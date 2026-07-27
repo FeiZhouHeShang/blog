@@ -1,0 +1,571 @@
+/* ==========================================================================
+   文章列表页面
+   ========================================================================== */
+
+/* #main-grid 位于 Swup 容器外，使用容器内容决定页面宽度，避免导航后宽度状态残留。 */
+#main-grid:has(#swup-container .article-list-page) {
+	max-width: 72rem;
+}
+
+.article-list-page {
+	width: 100%;
+	padding-top: var(--space-2);
+}
+
+.article-list-page__header {
+	margin-bottom: var(--space-6);
+}
+
+.article-list-page__header-left {
+	display: flex;
+	width: 100%;
+	min-width: 0;
+	flex-direction: column;
+	gap: var(--space-4);
+}
+
+.article-list-page__controls {
+	display: flex;
+	width: 100%;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-3);
+	flex-wrap: wrap;
+}
+
+.article-list-page__tabs {
+	display: inline-flex;
+	min-height: 3rem;
+	align-items: center;
+}
+
+.article-list-page__tabs.is-hidden {
+	display: none;
+}
+
+.article-list-page__total {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 0.375rem;
+	flex-shrink: 0;
+	color: var(--deep-text);
+}
+
+.article-list-page__total-number {
+	font-size: 2rem;
+	font-weight: 800;
+	line-height: 1;
+}
+
+.article-list-page__total-label {
+	color: var(--content-meta);
+	font-size: 0.875rem;
+	font-weight: 700;
+	white-space: nowrap;
+}
+
+.article-list-virtual {
+	width: 100%;
+}
+
+/* ==========================================================================
+   单一 DOM 卡片集合：只由 CSS 切换列表与网格
+   ========================================================================== */
+
+.article-list-collection {
+	display: grid;
+	width: 100%;
+	gap: var(--space-5);
+	margin-bottom: var(--space-6);
+}
+
+.article-list-virtual[data-view="grid"] .article-list-collection {
+	grid-template-columns: repeat(
+		auto-fill,
+		minmax(min(100%, 18.5rem), 1fr)
+	);
+}
+
+.article-list-virtual[data-view="list"] .article-list-collection {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+.article-list-card {
+	--article-list-card-active-border: var(--deep-text);
+
+	position: relative;
+	min-width: 0;
+	border: 1px solid var(--line-divider);
+	border-radius: var(--radius-medium);
+	background: var(--page-bg);
+	overflow: hidden;
+	transition: border-color 160ms ease, background-color 160ms ease, box-shadow 160ms ease;
+}
+
+.article-list-card:hover,
+.article-list-card:focus-within {
+	border-color: var(--article-list-card-active-border);
+	box-shadow: 0 0 0 1px var(--article-list-card-active-border);
+}
+
+.article-list-card.is-pinned {
+	--article-list-card-active-border: #ef4444;
+
+	border-color: var(--article-list-card-active-border);
+}
+
+:root.dark .article-list-card.is-pinned {
+	--article-list-card-active-border: #f87171;
+}
+
+.article-list-card__link {
+	position: relative;
+	display: flex;
+	height: 100%;
+	min-width: 0;
+	flex-direction: column;
+	color: inherit;
+	text-decoration: none;
+	cursor: pointer;
+}
+
+.article-list-card__link:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: -3px;
+}
+
+.article-list-card__media {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 16 / 9;
+	flex-shrink: 0;
+	background: var(--card-bg);
+	overflow: hidden;
+	clip-path: polygon(0 0, 100% 0, 100% 87%, 69% 94%, 38% 88%, 0 95%);
+}
+
+.article-list-card__media.is-hidden {
+	display: none;
+}
+
+.article-list-card__image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	opacity: 0;
+	transition: opacity 180ms ease;
+}
+
+.article-list-card__media picture {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.article-list-card__image.is-loaded {
+	opacity: 1;
+}
+
+.article-list-card__media-overlay {
+	display: none;
+}
+
+.article-list-card__content {
+	position: relative;
+	display: flex;
+	min-width: 0;
+	flex: 1;
+	flex-direction: column;
+	gap: 0.625rem;
+	padding: 1rem 1.125rem 1.125rem;
+	z-index: 2;
+}
+
+.article-list-card__pinned {
+	position: absolute;
+	top: -2.25rem;
+	left: 0.75rem;
+	display: inline-flex;
+	min-height: 1.625rem;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.125rem 0.4375rem;
+	border: 1px solid #ef4444;
+	border-radius: var(--radius-small);
+	background: color-mix(in srgb, #ef4444 10%, var(--page-bg));
+	color: #b91c1c;
+	font-size: 0.6875rem;
+	font-weight: 800;
+	line-height: 1;
+}
+
+:root.dark .article-list-card__pinned {
+	border-color: #f87171;
+	background: color-mix(in srgb, #ef4444 18%, var(--page-bg));
+	color: #fca5a5;
+}
+
+.article-list-card__title {
+	min-width: 0;
+	margin: 0;
+	overflow: hidden;
+	color: var(--deep-text);
+	font-size: 1.125rem;
+	font-weight: 800;
+	line-height: 1.35;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.article-list-card__lock {
+	display: inline-flex;
+	margin-left: 0.25rem;
+	align-items: center;
+	vertical-align: middle;
+	color: var(--content-meta);
+}
+
+.article-list-card__description {
+	display: -webkit-box;
+	min-height: 2.5rem;
+	margin: 0;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	color: var(--content-meta);
+	font-size: 0.8125rem;
+	font-weight: 500;
+	line-height: 1.5;
+}
+
+.article-list-card__meta {
+	display: flex;
+	min-width: 0;
+	align-items: center;
+	gap: 0.5rem;
+	margin-top: auto;
+	overflow: hidden;
+	color: var(--content-meta);
+	font-size: 0.75rem;
+	font-weight: 650;
+	line-height: 1.35;
+	white-space: nowrap;
+}
+
+.article-list-card__meta-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	flex-shrink: 0;
+}
+
+.article-list-card__category {
+	flex-shrink: 0;
+	color: var(--primary);
+	font-weight: 800;
+}
+
+.article-list-card__divider {
+	color: var(--meta-divider);
+}
+
+.article-list-card__tag {
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.article-list-card__tag-more {
+	flex-shrink: 0;
+	font-size: 0.6875rem;
+}
+
+.article-list-virtual[data-view="grid"] .article-list-card:not(.has-image) .article-list-card__content {
+	min-height: 15rem;
+	justify-content: flex-end;
+}
+
+.article-list-virtual[data-view="grid"] .article-list-card:not(.has-image) .article-list-card__pinned {
+	position: static;
+	align-self: flex-start;
+}
+
+/* ==========================================================================
+   列表视图：保留右侧背景图与左侧内容结构
+   ========================================================================== */
+
+.article-list-virtual[data-view="list"] .article-list-card {
+	min-height: 9.5rem;
+}
+
+.article-list-virtual[data-view="list"] .article-list-card__link {
+	display: block;
+	min-height: inherit;
+}
+
+.article-list-virtual[data-view="list"] .article-list-card__media {
+	position: absolute;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	width: 66.666%;
+	height: 100%;
+	aspect-ratio: auto;
+	clip-path: none;
+	pointer-events: none;
+}
+
+.article-list-virtual[data-view="list"] .article-list-card__image.is-loaded {
+	opacity: 0.32;
+}
+
+:root.dark .article-list-virtual[data-view="list"] .article-list-card__image.is-loaded {
+	opacity: 0.24;
+}
+
+.article-list-virtual[data-view="list"] .article-list-card__media-overlay {
+	position: absolute;
+	inset: 0;
+	display: block;
+	background: linear-gradient(
+		to right,
+		var(--page-bg) 18%,
+		color-mix(in srgb, var(--page-bg) 76%, transparent) 46%,
+		color-mix(in srgb, var(--page-bg) 32%, transparent) 78%,
+		transparent
+	);
+}
+
+.article-list-virtual[data-view="list"] .article-list-card__content {
+	min-height: 9.5rem;
+	justify-content: center;
+	gap: 0.5rem;
+	padding: 1.25rem 1.5rem;
+}
+
+.article-list-virtual[data-view="list"] .article-list-card__pinned {
+	position: static;
+	align-self: flex-start;
+	order: -1;
+}
+
+.article-list-virtual[data-view="list"] .article-list-card__title {
+	font-size: 1.25rem;
+}
+
+.article-list-virtual[data-view="list"] .article-list-card__description {
+	display: block;
+	min-height: 0;
+	overflow: hidden;
+	font-size: 0.875rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.article-list-card:not(.has-image) .article-list-card__description {
+	display: block;
+	min-height: 0;
+	overflow: visible;
+	-webkit-line-clamp: unset;
+	text-overflow: clip;
+	white-space: normal;
+}
+
+.article-list-virtual[data-view="list"] .article-list-card__meta {
+	margin-top: 0;
+	font-size: 0.8125rem;
+}
+
+/* ==========================================================================
+   图片占位与分页
+   ========================================================================== */
+
+.skeleton-shimmer {
+	animation: article-skeleton-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes article-skeleton-pulse {
+	0%,
+	100% {
+		background-color: var(--card-bg);
+	}
+	50% {
+		background-color: var(--line-divider);
+	}
+}
+
+.article-list-pagination {
+	display: flex;
+	justify-content: center;
+	margin-top: var(--space-6);
+}
+
+.article-list-pagination__inner,
+.article-list-pagination__pages {
+	display: inline-flex;
+	align-items: center;
+}
+
+.article-list-pagination__inner {
+	gap: 0.5rem;
+}
+
+.article-list-pagination__pages {
+	gap: 0.25rem;
+}
+
+.article-list-pagination__btn,
+.article-list-pagination__page {
+	display: flex;
+	width: 2.75rem;
+	height: 2.75rem;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--deep-text);
+	border-radius: var(--radius-medium);
+	background: transparent;
+	color: var(--deep-text);
+	cursor: pointer;
+	transition: background-color 160ms ease, color 160ms ease, opacity 160ms ease;
+}
+
+.article-list-pagination__page {
+	font-size: 0.875rem;
+	font-weight: 750;
+}
+
+.article-list-pagination__btn:hover:not(:disabled),
+.article-list-pagination__page:hover:not(.is-active),
+.article-list-pagination__page.is-active {
+	background: var(--deep-text);
+	color: var(--page-bg);
+}
+
+.article-list-pagination__btn:focus-visible,
+.article-list-pagination__page:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+}
+
+.article-list-pagination__btn:disabled {
+	opacity: 0.3;
+	cursor: not-allowed;
+}
+
+.article-list-pagination__dots {
+	display: flex;
+	width: 2.75rem;
+	height: 2.75rem;
+	align-items: center;
+	justify-content: center;
+	color: var(--content-meta);
+}
+
+/* ==========================================================================
+   空状态与响应式
+   ========================================================================== */
+
+.article-list-empty {
+	display: flex;
+	min-height: 16rem;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.5rem;
+	border: 1px dashed var(--line-divider);
+	border-radius: var(--radius-medium);
+	color: var(--content-meta);
+}
+
+.article-list-empty__title {
+	color: var(--deep-text);
+	font-size: 1.5rem;
+	font-weight: 800;
+}
+
+.article-list-empty__meta {
+	font-size: 0.9375rem;
+}
+
+@media (max-width: 768px) {
+	.article-list-page__header {
+		margin-bottom: 1.25rem;
+	}
+
+	.article-list-page__controls {
+		gap: 0.625rem;
+	}
+
+	.article-list-page__total-number {
+		font-size: 1.625rem;
+	}
+
+	.article-list-page__total-label {
+		font-size: 0.8rem;
+	}
+
+	.article-list-collection,
+	.article-list-virtual[data-view="grid"] .article-list-collection {
+		grid-template-columns: minmax(0, 1fr);
+	}
+
+	.article-list-virtual[data-view="list"] .article-list-card {
+		min-height: 0;
+	}
+
+	.article-list-virtual[data-view="list"] .article-list-card__link {
+		display: flex;
+	}
+
+	.article-list-virtual[data-view="list"] .article-list-card__media {
+		position: relative;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 16 / 9;
+		clip-path: polygon(0 0, 100% 0, 100% 87%, 69% 94%, 38% 88%, 0 95%);
+	}
+
+	.article-list-virtual[data-view="list"] .article-list-card__image.is-loaded,
+	:root.dark .article-list-virtual[data-view="list"] .article-list-card__image.is-loaded {
+		opacity: 1;
+	}
+
+	.article-list-virtual[data-view="list"] .article-list-card__media-overlay {
+		display: none;
+	}
+
+	.article-list-virtual[data-view="list"] .article-list-card__content {
+		min-height: 0;
+		padding: 1rem 1.125rem 1.125rem;
+	}
+
+	.article-list-virtual[data-view="list"] .article-list-card__title {
+		font-size: 1.125rem;
+	}
+
+	.article-list-virtual[data-view="list"] .article-list-card__meta {
+		font-size: 0.75rem;
+	}
+
+	.article-list-pagination__inner {
+		max-width: 100%;
+		gap: 0.25rem;
+	}
+
+	.article-list-pagination__pages {
+		overflow: hidden;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.article-list-card,
+	.article-list-card__image,
+	.article-list-pagination__btn,
+	.article-list-pagination__page {
+		transition: none;
+	}
+
+	.skeleton-shimmer {
+		animation: none;
+	}
+}

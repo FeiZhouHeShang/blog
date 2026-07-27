@@ -1,0 +1,541 @@
+---
+import Icon from "@components/common/Icon.astro";
+import DataMetricCard from "@components/features/DataMetricCard.astro";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import { homeConfig, siteConfig } from "@/config";
+import {
+	getCategoryList,
+	getSortedPosts,
+	getTagList,
+} from "@/utils/content-utils";
+import { formatDateI18n } from "@/utils/date-utils";
+import { countReadableCharacters } from "@/utils/home-data-layer.js";
+import { getGuidePostSets } from "@/utils/home-guide-grid.js";
+import { getPostUrlBySlug, getTagUrl, url } from "@/utils/url-utils";
+
+const posts = await getSortedPosts();
+const categories = await getCategoryList();
+const tags = await getTagList();
+const totalWords = posts.reduce(
+	(sum, post) => sum + countReadableCharacters(post.body || ""),
+	0,
+);
+const { pinned: pinnedPosts, recent: recentPosts } = getGuidePostSets(posts, 4);
+const rotationPosts = pinnedPosts;
+const articlePills = [
+	{ label: "文章", value: posts.length, tone: "light" as const },
+	{ label: "分类", value: categories.length, tone: "solid" as const },
+	{ label: "标签", value: tags.length, tone: "solid" as const },
+	{ label: "字数", value: totalWords.toLocaleString(), tone: "light" as const },
+];
+const visitPills = [
+	{ label: "UV", value: "--", tone: "light" as const },
+	{ label: "PV", value: "--", tone: "dark" as const },
+	{
+		label: i18n(I18nKey.siteStatsSource),
+		value: "Umami",
+		tone: "outline" as const,
+	},
+];
+const primaryContactNames = new Set(["qq", "github", "rss"]);
+const contactItems = homeConfig.links.map((link) => ({
+	name: link.name,
+	icon: link.icon,
+	href: link.url,
+}));
+const primaryContactItems = contactItems.filter((link) =>
+	primaryContactNames.has(link.name.toLowerCase()),
+);
+const umamiConfig = siteConfig.analytics?.umamiAnalytics;
+const statsBaseUrl = umamiConfig?.scriptUrl
+	? new URL(umamiConfig.scriptUrl).origin
+	: "";
+const statsShareId = umamiConfig?.shareId ?? "";
+---
+
+<section
+	class="home-data-layer"
+	aria-labelledby="home-data-layer-title"
+	id="home-data-layer"
+	data-stats-base-url={statsBaseUrl}
+	data-stats-share-id={statsShareId}
+>
+	<div class="home-data-layer__inner">
+		<div class="home-data-layer__heading">
+			<p class="home-data-layer__kicker">CONTEXT</p>
+			<h2 class="home-data-layer__title-main" id="home-data-layer-title">站点数据</h2>
+			<h2 class="home-data-layer__title-matrix">地图指南</h2>
+		</div>
+
+		<div class="home-data-layer__top-grid">
+			<DataMetricCard title="站点访问" eyebrow="VISITS" detail="访客与浏览统计载入中" icon="material-symbols:visibility-outline-rounded" hoverTitle="访问轨迹" hoverCode="01" variant="square" pills={visitPills} statKind="visits" visualImage={homeConfig.dataLayer.visitImage} />
+			<DataMetricCard title="文章档案" eyebrow="ARCHIVE" detail={`${posts.length} 篇文章 / ${categories.length} 个分类 / ${tags.length} 个标签`} icon="material-symbols:article-outline" hoverTitle="内容索引" hoverCode="02" variant="wide" pills={articlePills} statKind="articles" visualImage={homeConfig.dataLayer.archiveImage} />
+		</div>
+
+		<div class="home-guide-grid">
+			<section class="guide-card guide-card--article guide-card--pinned" aria-labelledby="guide-pinned-title" data-guide-rotator data-guide-axis="vertical">
+				<div class="guide-card__article-heading">
+					<h3 id="guide-pinned-title">置顶文章</h3>
+				</div>
+				<div class="guide-rotator__slides">
+					{rotationPosts.length > 0 ? rotationPosts.map((post, index) => (
+						<article class="guide-rotator__slide" data-guide-slide data-guide-url={getPostUrlBySlug(post.id)} hidden={index !== 0} aria-hidden={index !== 0 ? "true" : undefined}>
+							<span class="guide-rotator__meta">{post.data.category || "未分类"} / {formatDateI18n(post.data.published)}</span>
+							<div class="guide-rotator__title-row">
+								<a class="guide-rotator__article-link" href={getPostUrlBySlug(post.id)}><strong>{post.data.title}</strong></a>
+								<button class="guide-card__article-action" type="button" data-guide-next aria-label="切换下一篇置顶文章" title="切换下一篇置顶文章"><Icon name="material-symbols:arrow-forward-rounded" is:inline /></button>
+							</div>
+							<span>{post.data.description || "打开这篇文章继续阅读。"}</span>
+						</article>
+					)) : <p class="guide-card__detail">暂无置顶内容</p>}
+				</div>
+				{rotationPosts.length > 0 && (
+					<div class="guide-rotator__dots" aria-label="切换置顶文章">
+						{rotationPosts.map((post, index) => <button type="button" data-guide-dot aria-label={`查看置顶文章：${post.data.title}`} aria-current={index === 0 ? "true" : undefined}></button>)}
+					</div>
+				)}
+			</section>
+
+			<section class="guide-card guide-card--article guide-card--latest" aria-labelledby="guide-latest-title" data-guide-rotator data-guide-axis="horizontal">
+				<div class="guide-card__article-heading">
+					<h3 id="guide-latest-title">最新更新</h3>
+				</div>
+				<div class="guide-rotator__slides">
+					{recentPosts.length > 0 ? recentPosts.map((post, index) => (
+						<article class="guide-rotator__slide" data-guide-slide data-guide-url={getPostUrlBySlug(post.id)} hidden={index !== 0} aria-hidden={index !== 0 ? "true" : undefined}>
+							<span class="guide-rotator__meta">{post.data.category || "未分类"} / {formatDateI18n(post.data.published)}</span>
+							<div class="guide-rotator__title-row">
+								<a class="guide-rotator__article-link" href={getPostUrlBySlug(post.id)}><strong>{post.data.title}</strong></a>
+								<a class="guide-card__article-action" href={getPostUrlBySlug(post.id)} aria-label={`打开文章：${post.data.title}`} title="打开当前文章"><Icon name="material-symbols:arrow-forward-rounded" is:inline /></a>
+							</div>
+						</article>
+					)) : <p class="guide-card__detail">暂无文章内容</p>}
+				</div>
+				{recentPosts.length > 0 && (
+					<div class="guide-rotator__dots" aria-label="切换最新文章">
+						{recentPosts.map((post, index) => <button type="button" data-guide-dot aria-label={`查看最新文章：${post.data.title}`} aria-current={index === 0 ? "true" : undefined}></button>)}
+					</div>
+				)}
+			</section>
+
+			<section class="guide-card guide-card--index guide-card--categories" aria-labelledby="guide-categories-title">
+				<p class="guide-card__eyebrow">CATEGORIES</p>
+				<h3 id="guide-categories-title">分类索引</h3>
+				<div class="guide-link-list">
+					{categories.slice(0, 3).map((category) => <a href={category.url}><span>{category.name}</span><strong>{category.count}</strong></a>)}
+					<a href={url("/categories/")}><span>查看全部</span><strong>{categories.length} 个分类</strong></a>
+				</div>
+			</section>
+
+			<section class="guide-card guide-card--index guide-card--tags" aria-labelledby="guide-tags-title">
+				<p class="guide-card__eyebrow">TAGS</p>
+				<h3 id="guide-tags-title">标签索引</h3>
+				<div class="guide-tag-list">
+					{tags.slice(0, 5).map((tag) => <a href={getTagUrl(tag.name)}>#{tag.name}<span>{tag.count}</span></a>)}
+					<a class="guide-tag-list__all" href={url("/archive/")}>浏览全部标签 <Icon name="material-symbols:arrow-outward-rounded" is:inline /></a>
+				</div>
+			</section>
+
+			<section class="guide-card guide-card--contact" aria-labelledby="guide-contact-title" data-guide-contact tabindex="0">
+				<div class="guide-card__visual" aria-hidden="true">
+					<img src={homeConfig.dataLayer.contactImage} alt="" loading="lazy" decoding="async" />
+				</div>
+				<p class="guide-card__eyebrow">SUBSCRIBE</p>
+				<h3 id="guide-contact-title">订阅与联系</h3>
+				<div class="guide-contact__primary" aria-label="常用联系方式">
+					{primaryContactItems.map((link) => <a href={link.href} aria-label={link.name} title={link.name}><Icon name={link.icon} is:inline /></a>)}
+					<button class="guide-contact__toggle" type="button" aria-expanded="false" aria-label="展开全部联系方式"><Icon name="material-symbols:add-rounded" is:inline /></button>
+				</div>
+				<div class="guide-contact__all" aria-label="全部联系方式">
+					{contactItems.map((link) => <a href={link.href} aria-label={link.name} title={link.name}><Icon name={link.icon} is:inline /><span>{link.name}</span></a>)}
+				</div>
+			</section>
+		</div>
+	</div>
+</section>
+
+<script>
+	import { gsap } from "gsap";
+	import { createCache } from "@/utils/cache-utils";
+	import { formatCompactNumber } from "@/utils/home-data-layer.js";
+	import { waitForPageLoaderHidden } from "@/utils/page-loader-controller.js";
+
+	type Cleanup = () => void;
+	type ShareData = { websiteId: string; token: string };
+	type GuideOpeningBlock = {
+		element: HTMLElement;
+		collapseX: number;
+		collapseY: number;
+		entryX: number;
+		entryY: number;
+		rotation: number;
+	};
+
+	const shareCache = createCache<ShareData>({ key: "umami_share_data", ttl: 3_600_000 });
+	let cleanups: Cleanup[] = [];
+	let guideOpeningToken = 0;
+
+	function cleanupHomeDataLayer() {
+		guideOpeningToken += 1;
+		cleanups.forEach((cleanup) => cleanup());
+		cleanups = [];
+	}
+
+	function prefersReducedMotion() {
+		return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+	}
+
+	function isDesktopGuideOpening() {
+		return window.matchMedia("(min-width: 769px)").matches;
+	}
+
+	function getGuideOpeningBlocks(layer: HTMLElement): GuideOpeningBlock[] {
+		const cards = Array.from(layer.querySelectorAll<HTMLElement>(
+			".home-data-layer__top-grid > .data-card, .home-guide-grid > .guide-card",
+		));
+		if (cards.length === 0) return [];
+
+		const topGrid = layer.querySelector<HTMLElement>(".home-data-layer__top-grid");
+		const guideGrid = layer.querySelector<HTMLElement>(".home-guide-grid");
+		if (!topGrid || !guideGrid) return [];
+
+		const topRect = topGrid.getBoundingClientRect();
+		const guideRect = guideGrid.getBoundingClientRect();
+		const stageCenterX = (topRect.left + topRect.right) / 2;
+		const stageCenterY = (topRect.top + guideRect.bottom) / 2;
+
+		return cards.map((element, index) => {
+			const rect = element.getBoundingClientRect();
+			const cardCenterX = (rect.left + rect.right) / 2;
+			const cardCenterY = (rect.top + rect.bottom) / 2;
+			const deltaX = cardCenterX - stageCenterX;
+			const deltaY = cardCenterY - stageCenterY;
+			const distance = Math.max(Math.hypot(deltaX, deltaY), 1);
+			const outwardDistance = Math.min(window.innerWidth * 0.2, 280);
+			const rotation = [-7, 6, -5, 5, -4, 4, 7][index] ?? 0;
+
+			return {
+				element,
+				collapseX: stageCenterX - cardCenterX,
+				collapseY: stageCenterY - cardCenterY,
+				entryX: stageCenterX - cardCenterX + (deltaX / distance) * outwardDistance,
+				entryY: stageCenterY - cardCenterY + (deltaY / distance) * outwardDistance,
+				rotation,
+			};
+		});
+	}
+
+	async function initGuideOpening(layer: HTMLElement, token: number) {
+		if (prefersReducedMotion() || !isDesktopGuideOpening()) return;
+
+		await waitForPageLoaderHidden();
+		if (token !== guideOpeningToken || !document.contains(layer)) return;
+
+		const title = layer.querySelector<HTMLElement>(".home-data-layer__title-matrix");
+		const kicker = layer.querySelector<HTMLElement>(".home-data-layer__kicker");
+		const titleMain = layer.querySelector<HTMLElement>(".home-data-layer__title-main");
+		const blocks = getGuideOpeningBlocks(layer);
+		if (!title || !kicker || !titleMain || blocks.length === 0) return;
+
+		const release = () => {
+			layer.dataset.guideOpening = "complete";
+			gsap.set([kicker, titleMain, title], {
+				clearProps: "opacity,visibility,transform,clipPath,filter",
+			});
+			gsap.set(blocks.map(({ element }) => element), {
+				clearProps: "opacity,visibility,transform,clipPath,filter,pointerEvents",
+			});
+		};
+
+		let released = false;
+		const finish = () => {
+			if (released) return;
+			released = true;
+			release();
+		};
+		let timeline: ReturnType<typeof gsap.timeline> | null = null;
+		let started = false;
+		const start = () => {
+			if (started) return;
+			started = true;
+			layer.dataset.guideOpening = "playing";
+			gsap.set([kicker, titleMain], { autoAlpha: 0, y: 18 });
+			gsap.set(title, {
+				autoAlpha: 0,
+				x: -96,
+				scaleX: 0.72,
+				transformOrigin: "0% 50%",
+				clipPath: "inset(0 100% 0 0)",
+			});
+			blocks.forEach(({ element, entryX, entryY, rotation }) => {
+				gsap.set(element, {
+					autoAlpha: 0,
+					x: entryX,
+					y: entryY,
+					scale: 0.56,
+					rotation,
+					pointerEvents: "none",
+					transformOrigin: "50% 50%",
+				});
+			});
+
+			timeline = gsap.timeline({
+				defaults: { ease: "expo.inOut" },
+				onComplete: finish,
+			});
+			timeline
+				.to([kicker, titleMain], {
+					autoAlpha: 1,
+					y: 0,
+					duration: 0.5,
+					stagger: 0.08,
+					ease: "power3.out",
+				}, 0.12)
+				.to(title, {
+					autoAlpha: 1,
+					x: 0,
+					scaleX: 1,
+					clipPath: "inset(0 0% 0 0)",
+					duration: 1.2,
+					ease: "expo.out",
+				}, 0)
+				.to(blocks.map(({ element }) => element), {
+					autoAlpha: 1,
+					duration: 0.2,
+					stagger: 0.055,
+					ease: "none",
+				}, 0.48)
+				.to(blocks.map(({ element }) => element), {
+					x: (index) => blocks[index]?.collapseX ?? 0,
+					y: (index) => blocks[index]?.collapseY ?? 0,
+					scale: 0.82,
+					rotation: 0,
+					duration: 0.34,
+					stagger: 0.027,
+					ease: "expo.inOut",
+				}, 0.5)
+				.to(blocks.map(({ element }) => element), {
+					x: 0,
+					y: 0,
+					scale: 1,
+					duration: 0.8,
+					stagger: 0.05,
+					ease: "expo.out",
+				}, "+=0.18");
+		};
+		const preloadObserver = new IntersectionObserver((entries) => {
+			if (!entries.some((entry) => entry.isIntersecting)) return;
+			preloadObserver.disconnect();
+			start();
+		}, { rootMargin: "0px 0px -30% 0px" });
+		preloadObserver.observe(layer);
+
+		cleanups.push(() => {
+			preloadObserver.disconnect();
+			timeline?.kill();
+			gsap.set([kicker, titleMain, title, ...blocks.map(({ element }) => element)], {
+				clearProps: "opacity,visibility,transform,clipPath,filter,pointerEvents",
+			});
+		});
+	}
+
+	function initVisitStats(layer: HTMLElement) {
+		const statsBaseUrl = layer.dataset.statsBaseUrl;
+		const statsShareId = layer.dataset.statsShareId;
+		if (!statsBaseUrl || !statsShareId) return;
+		const detail = layer.querySelector<HTMLElement>(".data-card[data-stat-kind='visits'] .data-card__detail");
+		const valueNodes = layer.querySelectorAll<HTMLElement>("[data-stat-value]");
+		shareCache.fetch(async () => {
+			const response = await fetch(`${statsBaseUrl}/api/share/${statsShareId}`);
+			if (!response.ok) throw new Error("获取 Umami 分享信息失败");
+			const share = await response.json() as { websiteId?: string; entityId?: string; token?: string };
+			const websiteId = share.websiteId || share.entityId;
+			if (!websiteId) throw new Error("Umami 分享信息缺少 websiteId");
+			return { websiteId, token: share.token || statsShareId };
+		}).then(({ websiteId, token }) => fetch(`${statsBaseUrl}/api/websites/${websiteId}/stats?startAt=0&endAt=${Date.now()}`, {
+			headers: { "x-umami-share-token": token, "x-umami-share-context": "1", "Content-Type": "application/json" },
+		})).then((response) => response.json()).then((data: { uv?: number; visitors?: number; pv?: number; pageviews?: number }) => {
+			const uvRaw = data.uv || data.visitors || 0;
+			const pvRaw = data.pv || data.pageviews || 0;
+			const uvCompact = formatCompactNumber(uvRaw);
+			const pvCompact = formatCompactNumber(pvRaw);
+			if (detail) detail.textContent = `访客 ${uvCompact} / 浏览 ${pvCompact}`;
+			valueNodes.forEach((node) => {
+				const isUv = node.dataset.statValue === "UV";
+				const isPv = node.dataset.statValue === "PV";
+				if (!isUv && !isPv) return;
+				const value = isUv ? uvRaw : pvRaw;
+				node.dataset.compactValue = formatCompactNumber(value);
+				node.dataset.fullValue = Number(value).toLocaleString();
+				node.textContent = node.dataset.compactValue;
+			});
+		}).catch(() => {
+			if (detail) detail.textContent = "访客 -- / 浏览 --";
+		});
+	}
+
+	function initMetricCards(layer: HTMLElement) {
+		if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+		const cards = Array.from(layer.querySelectorAll<HTMLElement>("[data-card-interactive]"));
+		cards.forEach((card) => {
+			const hover = card.querySelector<HTMLElement>(".data-card__hover");
+			const orb = card.querySelector<HTMLElement>(".data-card__hover-orb");
+			const header = card.querySelector<HTMLElement>(".data-card__hover-header");
+			const title = card.querySelector<HTMLElement>(".data-card__hover-title");
+			const pills = Array.from(card.querySelectorAll<HTMLElement>(".data-card__hover-pill"));
+			if (!hover || !orb || !header || !title || pills.length === 0) return;
+			const visitValues = card.dataset.statKind === "visits" ? Array.from(card.querySelectorAll<HTMLElement>("[data-stat-value]")) : [];
+			const timeline = gsap.timeline({ paused: true, defaults: { ease: "power3.out" }, onReverseComplete: () => visitValues.forEach((node) => { if (node.dataset.compactValue) node.textContent = node.dataset.compactValue; }) });
+			timeline.set(hover, { autoAlpha: 1 }).fromTo(orb, { xPercent: -50, yPercent: -50, scale: 0.18 }, { xPercent: -50, yPercent: -50, scale: 1, duration: 0.58, ease: "expo.out" }, 0).fromTo([header, title], { autoAlpha: 0, y: 18 }, { autoAlpha: 1, y: 0, duration: 0.28, stagger: 0.05 }, 0.38).fromTo(pills, { autoAlpha: 0, y: -44, scale: 0.82 }, { autoAlpha: 1, y: 0, scale: 1, duration: 0.44, stagger: 0.08, ease: "back.out(1.7)" }, 0.5);
+			const enter = () => { timeline.play(); visitValues.forEach((node) => { if (node.dataset.fullValue) node.textContent = node.dataset.fullValue; }); };
+			const leave = () => timeline.reverse();
+			card.addEventListener("pointerenter", enter);
+			card.addEventListener("pointerleave", leave);
+			cleanups.push(() => { card.removeEventListener("pointerenter", enter); card.removeEventListener("pointerleave", leave); timeline.kill(); });
+		});
+	}
+
+	function initGuideRotators(layer: HTMLElement) {
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		const rotators = Array.from(layer.querySelectorAll<HTMLElement>("[data-guide-rotator]"));
+		rotators.forEach((rotator) => {
+			const slides = Array.from(rotator.querySelectorAll<HTMLElement>("[data-guide-slide]"));
+			const dots = Array.from(rotator.querySelectorAll<HTMLButtonElement>("[data-guide-dot]"));
+			if (slides.length === 0) return;
+			let activeIndex = 0;
+			let intervalId: number | undefined;
+			let transitionId = 0;
+			const axis = rotator.dataset.guideAxis === "vertical" ? "vertical" : "horizontal";
+			const nextButtons = Array.from(rotator.querySelectorAll<HTMLButtonElement>("[data-guide-next]"));
+
+			const setActive = (nextIndex: number) => {
+				const resolvedIndex = (nextIndex + slides.length) % slides.length;
+				if (resolvedIndex === activeIndex) {
+					rotator.animate([{ transform: "translateY(0)" }, { transform: "translateY(-0.2rem)" }, { transform: "translateY(0)" }], { duration: 240, easing: "ease-out" });
+					return;
+				}
+				const currentSlide = slides[activeIndex];
+				const nextSlide = slides[resolvedIndex];
+				if (!currentSlide || !nextSlide) return;
+				const currentTransition = ++transitionId;
+				currentSlide.getAnimations().forEach((animation) => animation.cancel());
+				nextSlide.getAnimations().forEach((animation) => animation.cancel());
+				activeIndex = resolvedIndex;
+				nextSlide.hidden = false;
+				nextSlide.setAttribute("aria-hidden", "false");
+				dots.forEach((dot, index) => dot.setAttribute("aria-current", String(index === activeIndex)));
+
+				if (reduceMotion) {
+					currentSlide.hidden = true;
+					currentSlide.setAttribute("aria-hidden", "true");
+					return;
+				}
+
+				const vertical = axis === "vertical";
+				const incoming = vertical
+					? [{ transform: "translateY(110%)" }, { transform: "translateY(0)" }]
+					: [{ transform: "translateX(110%)" }, { transform: "translateX(0)" }];
+				const outgoing = vertical
+					? [{ transform: "translateY(0)" }, { transform: "translateY(-110%)" }]
+					: [{ transform: "translateX(0)" }, { transform: "translateX(-110%)" }];
+				const options: KeyframeAnimationOptions = { duration: 520, easing: "cubic-bezier(0.65, 0, 0.35, 1)", fill: "both" };
+				const outgoingAnimation = currentSlide.animate(outgoing, options);
+				nextSlide.animate(incoming, options);
+				outgoingAnimation.finished.catch(() => undefined).then(() => {
+					if (currentTransition !== transitionId) return;
+					currentSlide.hidden = true;
+					currentSlide.setAttribute("aria-hidden", "true");
+					currentSlide.style.transform = "";
+					nextSlide.style.transform = "";
+				});
+			};
+			const stop = () => {
+				if (intervalId !== undefined) window.clearInterval(intervalId);
+				intervalId = undefined;
+			};
+			const start = () => {
+				if (reduceMotion || slides.length < 2 || intervalId !== undefined) return;
+				intervalId = window.setInterval(() => setActive(activeIndex + 1), 5000);
+			};
+			const pause = () => stop();
+			const resume = () => start();
+			const focusOut = (event: FocusEvent) => {
+				if (!rotator.contains(event.relatedTarget as Node | null)) start();
+			};
+
+			rotator.addEventListener("pointerenter", pause);
+			rotator.addEventListener("pointerleave", resume);
+			rotator.addEventListener("focusin", pause);
+			rotator.addEventListener("focusout", focusOut);
+			const dotHandlers = dots.map((dot, index) => {
+				const handler = () => setActive(index);
+				dot.addEventListener("click", handler);
+				return [dot, handler] as const;
+			});
+			const nextHandler = () => setActive(activeIndex + 1);
+			nextButtons.forEach((button) => button.addEventListener("click", nextHandler));
+			start();
+			cleanups.push(() => {
+				stop();
+				rotator.removeEventListener("pointerenter", pause);
+				rotator.removeEventListener("pointerleave", resume);
+				rotator.removeEventListener("focusin", pause);
+				rotator.removeEventListener("focusout", focusOut);
+				dotHandlers.forEach(([dot, handler]) => dot.removeEventListener("click", handler));
+				nextButtons.forEach((button) => button.removeEventListener("click", nextHandler));
+			});
+		});
+	}
+
+	function initGuideContact(layer: HTMLElement) {
+		const contact = layer.querySelector<HTMLElement>("[data-guide-contact]");
+		const toggle = contact?.querySelector<HTMLButtonElement>(".guide-contact__toggle");
+		if (!contact || !toggle) return;
+		const close = () => {
+			contact.classList.remove("is-open");
+			toggle.setAttribute("aria-expanded", "false");
+		};
+		const toggleContact = () => {
+			const isOpen = contact.classList.toggle("is-open");
+			toggle.setAttribute("aria-expanded", String(isOpen));
+		};
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") close();
+			if ((event.key === "Enter" || event.key === " ") && event.target === contact) {
+				event.preventDefault();
+				toggleContact();
+			}
+		};
+		const onCardClick = (event: MouseEvent) => {
+			if (!window.matchMedia("(hover: none)").matches) return;
+			if ((event.target as Element).closest("a, button")) return;
+			toggleContact();
+		};
+
+		toggle.addEventListener("click", toggleContact);
+		contact.addEventListener("keydown", onKeyDown);
+		contact.addEventListener("click", onCardClick);
+		cleanups.push(() => {
+			toggle.removeEventListener("click", toggleContact);
+			contact.removeEventListener("keydown", onKeyDown);
+			contact.removeEventListener("click", onCardClick);
+		});
+	}
+
+	function initHomeDataLayer() {
+		cleanupHomeDataLayer();
+		const layer = document.getElementById("home-data-layer");
+		if (!layer) return;
+		const token = ++guideOpeningToken;
+		initVisitStats(layer);
+		initMetricCards(layer);
+		initGuideRotators(layer);
+		initGuideContact(layer);
+		void initGuideOpening(layer, token);
+	}
+
+	initHomeDataLayer();
+	document.addEventListener("astro:page-load", initHomeDataLayer);
+	document.addEventListener("swup:willReplaceContent", cleanupHomeDataLayer);
+</script>

@@ -1,0 +1,384 @@
+---
+import { render } from "astro:content";
+import * as path from "node:path";
+import Comment from "@components/comment/index.astro";
+import Icon from "@components/common/Icon.astro";
+import Markdown from "@components/common/Markdown.astro";
+import VisitorCount from "@components/common/VisitorCount.astro";
+import EncryptedPost from "@components/features/EncryptedPost.astro";
+import KatexManager from "@components/features/KatexManager.astro";
+import SharePoster from "@components/misc/SharePoster.svelte";
+import I18nKey from "@i18n/i18nKey";
+import { i18n } from "@i18n/translation";
+import MainGridLayout from "@layouts/MainGridLayout.astro";
+import "@/styles/components/post-hero.css";
+import { getSortedPosts } from "@utils/content-utils";
+import {
+	getCategoryUrl,
+	getFileDirFromPath,
+	getPostUrlBySlug,
+	getTagUrl,
+	removeFileExtension,
+} from "@utils/url-utils";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import PostFooterActions from "@/components/misc/PostFooterActions.astro";
+import { coverImageConfig } from "@/config/coverImageConfig";
+import { homeConfig } from "@/config/homeConfig";
+import { siteConfig } from "@/config/siteConfig";
+import { formatDateI18n, formatDateToYYYYMMDD } from "@/utils/date-utils";
+import { processCoverImageSync } from "@/utils/image-utils";
+import { url } from "@/utils/url-utils";
+
+export async function getStaticPaths() {
+	const blogEntries = await getSortedPosts();
+	return blogEntries.map((entry) => {
+		// 将 id 转换为 slug（移除扩展名）以匹配路由参数
+		const slug = removeFileExtension(entry.id);
+		return {
+			params: { slug },
+			props: { entry },
+		};
+	});
+}
+
+const { entry } = Astro.props;
+const { Content, remarkPluginFrontmatter } = await render(entry);
+
+const bannerPostMeta = {
+	title: entry.data.title,
+	published: entry.data.published,
+	updated: entry.data.updated,
+	words: remarkPluginFrontmatter.words,
+	minutes: remarkPluginFrontmatter.minutes,
+};
+
+// 处理随机图：如果image为"api"，则从配置的API获取随机图
+const processedImage = processCoverImageSync(entry.data.image, entry.id);
+
+let posterCoverUrl = processedImage;
+if (processedImage) {
+	const isLocal = !(
+		processedImage.startsWith("/") ||
+		processedImage.startsWith("http") ||
+		processedImage.startsWith("https") ||
+		processedImage.startsWith("data:")
+	);
+	if (isLocal) {
+		const basePath = getFileDirFromPath(entry.filePath || "");
+		const files = import.meta.glob<ImageMetadata>(
+			"../../**/*.{png,jpg,jpeg,webp,avif,gif}",
+			{
+				import: "default",
+			},
+		);
+		let normalizedPath = path
+			.normalize(path.join("../../", basePath, processedImage))
+			.replace(/\\/g, "/");
+		const file = files[normalizedPath];
+		if (file) {
+			const img = await file();
+			posterCoverUrl = img.src;
+		}
+	}
+}
+
+// 处理头像URL
+let posterAvatarUrl: string | null = homeConfig.avatar || null;
+if (posterAvatarUrl) {
+	const isLocalAvatar = !(
+		posterAvatarUrl.startsWith("/") ||
+		posterAvatarUrl.startsWith("http") ||
+		posterAvatarUrl.startsWith("https") ||
+		posterAvatarUrl.startsWith("data:")
+	);
+	if (isLocalAvatar) {
+		const files = import.meta.glob<ImageMetadata>(
+			"../../**/*.{png,jpg,jpeg,webp,avif,gif}",
+			{
+				import: "default",
+			},
+		);
+		const normalizedPath = path
+			.normalize(path.join("../../", posterAvatarUrl))
+			.replace(/\\/g, "/");
+		const file = files[normalizedPath];
+		if (file) {
+			const img = await file();
+			posterAvatarUrl = img.src;
+		}
+	}
+}
+
+dayjs.extend(utc);
+
+const jsonLd = {
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	headline: entry.data.title,
+	description: entry.data.description || entry.data.title,
+	keywords: entry.data.tags,
+	image: posterCoverUrl || undefined,
+	author: {
+		"@type": "Person",
+		name: homeConfig.name,
+		url: Astro.site,
+	},
+	publisher: {
+		"@type": "Organization",
+		name: siteConfig.title,
+		logo: {
+			"@type": "ImageObject",
+			url: new URL("/favicon/favicon.ico", Astro.site).href,
+		},
+	},
+	datePublished: formatDateToYYYYMMDD(entry.data.published),
+	...(entry.data.updated && {
+		dateModified: formatDateToYYYYMMDD(entry.data.updated),
+	}),
+	mainEntityOfPage: {
+		"@type": "WebPage",
+		"@id": Astro.url.href,
+	},
+	inLanguage: entry.data.lang
+		? entry.data.lang.replace("_", "-")
+		: siteConfig.lang.replace("_", "-"),
+};
+
+const serializedJsonLd = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+---
+
+<MainGridLayout
+  banner={processedImage}
+  title={entry.data.title}
+  description={entry.data.description}
+  lang={entry.data.lang}
+  setOGTypeArticle={true}
+  postSlug={entry.id}
+  postCategory={entry.data.category || undefined}
+  bannerPostMeta={bannerPostMeta}
+>
+  <!-- KaTeX 按需加载 - 仅在文章页面 -->
+  <KatexManager slot="head" />
+  
+  <script
+    is:inline
+    slot="head"
+    type="application/ld+json"
+    set:html={serializedJsonLd}
+  />
+  <!-- Layer 1: Title + meta -->
+  <div class="post-hero rounded-(--radius-large) mb-2 onload-animation">
+    <div class="post-hero__content">
+      <h1
+        data-pagefind-body
+        data-pagefind-weight="10"
+        data-pagefind-meta="title"
+        class="post-hero__title"
+      >
+        {entry.data.title}
+      </h1>
+
+      <div class="post-hero__meta-row">
+        <span class="post-hero__meta-item">
+          {formatDateI18n(entry.data.published, false, true)}
+        </span>
+
+        <span class="post-hero__meta-dot">·</span>
+
+        <a href={getCategoryUrl(entry.data.category || null)} class="post-hero__meta-link">
+          #{entry.data.category || i18n(I18nKey.uncategorized)}
+        </a>
+
+        {entry.data.tags && entry.data.tags.length > 0 && entry.data.tags.map((tag, i) => (
+          <span class="post-hero__meta-tag">
+            {i > 0 && <span class="post-hero__meta-sep">/</span>}
+            <a href={getTagUrl(tag)} class="post-hero__meta-link">{tag.trim()}</a>
+          </span>
+        ))}
+
+        <span class="post-hero__meta-dot">·</span>
+
+        <span class="post-hero__meta-item">
+          {remarkPluginFrontmatter.words} {i18n(I18nKey.wordsCount)} {remarkPluginFrontmatter.minutes} {i18n(remarkPluginFrontmatter.minutes === 1 ? I18nKey.minuteCount : I18nKey.minutesCount)}
+        </span>
+
+        <span class="post-hero__meta-dot">·</span>
+
+        <span class="post-hero__views"><VisitorCount id={entry.id} compact /></span>
+
+        <span class="post-hero__meta-dot">·</span>
+
+        {siteConfig.sharePoster && (
+          <span class="post-hero__share"><SharePoster
+            client:only="svelte"
+            title={entry.data.title}
+            author={homeConfig.name}
+            description={entry.data.description || entry.data.title}
+            pubDate={formatDateToYYYYMMDD(entry.data.published)}
+            coverImage={posterCoverUrl}
+            url={Astro.url.href}
+            siteTitle={siteConfig.title}
+            avatar={posterAvatarUrl}
+          /></span>
+        )}
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 2: Introduction card (notebook-style) -->
+  {
+    (entry.data.description || siteConfig.showLastModified) && (() => {
+      const lastModified = dayjs(entry.data.updated || entry.data.published);
+      const dateStr = lastModified.format("YYYY-MM-DD");
+      const outdatedThreshold = siteConfig.outdatedThreshold ?? 1;
+      return (
+        <div class="post-intro-card mb-2">
+          {
+            siteConfig.showLastModified && (
+              <div
+                id="outdated-info"
+                class="post-intro-card__outdated hidden"
+                data-date={lastModified.toISOString()}
+                data-threshold={outdatedThreshold}
+              >
+                <div class="post-intro-card__section">
+                  <div class="post-intro-card__row">
+                    <Icon name="material-symbols:info-outline-rounded" class="post-intro-card__icon" />
+                    <span class="post-intro-card__text">
+                      {i18n(I18nKey.lastModifiedPrefix)}{dateStr}
+                      <span id="days-ago-text-intro" class="outdated-days" data-template={i18n(I18nKey.lastModifiedDaysAgo)}></span>
+                      <span id="outdated-warning-intro" class="outdated-warning hidden">，{i18n(I18nKey.lastModifiedOutdated)}</span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+          {entry.data.description && (
+            <>
+              {siteConfig.showLastModified && <div class="post-intro-card__divider" />}
+              <div class="post-intro-card__section">
+                <div class="post-intro-card__label">简介</div>
+                <p class="post-intro-card__desc">{entry.data.description}</p>
+              </div>
+            </>
+          )}
+        </div>
+      );
+    })()
+  }
+
+  <!-- Layer 3: Cover image -->
+  {coverImageConfig.enableInPost && posterCoverUrl && (
+    <div class="post-cover mb-2">
+      <img
+        src={posterCoverUrl}
+        alt=""
+        loading="eager"
+        fetchpriority="high"
+      />
+    </div>
+  )}
+
+  <div class="flex w-full rounded-(--radius-large) overflow-hidden relative mb-4">
+    <div id="post-container" class="card-base z-10 px-3 pb-4 pt-0 relative w-full">
+      {entry.data.password ? (
+        <EncryptedPost password={entry.data.password} slug={entry.id} hint={entry.data.passwordHint}>
+          <Markdown class="mb-6 markdown-content onload-animation">
+            <Content />
+          </Markdown>
+
+          <PostFooterActions
+            title={entry.data.title}
+            published={entry.data.published}
+            id={entry.id}
+            author={entry.data.author}
+            sourceLink={entry.data.sourceLink}
+            licenseName={entry.data.licenseName}
+            licenseUrl={entry.data.licenseUrl}
+          />
+        </EncryptedPost>
+      ) : (
+        <>
+          <Markdown class="mb-6 markdown-content onload-animation">
+            <Content />
+          </Markdown>
+
+          <PostFooterActions
+            title={entry.data.title}
+            published={entry.data.published}
+            id={entry.id}
+            author={entry.data.author}
+            sourceLink={entry.data.sourceLink}
+            licenseName={entry.data.licenseName}
+            licenseUrl={entry.data.licenseUrl}
+          />
+        </>
+      )}
+    </div>
+  </div>
+
+  <script>
+    import dayjs from "dayjs";
+
+    function checkOutdated() {
+      const info = document.getElementById('outdated-info');
+      if (!info) return;
+      const lastModified = dayjs(info.dataset.date);
+      const daysDiff = dayjs().diff(lastModified, "day");
+      const threshold = Number(info.dataset.threshold);
+
+      if (daysDiff >= threshold) {
+        info.classList.remove('hidden');
+        if (daysDiff >= 1) {
+          const textEl = document.getElementById('days-ago-text-intro');
+          if (textEl && textEl.dataset.template) {
+            textEl.textContent = `，${textEl.dataset.template.replace("{days}", daysDiff.toString())}`;
+          }
+          const warningEl = document.getElementById('outdated-warning-intro');
+          if (warningEl) warningEl.classList.remove('hidden');
+        }
+      }
+    }
+
+    document.addEventListener("astro:page-load", checkOutdated);
+  </script>
+
+  <div
+    class="flex flex-col md:flex-row justify-between mb-4 gap-4 overflow-hidden w-full"
+  >
+    <a
+      href={entry.data.nextSlug ? getPostUrlBySlug(entry.data.nextSlug) : url("/")}
+      class="w-full font-bold overflow-hidden active:scale-95"
+    >
+      <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-start! gap-4">
+        <Icon
+          name="material-symbols:chevron-left-rounded"
+          class="text-[2rem] text-(--primary)"
+        />
+        <div class="overflow-hidden transition text-ellipsis whitespace-nowrap max-w-[calc(100%-3rem)] text-black/75 dark:text-white/75">
+          {entry.data.nextTitle || i18n(I18nKey.home)}
+        </div>
+      </div>
+    </a>
+
+    <a
+      href={entry.data.prevSlug ? getPostUrlBySlug(entry.data.prevSlug) : url("/")}
+      class="w-full font-bold overflow-hidden active:scale-95"
+    >
+      <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-end! gap-4">
+        <div class="overflow-hidden transition text-ellipsis whitespace-nowrap max-w-[calc(100%-3rem)] text-black/75 dark:text-white/75">
+          {entry.data.prevTitle || i18n(I18nKey.home)}
+        </div>
+        <Icon
+          name="material-symbols:chevron-right-rounded"
+          class="text-[2rem] text-(--primary)"
+        />
+      </div>
+    </a>
+  </div>
+
+  <!-- 评论 -->
+  {entry.data.comment && !entry.data.password && <Comment post={entry} />}
+</MainGridLayout>
