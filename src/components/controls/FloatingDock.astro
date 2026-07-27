@@ -5,9 +5,8 @@ import Icon from "@components/common/Icon.astro";
  * 所有重组件（Theme / DisplaySettings / Music / Live2D / Spine / Calendar / TOC / BackToTop / BackToHome / BackToComment / Tags）
  * 全部以图标按钮 + 抽屉/浮层形式集中在右下角。
  */
-import MusicPlayer from "@/components/features/MusicPlayer.astro";
 import { announcementConfig, spineModelConfig } from "@/config";
-import { musicPlayerConfig } from "@/config/musicConfig";
+// [已修改] 移除 musicPlayerConfig 和 MusicPlayer，改用第三方播放器
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 import { getTagList } from "@/utils/content-utils";
@@ -21,13 +20,6 @@ const tags = await getTagList();
 		<span class="dock-btn-icon"><Icon name="ri:ai" class="text-3xl" /></span>
 		<span class="dock-btn-label">AI 搜索</span>
 	</button>
-
-	{musicPlayerConfig.showInNavbar !== false && (
-		<button class="dock-btn dock-btn-music" id="dock-music-btn" aria-label={i18n(I18nKey.music)} type="button" data-tooltip={i18n(I18nKey.music)}>
-			<span class="dock-btn-icon"><Icon name="material-symbols:music-note-rounded" class="text-3xl" /></span>
-			<span class="dock-btn-label">{i18n(I18nKey.music)}</span>
-		</button>
-	)}
 
 	<button class="dock-btn dock-btn-comment hide" id="dock-comment-btn" aria-label="Comments" type="button" data-tooltip="跳到评论">
 		<span class="dock-btn-icon"><Icon name="mingcute:comment-line" class="text-3xl" /></span>
@@ -124,15 +116,7 @@ const tags = await getTagList();
 	</div>
 )}
 
-{musicPlayerConfig.showInNavbar !== false && (
-	<div class="dock-drawer dock-drawer-closed" id="dock-drawer-music">
-		<div class="dock-drawer-title">
-			<Icon name="material-symbols:music-note-rounded" class="dock-drawer-title-icon" />
-			<span>{i18n(I18nKey.music)}</span>
-		</div>
-		<MusicPlayer lazy />
-	</div>
-)}
+{/* [已修改] 移除音乐抽屉 dock-drawer-music，改用第三方播放器 */}
 
 <div class="dock-drawer dock-drawer-closed" id="dock-drawer-tags">
 	<div class="dock-drawer-title">
@@ -183,8 +167,8 @@ const tags = await getTagList();
 			expandedLabel?.classList.toggle("hidden", expanded);
 		});
 
+		// [已修改] 移除音乐抽屉映射，改用第三方播放器
 		const drawers: Record<string, string> = {
-			"dock-music-btn": "dock-drawer-music",
 			"dock-toc-btn": "dock-drawer-toc",
 			"dock-announcement-btn": "dock-drawer-announcement",
 			"dock-tags-btn": "dock-drawer-tags",
@@ -223,33 +207,7 @@ const tags = await getTagList();
 			}
 		}, { signal: dockSignal });
 
-		// 音乐按钮播放旋转
-		const musicBtn = document.getElementById("dock-music-btn");
-		function updateMusicIconSpin() {
-			if (!musicBtn) return;
-			const mgr = window.__fireflyMusic;
-			const isPlaying = mgr?.getState().isPlaying ?? false;
-			musicBtn.classList.toggle("is-playing", isPlaying);
-		}
-		updateMusicIconSpin();
-		window.addEventListener("fm:play-state", updateMusicIconSpin, { signal: dockSignal });
-
-		// 音乐抽屉懒加载：首次打开时触发 MusicManager 初始化
-		const musicDrawerBtn = musicBtn;
-		const musicDrawerEl = document.getElementById("dock-drawer-music");
-		if (musicDrawerBtn && musicDrawerEl) {
-			musicDrawerBtn.addEventListener("click", () => {
-				const mgr = window.__fireflyMusic;
-				if (mgr && !mgr.getState().initialized) {
-					const widget = musicDrawerEl.querySelector(".music-player-widget");
-					const loadingEl = widget?.querySelector(".music-loading");
-					if (loadingEl) {
-						loadingEl.classList.remove("opacity-0", "pointer-events-none");
-					}
-					mgr.init();
-				}
-			});
-		}
+		// [已修改] 移除音乐按钮旋转和抽屉懒加载逻辑，改用第三方播放器
 
 		// Spine 显隐切换（简单切换，保持原有行为）
 		function bindSpineToggle(btnId: string, targetId: string, storageKey: string) {

@@ -10,7 +10,7 @@ const currentYear = new Date().getFullYear();
 
 // 从配置中获取站点开始日期
 const siteStartDate = siteConfig.siteStartDate || "2025-01-01";
-const { socialLinks, beian, poweredBy } = footerConfig;
+const { socialLinks, poweredBy } = footerConfig; // [已修改] 移除beian引用（备案信息已移除）
 
 // 获取最新文章日期（用于计算最后活动时间）
 const posts = await getSortedPosts();
@@ -102,36 +102,9 @@ const isExternalLink = (href: string) => !/^(mailto:|tel:)/i.test(href);
 			<span>&copy; <span id="copyright-year">{currentYear}</span> {homeConfig.name}</span>
 		</div>
 
-		{/* 第五层：备案信息 */}
-		{(beian.icp || beian.police) && (
-			<div class="flex items-center justify-center gap-2 text-neutral-500 dark:text-neutral-400 text-sm flex-wrap">
-				{beian.icp && (
-					<a
-						class="transition text-(--primary) font-bold hover:scale-105 inline-flex items-center gap-1"
-						target="_blank"
-						href={beian.icpUrl}
-					>
-						<span>{beian.icp}</span>
-					</a>
-				)}
-				{beian.icp && beian.police && (
-					<span class="text-neutral-300 dark:text-neutral-600">|</span>
-				)}
-				{beian.police && (
-					<a
-						class="transition text-(--primary) font-bold hover:scale-105 inline-flex items-center gap-1"
-						target="_blank"
-						rel="noreferrer"
-						href={beian.policeUrl}
-					>
-						<img src={beian.policeIcon} alt="公安网备" class="w-4 h-4 inline-block" />
-						<span>{beian.police}</span>
-					</a>
-				)}
-			</div>
-		)}
+		{/* [已移除] 备案信息 - 因为主机和域名在海外，不需要ICP备案。如需恢复，在 footerConfig.ts 中配置 beian 字段 */}
 
-		{/* 第六层：Powered by */}
+		{/* 第五层：Powered by */}
 		<div class="flex items-center justify-center gap-1 text-neutral-500 dark:text-neutral-400 text-sm">
 			{poweredBy.map((item, index) => (
 				<>

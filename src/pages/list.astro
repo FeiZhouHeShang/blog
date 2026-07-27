@@ -6,6 +6,10 @@ import type { ImageMetadata } from "astro";
 import PageTitle from "@/components/common/PageTitle.astro";
 import AnimatedTabs from "@/components/controls/AnimatedTabs.svelte";
 import ArticleVirtualList from "@/components/pages/ArticleVirtualList.svelte";
+import ProfileCard from "@/components/layout/ProfileCard.astro";
+import QuoteCard from "@/components/layout/QuoteCard.astro";
+import IpInfoCard from "@/components/layout/IpInfoCard.astro";
+import RightDashboard from "@/components/layout/RightDashboard.astro";
 import { siteConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
@@ -13,6 +17,12 @@ import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import "@/styles/pages/article-list.css";
 import "@/styles/components/animated-tabs.css";
 import { getSortedPosts } from "@/utils/content-utils";
+
+// [关键词: list-page] 文章列表页 - 三栏布局
+// 左栏: ProfileCard + QuoteCard（个人信息 + 每日一言）
+// 中栏: 文章列表
+// 右栏: RightDashboard（日历 + 最新文章）
+// 布局修改：搜索 list-page-layout
 import {
 	getApiUrlList,
 	getImageQuality,
@@ -195,30 +205,90 @@ const umamiPageviews = {
 ---
 
 <MainGridLayout title={title} description={description}>
-	<section class="article-list-page">
-		<header class="article-list-page__header">
-			<div class="article-list-page__header-left">
-				<PageTitle
-					title={title}
-				/>
-				<div class="article-list-page__controls">
-					<div class:list={["article-list-page__tabs", { "is-hidden": !allowLayoutSwitch }]}>
-						<AnimatedTabs client:load activeTab={defaultLayout === "grid" ? "grid" : "list"} />
-					</div>
-					<div class="article-list-page__total" aria-label={`共 ${articleListPosts.length} 篇文章`}>
-						<span class="article-list-page__total-number">{articleListPosts.length}</span>
-						<span class="article-list-page__total-label">篇文章</span>
+	{/* [关键词: list-page-layout] 三栏布局：左侧个人卡牌 + 中间文章列表 + 右侧仪表盘 */}
+	<div class="list-page-layout">
+		<!-- [关键词: list-page-left] 左侧：个人信息卡 + 每日一言 + 访客信息（由父容器统一 sticky） -->
+		<aside class="list-page-left">
+			<ProfileCard />
+			<QuoteCard />
+			<IpInfoCard />
+		</aside>
+
+		<!-- 中间文章列表 -->
+		<section class="article-list-page">
+			<header class="article-list-page__header">
+				<div class="article-list-page__header-left">
+					<PageTitle
+						title={title}
+					/>
+					<div class="article-list-page__controls">
+						<div class:list={["article-list-page__tabs", { "is-hidden": !allowLayoutSwitch }]}>
+							<AnimatedTabs client:load activeTab={defaultLayout === "grid" ? "grid" : "list"} />
+						</div>
+						<div class="article-list-page__total" aria-label={`共 ${articleListPosts.length} 篇文章`}>
+							<span class="article-list-page__total-number">{articleListPosts.length}</span>
+							<span class="article-list-page__total-label">篇文章</span>
+						</div>
 					</div>
 				</div>
-			</div>
-		</header>
+			</header>
 
-		<ArticleVirtualList
-			client:load
-			posts={articleListPosts}
-			defaultView={defaultLayout === "grid" ? "grid" : "list"}
-			postsPerPage={siteConfig.pagination.postsPerPage}
-			umamiPageviews={umamiPageviews}
-		/>
-	</section>
+			<ArticleVirtualList
+				client:load
+				posts={articleListPosts}
+				defaultView={defaultLayout === "grid" ? "grid" : "list"}
+				postsPerPage={siteConfig.pagination.postsPerPage}
+				umamiPageviews={umamiPageviews}
+			/>
+		</section>
+
+		<!-- 右侧仪表盘 -->
+		<aside class="list-page-right">
+			<RightDashboard />
+		</aside>
+	</div>
 </MainGridLayout>
+
+<style>
+/* [关键词: list-page-layout] 三栏布局样式 - 修改列宽/间距在此处 */
+.list-page-layout {
+	display: grid;
+	grid-template-columns: 220px 1fr 260px;
+	gap: 1.5rem;
+	align-items: start;
+}
+
+/* [关键词: list-page-left] 左侧容器 - sticky 定位统一由父容器管理 */
+.list-page-left {
+	display: flex;
+	flex-direction: column;
+	gap: 1rem;
+	position: sticky;
+	top: 80px;
+	max-height: calc(100vh - 100px);
+	overflow-y: auto;
+}
+
+/* 响应式：小于 1100px 时隐藏右侧 */
+@media (max-width: 1100px) {
+	.list-page-layout {
+		grid-template-columns: 200px 1fr;
+	}
+
+	.list-page-right {
+		display: none;
+	}
+}
+
+/* 响应式：小于 800px 时单栏 */
+@media (max-width: 800px) {
+	.list-page-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.list-page-left {
+		position: static;
+		max-height: none;
+	}
+}
+</style>

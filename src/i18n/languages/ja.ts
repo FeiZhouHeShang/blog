@@ -357,8 +357,8 @@ export const ja: Translation = {
 	// カレンダーページ
 	[Key.calendar]: "カレンダー",
 	[Key.feibichi]: "个人主站",
-	[Key.contactMe]: "お問い合わせ",
-	[Key.qqGroup]: "QQグループ",
+	[Key.contactMe]: "友達と交流",
+	[Key.qqGroup]: "マイQQ",
 	[Key.navPosts]: "記事",
 	[Key.navMy]: "マイ",
 	[Key.calendarDescription]: "祝日・誕生日・予定・記事更新の総合カレンダー",

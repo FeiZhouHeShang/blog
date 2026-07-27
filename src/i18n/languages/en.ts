@@ -358,8 +358,8 @@ export const en: Translation = {
 	// Calendar page
 	[Key.calendar]: "Calendar",
 	[Key.feibichi]: "Feibichi",
-	[Key.contactMe]: "Contact Me",
-	[Key.qqGroup]: "QQ Group",
+	[Key.contactMe]: "Friend Zone",
+	[Key.qqGroup]: "My QQ",
 	[Key.navPosts]: "Posts",
 	[Key.navMy]: "My",
 	[Key.calendarDescription]:

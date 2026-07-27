@@ -4,10 +4,9 @@ import La51Analytics from "@components/analytics/La51Analytics.astro";
 import MicrosoftClarity from "@components/analytics/MicrosoftClarity.astro";
 import UmamiAnalytics from "@components/analytics/UmamiAnalytics.astro";
 import FancyboxManager from "@components/features/FancyboxManager.astro";
-import FloatingLyrics from "@components/features/FloatingLyrics.astro";
 import FontManager from "@components/features/FontManager.astro";
-import MusicManager from "@components/features/MusicManager.astro";
 import PageLoader from "@components/features/PageLoader.astro";
+// [已修改] 移除 MusicManager 和 FloatingLyrics，改用第三方播放器
 import PrivacyModal from "@components/features/PrivacyModal.astro";
 import UserAgreementModal from "@components/features/UserAgreementModal.astro";
 import ConfigCarrier from "@components/layout/ConfigCarrier.astro";
@@ -203,8 +202,6 @@ const siteLang = lang.replace("_", "-");
     <div id="progress-bar"></div>
     <PageLoader />
     <ConfigCarrier />
-    <MusicManager />
-    <FloatingLyrics />
     <slot />
     {/* 全局持久化组件 — Swup 容器外，所有页面共享（CLAUDE.md 4.2） */}
     <FloatingDock />
@@ -214,6 +211,19 @@ const siteLang = lang.replace("_", "-");
     <PrivacyModal />
     <UserAgreementModal />
     <FancyboxManager />
+    {/* [已修改] 第三方音乐播放器 - 原 MusicManager + FloatingLyrics 已移除，通过 JS 动态加载避免 Astro 类型检查 */}
+    <script is:inline>
+      // 动态加载第三方音乐播放器（myhkw.cn）
+      (function() {
+        var s = document.createElement('script');
+        s.type = 'text/javascript';
+        s.id = 'myhk';
+        s.src = 'https://myhkw.cn/api/player/171731199987';
+        s.setAttribute('key', '171731199987');
+        s.setAttribute('m', '1');
+        document.body.appendChild(s);
+      })();
+    </script>
   </body>
 </html>
 

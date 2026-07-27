@@ -11,16 +11,19 @@
 	width: 100vw;
 	margin-left: calc(50% - 50vw);
 	margin-right: calc(50% - 50vw);
-	height: 2.5rem;
+	height: 2.25rem;
 	overflow: hidden;
-	background: transparent;
-	border-top: 1px solid #000;
-	border-bottom: 1px solid #000;
+	/* [已修改] 改为半透明背景，确保不遮挡仪表盘 */
+	background: var(--bg-card, rgba(255, 255, 255, 0.9));
+	backdrop-filter: blur(8px);
+	border-top: 1px solid var(--border-color, #e5e5e5);
+	border-bottom: 1px solid var(--border-color, #e5e5e5);
+	margin-top: 0.5rem;
 }
 
 :root.dark .home-ticker {
-	border-top-color: #fff;
-	border-bottom-color: #fff;
+	border-top-color: var(--border-color, #333);
+	border-bottom-color: var(--border-color, #333);
 }
 
 .home-ticker__inner {
@@ -72,12 +75,8 @@
 	font-size: 0.8125rem;
 	font-weight: 600;
 	letter-spacing: 0.04em;
-	color: #000;
+	color: var(--text-color, #333);
 	line-height: 1;
-}
-
-:root.dark .home-ticker__text {
-	color: #fff;
 }
 
 .home-ticker__sep {
@@ -85,14 +84,10 @@
 	margin-inline: var(--home-ticker-separator-gap);
 	font-size: 0.75rem;
 	font-weight: 700;
-	color: #000;
+	color: var(--text-color, #333);
 	opacity: 0.6;
 	line-height: 1;
 	user-select: none;
-}
-
-:root.dark .home-ticker__sep {
-	color: #fff;
 }
 
 @keyframes home-ticker-scroll {

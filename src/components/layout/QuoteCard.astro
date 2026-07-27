@@ -1,0 +1,173 @@
+---
+import Icon from "@components/common/Icon.astro";
+
+/**
+ * [关键词: quote-card] 今日一言卡片 - 使用 Hitokoto API 获取随机名言
+ * API 文档: https://hitokoto.cn
+ *
+ * 接口地址: https://v1.hitokoto.cn
+ * 支持分类参数:
+ *   c=a  文学  c=b  诗词  c=c  名言  c=d  动漫  c=e  游戏
+ *   c=f  历史  c=g  国学  c=h  哲学  c=i  心理学  c=j  生活
+ *   c=k  娱乐  c=l  机械  c=m  计算机  c=n  经济  c=o  政治
+ *   c=p  法律  c=q  军事  c=r  医学  c=s  自然  c=t  艺术
+ *   c=u  建筑  c=v  人文  c=w  原创  c=x  网络  c=y  其他
+ *   c=z  影视
+ *
+ * 修改分类：搜索 quote-api-category
+ * 修改刷新按钮：搜索 quote-refresh
+ */
+
+// [关键词: quote-api-category] Hitokoto 分类参数 - 可修改为想要的分类
+const hitokotoCategories = "c=i&c=k&c=d&c=b"; // 心理学/娱乐/动漫/诗词
+
+// SSR 占位内容（API 尚未调用时显示）
+const fallbackQuote = {
+	text: "加载中...",
+	from: "正在获取名言",
+	from_who: "",
+};
+---
+
+<div class="quote-card" data-quote-card>
+	<!-- [关键词: quote-card-title] 修改标题文字 -->
+	<h3 class="quote-card__title">
+		<Icon name="material-symbols:format-quote-outline" class="quote-card__icon" />
+		今日一言
+	</h3>
+
+	<!-- 名言内容区域 -->
+	<blockquote class="quote-card__content" data-quote-content>
+		<p class="quote-card__text" data-quote-text>{fallbackQuote.text}</p>
+		<cite class="quote-card__from" data-quote-from>
+			—— {fallbackQuote.from}
+			{fallbackQuote.from_who ? ` · ${fallbackQuote.from_who}` : ""}
+		</cite>
+	</blockquote>
+
+	<!-- [关键词: quote-refresh] 刷新按钮 - 点击获取新名言 -->
+	<button class="quote-card__refresh" data-quote-refresh aria-label="换一句">
+		<Icon name="material-symbols:refresh-rounded" class="quote-card__refresh-icon" />
+	</button>
+</div>
+
+<!-- [关键词: quote-card-script] 客户端脚本 - 获取名言并渲染 -->
+<script is:inline define:vars={{ categories: hitokotoCategories }}>
+(function () {
+	const card = document.querySelector("[data-quote-card]");
+	if (!card || card.dataset.initialized) return;
+	card.dataset.initialized = "true";
+
+	const textEl = card.querySelector("[data-quote-text]");
+	const fromEl = card.querySelector("[data-quote-from]");
+	const refreshBtn = card.querySelector("[data-quote-refresh]");
+
+	// [关键词: quote-api-url] 构建 API URL
+	const API_URL = `https://v1.hitokoto.cn/?${categories}`;
+
+	async function fetchQuote() {
+		if (!textEl || !fromEl) return;
+		textEl.textContent = "加载中...";
+		fromEl.textContent = "";
+
+		try {
+			const res = await fetch(API_URL);
+			if (!res.ok) throw new Error(`HTTP ${res.status}`);
+			const data = await res.json();
+
+			textEl.textContent = data.hitokoto || "暂无内容";
+			const parts = ["—— " + (data.from || "未知")];
+			if (data.from_who) parts.push(data.from_who);
+			fromEl.textContent = parts.join(" · ");
+		} catch (err) {
+			textEl.textContent = "获取失败，请刷新重试";
+			fromEl.textContent = "";
+			console.warn("[QuoteCard] Hitokoto API error:", err);
+		}
+	}
+
+	if (refreshBtn) {
+		refreshBtn.addEventListener("click", fetchQuote);
+	}
+
+	fetchQuote();
+})();
+</script>
+
+<style>
+.quote-card {
+	background: var(--float-panel-bg);
+	border: 1px solid var(--line-divider);
+	border-radius: 16px;
+	padding: 1.25rem;
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+	position: relative;
+}
+
+:root.dark .quote-card {
+	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+.quote-card__title {
+	display: flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 0.95rem;
+	font-weight: 600;
+	color: var(--deep-text);
+	margin: 0 0 0.75rem;
+}
+
+.quote-card__icon {
+	font-size: 1.1rem;
+	color: var(--primary);
+}
+
+.quote-card__content {
+	margin: 0;
+	padding: 0;
+	font-style: normal;
+	text-align: center;
+}
+
+.quote-card__text {
+	font-size: 0.85rem;
+	line-height: 1.7;
+	color: var(--deep-text);
+	margin: 0 0 0.35rem;
+}
+
+.quote-card__from {
+	font-size: 0.75rem;
+	color: var(--content-meta);
+	font-style: normal;
+}
+
+/* [关键词: quote-refresh] 刷新按钮样式 */
+.quote-card__refresh {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: 50%;
+	background: var(--btn-plain-bg-hover);
+	border: none;
+	color: var(--content-meta);
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.quote-card__refresh:hover {
+	background: var(--primary);
+	color: var(--page-bg);
+	transform: rotate(180deg);
+}
+
+.quote-card__refresh-icon {
+	font-size: 0.9rem;
+}
+</style>

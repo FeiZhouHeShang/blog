@@ -8,20 +8,26 @@ import { siteConfig } from "./siteConfig";
 
 /**
  * 构建导航栏链接配置
- * 遵循企业级代码规范：
- * - 使用 LinkPreset 枚举消除魔法值
- * - 通过 LinkPresets 集中管理链接元数据（i18n、图标、URL）
- * - 页面开关控制可选链接的显隐
- * - 先依次构建各导航项，再统一组装到 links 数组
+ * [关键词: nav-config] 导航配置 - 如需修改导航栏顺序/内容，编辑此文件
+ *
+ * 使用说明：
+ * - LinkPreset 枚举消除魔法值，新增导航项需在 types/config.ts 的 LinkPreset 中添加
+ * - LinkPresets 集中管理链接元数据（i18n、图标、URL），修改链接信息在 link-presets.ts
+ * - 页面开关控制可选链接的显隐，开关在 siteConfig.ts 的 pages 字段
+ *
+ * 修改指南：
+ * - 改导航名称：修改对应语言文件的 i18n（搜索 contactMe/qqGroup 等 key）
+ * - 改导航图标/URL：修改 src/constants/link-presets.ts
+ * - 改导航顺序：修改下方 links 数组的顺序
  */
 const buildNavBarConfig = (): NavBarConfig => {
-	// 1. 构建文章下拉菜单
+	// [关键词: nav-posts] 文章下拉菜单
 	const postsNav: NavBarLink = {
 		...LinkPresets[LinkPreset.NavPosts],
 		children: [LinkPreset.Archive, LinkPreset.Categories, LinkPreset.PostList],
 	};
 
-	// 2. 构建联系我下拉菜单
+	// [关键词: nav-friends] 交友互动下拉菜单
 	const contactChildren: (NavBarLink | LinkPreset)[] = [];
 	if (siteConfig.pages.friends) {
 		contactChildren.push(LinkPreset.Friends);
@@ -29,6 +35,7 @@ const buildNavBarConfig = (): NavBarConfig => {
 	if (siteConfig.pages.guestbook) {
 		contactChildren.push(LinkPreset.Guestbook);
 	}
+	// [关键词: nav-qq-link] QQ联系方式（原QQ群已改为个人QQ）
 	contactChildren.push(LinkPreset.QQGroup);
 
 	const contactNav: NavBarLink | null =
@@ -39,7 +46,7 @@ const buildNavBarConfig = (): NavBarConfig => {
 				}
 			: null;
 
-	// 3. 构建我的下拉菜单
+	// [关键词: nav-my] 我的下拉菜单
 	const myChildren: (NavBarLink | LinkPreset)[] = [];
 	if (siteConfig.pages.calendar) {
 		myChildren.push(LinkPreset.Calendar);
@@ -50,7 +57,6 @@ const buildNavBarConfig = (): NavBarConfig => {
 	if (siteConfig.pages.sponsor) {
 		myChildren.push(LinkPreset.Sponsor);
 	}
-	myChildren.push(LinkPreset.Music);
 	myChildren.push(LinkPreset.About);
 
 	const myNav: NavBarLink = {
@@ -58,7 +64,7 @@ const buildNavBarConfig = (): NavBarConfig => {
 		children: myChildren,
 	};
 
-	// 4. 统一组装导航栏链接（顺序：主页 → 个人主站 → 工具导航 → 文章 → 联系我 → 我的）
+	// [关键词: nav-order] 导航顺序：主页 → 个人主站 → 工具导航 → 文章 → 交友互动 → 我的
 	const links: (NavBarLink | LinkPreset)[] = [
 		LinkPreset.Home,
 		LinkPreset.Feibichi,

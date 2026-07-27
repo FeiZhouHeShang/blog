@@ -1,0 +1,2264 @@
+[vite] connected.
+[2m19:07:59[22m [34m[types][39m Generated [2m1ms[22m
+[vite] connected.
+[2m19:07:59[22m [34m[content][39m Syncing content
+[2m19:07:59[22m [34m[content][39m Synced content
+[2m19:07:59[22m [34m[vite][39m Re-optimizing dependencies because vite config has changed
+[2m19:07:59[22m [34m[vite][39m Port 4321 is in use, trying another one...
+[42m[1m astro [22m[49m [32mv6.4.6[39m [2mready in[22m 4140 [2mms[22m
+[2m┃[22m Local    [36mhttp://localhost:4322/[39m
+[2m┃[22m Network  [2muse --host to expose[22m
+[2m19:07:59[22m [32mwatching for file changes...[39m
+[2m19:08:31[22m [34m[200][39m / [2m362ms[22m
+[31m[1m19:08:31[22m [ERROR][39m Unable to locate "material-symbols:tag-outline" icon!
+  [1mHint:[22m
+[33m    The "material-symbols" set does not include an icon named "tag-outline".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:08:32[22m [34m[200][39m /_image/ [2m282ms[22m
+[2m19:08:34[22m [34m[vite][39m [32m✨ new dependencies optimized: [33m@swup/astro/serialise, @swup/astro/client/Swup, @swup/astro/client/SwupA11yPlugin, @swup/astro/client/SwupPreloadPlugin, @swup/astro/client/SwupHeadPlugin, @swup/astro/client/SwupScriptsPlugin[32m[39m
+[2m19:08:34[22m [34m[vite][39m [32m✨ optimized dependencies changed. reloading[39m
+[2m19:08:34[22m [34m[200][39m /_image/ [2m22ms[22m
+[2m19:08:34[22m [34m[200][39m / [2m10ms[22m
+[31m[1m19:08:34[22m [ERROR][39m Unable to locate "material-symbols:tag-outline" icon!
+  [1mHint:[22m
+[33m    The "material-symbols" set does not include an icon named "tag-outline".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:08:34[22m [34m[200][39m / [2m12ms[22m
+[31m[1m19:08:34[22m [ERROR][39m Unable to locate "material-symbols:tag-outline" icon!
+  [1mHint:[22m
+[33m    The "material-symbols" set does not include an icon named "tag-outline".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at eval (H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15)
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:08:35[22m [34m[200][39m / [2m9ms[22m
+[31m[1m19:08:35[22m [ERROR][39m Unable to locate "material-symbols:tag-outline" icon!
+  [1mHint:[22m
+[33m    The "material-symbols" set does not include an icon named "tag-outline".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:08:35[22m [34m[200][39m / [2m11ms[22m
+[31m[1m19:08:35[22m [ERROR][39m Unable to locate "material-symbols:tag-outline" icon!
+  [1mHint:[22m
+[33m    The "material-symbols" set does not include an icon named "tag-outline".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at eval (H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15)
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:08:36[22m [34m[200][39m /collections/ [2m64ms[22m
+[2m19:08:36[22m [34m[200][39m /categories/ [2m59ms[22m
+19:08:36 [vite-plugin-svelte] src/components/pages/ArticleVirtualList.svelte:17:18 This reference only captures the initial value of `defaultView`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+[2m19:08:36[22m [34m[200][39m /guestbook/ [2m60ms[22m
+[2m19:08:36[22m [34m[200][39m /archive/ [2m72ms[22m
+[2m19:08:36[22m [34m[200][39m /sponsor/ [2m59ms[22m
+19:08:36 [vite-plugin-svelte] src/components/pages/gallery/NetworkAlbum.svelte:151:6 Screenreaders already announce `<img>` elements as an image
+https://svelte.dev/e/a11y_img_redundant_alt
+[2m19:08:36[22m [34m[200][39m /list/ [2m90ms[22m
+[2m19:08:36[22m [34m[200][39m /about/ [2m74ms[22m
+[2m19:08:36[22m [34m[200][39m /friends/ [2m129ms[22m
+19:08:37 [vite-plugin-svelte] src/components/pages/calendar/EventDetailPanel.svelte:128:5 `<svelte:element>` with a click handler must have an ARIA role
+https://svelte.dev/e/a11y_no_static_element_interactions
+[2m19:08:37[22m [34m[200][39m /gallery/ [2m69ms[22m
+[31m[1m19:08:37[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:08:37[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:08:37[22m [34m[200][39m /calendar/ [2m83ms[22m
+[2m19:09:12[22m [34m[watch][39m /src/components/layout/HomeDashboard.astro?astro&type=style&index=0&lang.css, /src/styles/main.css
+[2m19:09:12[22m [34m[200][39m / [2m77ms[22m
+[2m19:09:13[22m [34m[200][39m / [2m16ms[22m
+[2m19:09:13[22m [33m[404][39m /assets/images/avatar.webp [2m206ms[22m
+[2m19:09:14[22m [34m[200][39m /collections/ [2m21ms[22m
+[2m19:09:14[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:09:14[22m [34m[200][39m /categories/ [2m9ms[22m
+[2m19:09:14[22m [34m[200][39m /list/ [2m18ms[22m
+[2m19:09:14[22m [34m[200][39m /friends/ [2m8ms[22m
+[2m19:09:15[22m [34m[200][39m /guestbook/ [2m9ms[22m
+[2m19:09:15[22m [34m[200][39m /gallery/ [2m9ms[22m
+[2m19:09:15[22m [34m[200][39m /sponsor/ [2m7ms[22m
+[2m19:09:15[22m [34m[200][39m /about/ [2m7ms[22m
+[2m19:09:15[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:09:15[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:15[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:09:15[22m [34m[200][39m /archive/ [2m25ms[22m
+[31m[1m19:09:15[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:09:15[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:09:15[22m [34m[200][39m /calendar/ [2m252ms[22m
+[2m19:09:15[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:09:15[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:09:15[22m [34m[vite][39m [32m✨ new dependencies optimized: [33m@fancyapps/ui[32m[39m
+[2m19:09:15[22m [34m[vite][39m [32m✨ optimized dependencies changed. reloading[39m
+[33m[1m19:09:15[22m [WARN] [router][39m A `getStaticPaths()` route pattern was matched, but no matching static path was found for requested path `/posts/`.
+
+Possible dynamic routes being matched: src/pages/posts/[...slug].astro.
+[2m19:09:15[22m [33m[404][39m /posts/ [2m8ms[22m
+[2m19:09:15[22m [34m[200][39m / [2m8ms[22m
+[2m19:09:15[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m111ms[22m
+[2m19:09:15[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m111ms[22m
+[2m19:09:15[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m124ms[22m
+[2m19:09:15[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m134ms[22m
+[2m19:09:15[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:09:16[22m [33m[404][39m /assets/images/avatar.webp [2m7ms[22m
+[2m19:09:16[22m [34m[200][39m / [2m8ms[22m
+[2m19:09:16[22m [34m[200][39m /collections/ [2m6ms[22m
+[2m19:09:16[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:16[22m [34m[200][39m /categories/ [2m7ms[22m
+[2m19:09:16[22m [34m[200][39m /list/ [2m14ms[22m
+[2m19:09:16[22m [34m[200][39m /friends/ [2m9ms[22m
+[2m19:09:16[22m [34m[200][39m /guestbook/ [2m6ms[22m
+[2m19:09:16[22m [34m[200][39m /gallery/ [2m8ms[22m
+[2m19:09:16[22m [34m[200][39m /sponsor/ [2m8ms[22m
+[2m19:09:16[22m [34m[200][39m /about/ [2m12ms[22m
+[33m[1m19:09:16[22m [WARN] [router][39m A `getStaticPaths()` route pattern was matched, but no matching static path was found for requested path `/posts/`.
+
+Possible dynamic routes being matched: src/pages/posts/[...slug].astro.
+[2m19:09:16[22m [33m[404][39m /posts/ [2m7ms[22m
+[2m19:09:16[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m10ms[22m
+[2m19:09:16[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:16[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:16[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:16[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m10ms[22m
+[2m19:09:16[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:09:17[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m9ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:09:17[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m7ms[22m
+[31m[1m19:09:17[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:09:17[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:09:17[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:09:17[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m11ms[22m
+[2m19:09:17[22m [34m[200][39m /calendar/ [2m305ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:09:17[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:09:36[22m [34m[200][39m /_image/ [2m248ms[22m
+19:09:36 [vite-plugin-svelte] src/components/pages/ArticleVirtualList.svelte:17:18 This reference only captures the initial value of `defaultView`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+[2m19:09:38[22m [33m[404][39m /assets/images/avatar.webp [2m6ms[22m
+[2m19:10:56[22m [34m[watch][39m /src/styles/main.css
+[2m19:10:57[22m [34m[watch][39m /src/styles/main.css
+[31m[1m19:10:57[22m [ERROR][39m Unexpected "HomeHero"
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\src\pages\index.astro:26:7
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:10:57[22m [34m[watch][39m /src/styles/main.css
+[2m19:10:57[22m [34m[watch][39m /src/styles/main.css
+[2m19:10:57[22m [34m[watch][39m /src/styles/main.css
+[31m[1m19:10:57[22m [ERROR][39m Unterminated string literal
+  [1mStack trace:[22m
+[2m    at failureErrorWithLog (H:\个人博客\博客信息\node_modules\.pnpm\esbuild@0.27.7\node_modules\esbuild\lib\main.js:1748:15)
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:10:58[22m [34m[watch][39m /src/styles/main.css
+[2m19:10:58[22m [34m[watch][39m /src/styles/main.css
+[2m19:10:58[22m [34m[200][39m / [2m90ms[22m
+[2m19:10:58[22m [34m[200][39m / [2m90ms[22m
+[2m19:10:58[22m [34m[watch][39m /src/styles/main.css
+[2m19:10:59[22m [34m[watch][39m /src/styles/main.css
+[2m19:10:59[22m [34m[200][39m / [2m283ms[22m
+[2m19:10:59[22m [34m[200][39m /collections/ [2m21ms[22m
+[2m19:10:59[22m [34m[200][39m /categories/ [2m35ms[22m
+[2m19:10:59[22m [34m[200][39m /list/ [2m51ms[22m
+[2m19:10:59[22m [34m[200][39m /archive/ [2m68ms[22m
+[2m19:10:59[22m [34m[200][39m /friends/ [2m15ms[22m
+[2m19:10:59[22m [34m[200][39m /guestbook/ [2m7ms[22m
+[2m19:10:59[22m [34m[200][39m /gallery/ [2m9ms[22m
+[2m19:10:59[22m [34m[200][39m /sponsor/ [2m8ms[22m
+[2m19:10:59[22m [34m[200][39m /about/ [2m8ms[22m
+[2m19:10:59[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:10:59[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:10:59[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:10:59[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:10:59[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:10:59[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:10:59[22m [34m[200][39m /archive/ [2m9ms[22m
+[31m[1m19:11:00[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:11:00[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:11:00[22m [34m[200][39m /calendar/ [2m224ms[22m
+[2m19:11:00[22m [34m[watch][39m /src/styles/main.css
+[2m19:11:00[22m [34m[200][39m /archive/ [2m31ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m31ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m31ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m31ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m31ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:00[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:00[22m [34m[200][39m / [2m63ms[22m
+[2m19:11:01[22m [34m[200][39m / [2m15ms[22m
+[2m19:11:01[22m [34m[200][39m /_image/ [2m126ms[22m
+[2m19:11:02[22m [34m[200][39m /collections/ [2m16ms[22m
+[2m19:11:02[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:11:02[22m [34m[200][39m /categories/ [2m7ms[22m
+[2m19:11:02[22m [34m[200][39m /list/ [2m13ms[22m
+[2m19:11:02[22m [34m[200][39m /friends/ [2m9ms[22m
+[2m19:11:02[22m [34m[200][39m /guestbook/ [2m7ms[22m
+[2m19:11:02[22m [34m[200][39m /gallery/ [2m9ms[22m
+[2m19:11:03[22m [34m[200][39m /sponsor/ [2m7ms[22m
+[2m19:11:03[22m [34m[200][39m /about/ [2m6ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m22ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m22ms[22m
+[31m[1m19:11:03[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:11:03[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:11:03[22m [34m[200][39m /archive/ [2m21ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:11:03[22m [34m[200][39m /calendar/ [2m400ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:03[22m [34m[vite][39m [32m✨ new dependencies optimized: [33mgsap/ScrollTrigger, @vfx-js/core[32m[39m
+[2m19:11:03[22m [34m[vite][39m [32m✨ optimized dependencies changed. reloading[39m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:03[22m [34m[200][39m / [2m10ms[22m
+[2m19:11:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:04[22m [34m[200][39m / [2m11ms[22m
+[2m19:11:04[22m [34m[200][39m /_image/ [2m365ms[22m
+[2m19:11:05[22m [34m[200][39m /collections/ [2m6ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:05[22m [34m[200][39m /categories/ [2m7ms[22m
+[2m19:11:05[22m [34m[200][39m /list/ [2m27ms[22m
+[2m19:11:05[22m [34m[200][39m /friends/ [2m18ms[22m
+[2m19:11:05[22m [34m[200][39m /guestbook/ [2m18ms[22m
+[2m19:11:05[22m [34m[200][39m /gallery/ [2m11ms[22m
+[2m19:11:05[22m [34m[200][39m /sponsor/ [2m8ms[22m
+[2m19:11:05[22m [34m[200][39m /about/ [2m8ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m9ms[22m
+[31m[1m19:11:05[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:11:05[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:11:05[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:05[22m [34m[200][39m /calendar/ [2m332ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:11:05[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:06[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:11:06[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:06[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:06[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:06[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:11:06[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:11:06[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:11:06[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:17[22m [34m[watch][39m /src/styles/main.css
+[2m19:12:17[22m [34m[200][39m / [2m18ms[22m
+[2m19:12:17[22m [34m[200][39m / [2m18ms[22m
+[2m19:12:18[22m [34m[200][39m /collections/ [2m12ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:12:18[22m [34m[200][39m /categories/ [2m10ms[22m
+[2m19:12:18[22m [34m[200][39m /friends/ [2m10ms[22m
+[2m19:12:18[22m [34m[200][39m /guestbook/ [2m12ms[22m
+[2m19:12:18[22m [34m[200][39m /gallery/ [2m13ms[22m
+[2m19:12:18[22m [34m[200][39m /sponsor/ [2m22ms[22m
+[2m19:12:18[22m [34m[200][39m /about/ [2m9ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[31m[1m19:12:18[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:12:18[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:12:18[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:12:18[22m [34m[200][39m /calendar/ [2m368ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:12:18[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:12:19[22m [34m[200][39m /list/ [2m204ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:19[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:12:38[22m [34m[watch][39m /src/styles/main.css
+[2m19:12:39[22m [34m[200][39m / [2m13ms[22m
+[2m19:12:39[22m [34m[200][39m / [2m11ms[22m
+[2m19:12:40[22m [34m[200][39m /collections/ [2m7ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:40[22m [34m[200][39m /categories/ [2m8ms[22m
+[2m19:12:40[22m [34m[200][39m /friends/ [2m7ms[22m
+[2m19:12:40[22m [34m[200][39m /guestbook/ [2m7ms[22m
+[2m19:12:40[22m [34m[200][39m /gallery/ [2m11ms[22m
+[2m19:12:40[22m [34m[200][39m /sponsor/ [2m10ms[22m
+[2m19:12:40[22m [34m[200][39m /about/ [2m7ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m9ms[22m
+[31m[1m19:12:40[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:12:40[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:12:40[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:40[22m [34m[200][39m /calendar/ [2m275ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m18ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:12:40[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:12:41[22m [34m[200][39m /list/ [2m78ms[22m
+[2m19:13:27[22m [34m[watch][39m /src/styles/main.css
+[2m19:13:28[22m [34m[200][39m / [2m13ms[22m
+[2m19:13:28[22m [34m[200][39m / [2m9ms[22m
+[2m19:13:28[22m [34m[200][39m /collections/ [2m7ms[22m
+[2m19:13:28[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:28[22m [34m[200][39m /categories/ [2m8ms[22m
+[2m19:13:28[22m [34m[200][39m /friends/ [2m9ms[22m
+[2m19:13:28[22m [34m[200][39m /guestbook/ [2m9ms[22m
+[2m19:13:29[22m [34m[200][39m /gallery/ [2m9ms[22m
+[2m19:13:29[22m [34m[200][39m /sponsor/ [2m9ms[22m
+[2m19:13:29[22m [34m[200][39m /about/ [2m8ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m9ms[22m
+[31m[1m19:13:29[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:13:29[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:13:29[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:13:29[22m [34m[200][39m /calendar/ [2m354ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:13:29[22m [34m[200][39m /list/ [2m188ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m19ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m27ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m18ms[22m
+[2m19:13:29[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:13:35[22m [34m[200][39m /list/ [2m13ms[22m
+[2m19:13:35[22m [33m[404][39m /list/assets/images/avatar.webp [2m8ms[22m
+[2m19:13:35[22m [34m[200][39m /list/ [2m18ms[22m
+19:13:35 [vite-plugin-svelte] src/components/pages/ArticleVirtualList.svelte:17:18 This reference only captures the initial value of `defaultView`. Did you mean to reference it inside a closure instead?
+https://svelte.dev/e/state_referenced_locally
+[2m19:13:36[22m [34m[200][39m / [2m11ms[22m
+[2m19:13:36[22m [34m[200][39m /collections/ [2m8ms[22m
+[2m19:13:36[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:13:36[22m [34m[200][39m /categories/ [2m15ms[22m
+[2m19:13:36[22m [34m[200][39m /friends/ [2m9ms[22m
+[2m19:13:36[22m [34m[200][39m /guestbook/ [2m9ms[22m
+[2m19:13:36[22m [34m[200][39m /gallery/ [2m14ms[22m
+[2m19:13:36[22m [34m[200][39m /sponsor/ [2m11ms[22m
+[2m19:13:36[22m [34m[200][39m /about/ [2m9ms[22m
+[2m19:13:36[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m15ms[22m
+[2m19:13:36[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m7ms[22m
+[2m19:13:36[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m11ms[22m
+[31m[1m19:13:36[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:13:36[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:13:36[22m [34m[200][39m /calendar/ [2m157ms[22m
+[2m19:13:36[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m8ms[22m
+[2m19:13:36[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m8ms[22m
+[2m19:13:36[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:36[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:13:36[22m [34m[200][39m /archive/ [2m18ms[22m
+[2m19:13:36[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m18ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:13:37[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:14:06[22m [34m[200][39m / [2m9ms[22m
+[2m19:14:06[22m [34m[200][39m / [2m11ms[22m
+[2m19:14:07[22m [34m[200][39m /collections/ [2m7ms[22m
+[2m19:14:07[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:14:07[22m [34m[200][39m /categories/ [2m7ms[22m
+[2m19:14:07[22m [34m[200][39m /list/ [2m18ms[22m
+[2m19:14:07[22m [34m[200][39m /friends/ [2m23ms[22m
+[2m19:14:07[22m [34m[200][39m /guestbook/ [2m14ms[22m
+[2m19:14:07[22m [34m[200][39m /gallery/ [2m10ms[22m
+[2m19:14:07[22m [34m[200][39m /sponsor/ [2m13ms[22m
+[2m19:14:07[22m [34m[200][39m /about/ [2m9ms[22m
+[2m19:14:07[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:14:07[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:14:07[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:14:07[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:14:07[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:14:07[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m11ms[22m
+[31m[1m19:14:08[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:14:08[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:14:08[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:14:08[22m [34m[200][39m /calendar/ [2m457ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m36ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:14:08[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:14:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:14:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:14:45[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:14:45[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:14:47[22m [33m[404][39m /list/assets/images/avatar.webp [2m6ms[22m
+[2m19:14:47[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m8ms[22m
+[2m19:14:48[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m12ms[22m
+[2m19:14:48[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m13ms[22m
+[2m19:14:48[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m9ms[22m
+[2m19:14:48[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m10ms[22m
+[2m19:14:51[22m [34m[200][39m /posts/projects/projects-redis-interaction-cache-design/ [2m6ms[22m
+[2m19:15:34[22m [34m[200][39m /_image/ [2m7ms[22m
+[2m19:15:34[22m [34m[200][39m /_image/ [2m7ms[22m
+[2m19:15:37[22m [33m[404][39m /list/assets/images/avatar.webp [2m7ms[22m
+[2m19:17:11[22m [33m[404][39m /list/assets/images/avatar.webp [2m14ms[22m
+[2m19:21:32[22m [34m[watch][39m /src/styles/main.css, /src/pages/list.astro?astro&type=style&index=0&lang.css
+[2m19:21:33[22m [34m[200][39m /list/ [2m72ms[22m
+[31m[1m19:21:33[22m [ERROR][39m DashboardSidebar is not defined
+  [1mStack trace:[22m
+[2m    at Object.default (H:\个人博客\博客信息\src\pages\list.astro:1:1)
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:21:33[22m [34m[200][39m /list/ [2m14ms[22m
+[31m[1m19:21:33[22m [ERROR][39m DashboardSidebar is not defined
+  [1mStack trace:[22m
+[2m    at Object.default (H:\个人博客\博客信息\src\pages\list.astro:1:1)
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:21:34[22m [34m[200][39m / [2m10ms[22m
+[2m19:21:34[22m [34m[200][39m /collections/ [2m9ms[22m
+[2m19:21:34[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:21:34[22m [34m[200][39m /categories/ [2m7ms[22m
+[2m19:21:34[22m [34m[200][39m /friends/ [2m8ms[22m
+[2m19:21:34[22m [34m[200][39m /guestbook/ [2m7ms[22m
+[2m19:21:34[22m [34m[200][39m /gallery/ [2m8ms[22m
+[2m19:21:34[22m [34m[200][39m /sponsor/ [2m8ms[22m
+[2m19:21:34[22m [34m[200][39m /about/ [2m8ms[22m
+[31m[1m19:21:34[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:21:34[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:21:34[22m [34m[200][39m /calendar/ [2m67ms[22m
+[2m19:21:52[22m [34m[watch][39m /src/styles/main.css, /src/pages/list.astro?astro&type=style&index=0&lang.css
+[2m19:21:52[22m [34m[200][39m /list/ [2m62ms[22m
+[31m[1m19:21:52[22m [ERROR][39m Unable to locate "material-symbols:rss-feed-outline" icon!
+  [1mHint:[22m
+[33m    The "material-symbols" set does not include an icon named "rss-feed-outline".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:21:52[22m [34m[200][39m /list/ [2m13ms[22m
+[31m[1m19:21:52[22m [ERROR][39m Unable to locate "material-symbols:rss-feed-outline" icon!
+  [1mHint:[22m
+[33m    The "material-symbols" set does not include an icon named "rss-feed-outline".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at eval (H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15)
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:21:53[22m [33m[404][39m /assets/images/avatar.webp [2m7ms[22m
+[2m19:21:53[22m [34m[200][39m /list/ [2m11ms[22m
+[31m[1m19:21:53[22m [ERROR][39m Unable to locate "material-symbols:rss-feed-outline" icon!
+  [1mHint:[22m
+[33m    The "material-symbols" set does not include an icon named "rss-feed-outline".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:21:53[22m [34m[200][39m / [2m10ms[22m
+[2m19:21:53[22m [34m[200][39m /collections/ [2m7ms[22m
+[2m19:21:53[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:21:53[22m [34m[200][39m /categories/ [2m9ms[22m
+[2m19:21:53[22m [34m[200][39m /friends/ [2m7ms[22m
+[2m19:21:53[22m [34m[200][39m /guestbook/ [2m8ms[22m
+[2m19:21:53[22m [34m[200][39m /gallery/ [2m8ms[22m
+[2m19:21:53[22m [34m[200][39m /sponsor/ [2m6ms[22m
+[2m19:21:53[22m [34m[200][39m /about/ [2m6ms[22m
+[31m[1m19:21:53[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:21:53[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:21:53[22m [34m[200][39m /calendar/ [2m72ms[22m
+[2m19:21:54[22m [34m[200][39m /rss.xml [2m182ms[22m
+[2m19:22:10[22m [34m[200][39m /list/ [2m13ms[22m
+[31m[1m19:22:10[22m [ERROR][39m Unable to locate "material-symbols:rss-feed-outline" icon!
+  [1mHint:[22m
+[33m    The "material-symbols" set does not include an icon named "rss-feed-outline".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at eval (H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15)
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:22:10[22m [33m[404][39m /assets/images/avatar.webp [2m7ms[22m
+[2m19:22:10[22m [34m[200][39m /list/ [2m12ms[22m
+[31m[1m19:22:10[22m [ERROR][39m Unable to locate "material-symbols:rss-feed-outline" icon!
+  [1mHint:[22m
+[33m    The "material-symbols" set does not include an icon named "rss-feed-outline".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:22:11[22m [34m[200][39m / [2m8ms[22m
+[2m19:22:11[22m [34m[200][39m /collections/ [2m6ms[22m
+[2m19:22:11[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:11[22m [34m[200][39m /categories/ [2m6ms[22m
+[2m19:22:11[22m [34m[200][39m /friends/ [2m7ms[22m
+[2m19:22:11[22m [34m[200][39m /guestbook/ [2m8ms[22m
+[2m19:22:11[22m [34m[200][39m /gallery/ [2m11ms[22m
+[2m19:22:11[22m [34m[200][39m /sponsor/ [2m7ms[22m
+[2m19:22:11[22m [34m[200][39m /about/ [2m6ms[22m
+[31m[1m19:22:11[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:22:11[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:22:11[22m [34m[200][39m /calendar/ [2m60ms[22m
+[2m19:22:28[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/ProfileCard.astro?astro&type=style&index=0&lang.css
+[2m19:22:28[22m [34m[200][39m /list/ [2m60ms[22m
+[2m19:22:28[22m [33m[404][39m /assets/images/avatar.webp [2m7ms[22m
+[2m19:22:28[22m [34m[200][39m /list/ [2m15ms[22m
+[2m19:22:29[22m [34m[200][39m / [2m9ms[22m
+[2m19:22:29[22m [34m[200][39m /collections/ [2m9ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:29[22m [34m[200][39m /categories/ [2m7ms[22m
+[2m19:22:29[22m [34m[200][39m /friends/ [2m11ms[22m
+[2m19:22:29[22m [34m[200][39m /guestbook/ [2m9ms[22m
+[2m19:22:29[22m [34m[200][39m /gallery/ [2m14ms[22m
+[2m19:22:29[22m [34m[200][39m /sponsor/ [2m7ms[22m
+[2m19:22:29[22m [34m[200][39m /about/ [2m7ms[22m
+[2m19:22:29[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m9ms[22m
+[2m19:22:29[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m7ms[22m
+[2m19:22:29[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m10ms[22m
+[2m19:22:29[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m9ms[22m
+[2m19:22:29[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m6ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m10ms[22m
+[31m[1m19:22:29[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:22:29[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:22:29[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:29[22m [34m[200][39m /calendar/ [2m375ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:29[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m26ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:30[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:43[22m [34m[200][39m /list/ [2m12ms[22m
+[2m19:22:43[22m [33m[404][39m /assets/images/avatar.webp [2m9ms[22m
+[2m19:22:43[22m [34m[200][39m /list/ [2m11ms[22m
+[2m19:22:44[22m [34m[200][39m / [2m8ms[22m
+[2m19:22:44[22m [34m[200][39m /collections/ [2m8ms[22m
+[2m19:22:44[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:22:44[22m [34m[200][39m /categories/ [2m11ms[22m
+[2m19:22:44[22m [34m[200][39m /friends/ [2m6ms[22m
+[2m19:22:44[22m [34m[200][39m /guestbook/ [2m7ms[22m
+[2m19:22:44[22m [34m[200][39m /gallery/ [2m8ms[22m
+[31m[1m19:22:44[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:22:44[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:22:44[22m [34m[200][39m /calendar/ [2m35ms[22m
+[2m19:22:44[22m [34m[200][39m /sponsor/ [2m7ms[22m
+[2m19:22:44[22m [34m[200][39m /about/ [2m6ms[22m
+[2m19:22:44[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m8ms[22m
+[2m19:22:44[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m7ms[22m
+[2m19:22:44[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m7ms[22m
+[2m19:22:44[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m8ms[22m
+[2m19:22:44[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m10ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:22:45[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:23:00[22m [34m[watch][39m /src/components/layout/HomeDashboard.astro?astro&type=style&index=0&lang.css, /src/styles/main.css
+[2m19:23:00[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/DashboardSidebar.astro?astro&type=style&index=0&lang.css
+[2m19:23:00[22m [34m[200][39m /list/ [2m13ms[22m
+[2m19:23:00[22m [33m[404][39m /assets/images/avatar.webp [2m10ms[22m
+[2m19:23:00[22m [34m[200][39m /list/ [2m15ms[22m
+[2m19:23:01[22m [34m[200][39m / [2m9ms[22m
+[2m19:23:01[22m [34m[200][39m /collections/ [2m6ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:23:01[22m [34m[200][39m /categories/ [2m7ms[22m
+[2m19:23:01[22m [34m[200][39m /friends/ [2m8ms[22m
+[2m19:23:01[22m [34m[200][39m /guestbook/ [2m9ms[22m
+[2m19:23:01[22m [34m[200][39m /gallery/ [2m9ms[22m
+[2m19:23:01[22m [34m[200][39m /sponsor/ [2m9ms[22m
+[2m19:23:01[22m [34m[200][39m /about/ [2m11ms[22m
+[2m19:23:01[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m11ms[22m
+[2m19:23:01[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m11ms[22m
+[2m19:23:01[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m8ms[22m
+[2m19:23:01[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m10ms[22m
+[2m19:23:01[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m13ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m11ms[22m
+[31m[1m19:23:01[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:23:01[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:23:01[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:01[22m [34m[200][39m /calendar/ [2m370ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:01[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:02[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:36[22m [34m[200][39m /posts/projects/projects-redis-interaction-cache-design/ [2m7ms[22m
+[2m19:23:36[22m [34m[200][39m /posts/ai/ai-napcat-astrbot-deployment/ [2m10ms[22m
+[2m19:23:37[22m [34m[200][39m /posts/others/others-umami-vercel-neon-deployment/ [2m8ms[22m
+[2m19:23:37[22m [34m[200][39m /posts/projects/projects-java-thread-pool-configuration/ [2m8ms[22m
+[2m19:23:42[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/ProfileCard.astro?astro&type=style&index=0&lang.css
+[2m19:23:42[22m [34m[200][39m /list/ [2m93ms[22m
+[2m19:23:42[22m [33m[404][39m /assets/images/avatar.webp [2m6ms[22m
+[2m19:23:42[22m [34m[200][39m /list/ [2m16ms[22m
+[2m19:23:43[22m [34m[200][39m / [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /collections/ [2m8ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:23:43[22m [34m[200][39m /categories/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /friends/ [2m7ms[22m
+[2m19:23:43[22m [34m[200][39m /guestbook/ [2m6ms[22m
+[2m19:23:43[22m [34m[200][39m /gallery/ [2m13ms[22m
+[2m19:23:43[22m [34m[200][39m /sponsor/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /about/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m8ms[22m
+[2m19:23:43[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m10ms[22m
+[2m19:23:43[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m8ms[22m
+[2m19:23:43[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m7ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m16ms[22m
+[31m[1m19:23:43[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:23:43[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:23:43[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:43[22m [34m[200][39m /calendar/ [2m376ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:43[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:44[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:23:44[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:44[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:50[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/RightDashboard.astro?astro&type=style&index=0&lang.css
+[2m19:23:50[22m [34m[200][39m /list/ [2m65ms[22m
+[2m19:23:50[22m [33m[404][39m /assets/images/avatar.webp [2m6ms[22m
+[2m19:23:50[22m [34m[200][39m /list/ [2m10ms[22m
+[2m19:23:51[22m [34m[200][39m / [2m8ms[22m
+[2m19:23:51[22m [34m[200][39m /collections/ [2m9ms[22m
+[2m19:23:51[22m [34m[200][39m /archive/ [2m21ms[22m
+[2m19:23:51[22m [34m[200][39m /categories/ [2m9ms[22m
+[2m19:23:51[22m [34m[200][39m /friends/ [2m11ms[22m
+[2m19:23:51[22m [34m[200][39m /guestbook/ [2m14ms[22m
+[2m19:23:51[22m [34m[200][39m /gallery/ [2m37ms[22m
+[2m19:23:51[22m [34m[200][39m /sponsor/ [2m9ms[22m
+[2m19:23:51[22m [34m[200][39m /about/ [2m9ms[22m
+[2m19:23:51[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m11ms[22m
+[2m19:23:51[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m9ms[22m
+[2m19:23:51[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m12ms[22m
+[2m19:23:51[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m12ms[22m
+[2m19:23:51[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m11ms[22m
+[2m19:23:51[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:51[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:51[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:51[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:51[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:51[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:51[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:51[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:51[22m [34m[200][39m /archive/ [2m9ms[22m
+[31m[1m19:23:51[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:23:51[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:23:51[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:52[22m [34m[200][39m /calendar/ [2m434ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m7ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:23:52[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:23:58[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/RightDashboard.astro?astro&type=style&index=0&lang.css
+[2m19:23:59[22m [34m[200][39m /list/ [2m67ms[22m
+[31m[1m19:23:59[22m [ERROR][39m today is not defined
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\src\components\layout\RightDashboard.astro:18:27
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:23:59[22m [33m[404][39m /assets/images/avatar.webp [2m7ms[22m
+[2m19:23:59[22m [34m[200][39m /list/ [2m12ms[22m
+[31m[1m19:23:59[22m [ERROR][39m today is not defined
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\src\components\layout\RightDashboard.astro:18:27
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:23:59[22m [34m[200][39m / [2m9ms[22m
+[2m19:23:59[22m [34m[200][39m /collections/ [2m8ms[22m
+[2m19:23:59[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:23:59[22m [34m[200][39m /categories/ [2m9ms[22m
+[2m19:23:59[22m [34m[200][39m /friends/ [2m10ms[22m
+[2m19:23:59[22m [34m[200][39m /guestbook/ [2m16ms[22m
+[2m19:23:59[22m [34m[200][39m /gallery/ [2m34ms[22m
+[2m19:23:59[22m [34m[200][39m /sponsor/ [2m7ms[22m
+[2m19:23:59[22m [34m[200][39m /about/ [2m6ms[22m
+[2m19:23:59[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m9ms[22m
+[31m[1m19:23:59[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:23:59[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:23:59[22m [34m[200][39m /calendar/ [2m114ms[22m
+[2m19:24:00[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m8ms[22m
+[2m19:24:00[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m7ms[22m
+[2m19:24:00[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m9ms[22m
+[2m19:24:00[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m7ms[22m
+[2m19:24:21[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/RightDashboard.astro?astro&type=style&index=0&lang.css
+[2m19:24:21[22m [34m[200][39m /list/ [2m67ms[22m
+[2m19:24:21[22m [34m[200][39m /list/ [2m9ms[22m
+[2m19:24:21[22m [33m[404][39m /assets/images/avatar.webp [2m7ms[22m
+[2m19:24:21[22m [34m[200][39m /list/ [2m14ms[22m
+[2m19:24:22[22m [34m[200][39m / [2m13ms[22m
+[2m19:24:22[22m [34m[200][39m /collections/ [2m9ms[22m
+[2m19:24:22[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:24:22[22m [34m[200][39m /categories/ [2m7ms[22m
+[2m19:24:22[22m [34m[200][39m /friends/ [2m7ms[22m
+[2m19:24:22[22m [34m[200][39m /guestbook/ [2m7ms[22m
+[2m19:24:22[22m [34m[200][39m /gallery/ [2m23ms[22m
+[2m19:24:22[22m [34m[200][39m /sponsor/ [2m8ms[22m
+[2m19:24:22[22m [34m[200][39m /about/ [2m6ms[22m
+[31m[1m19:24:22[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:24:22[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:24:22[22m [34m[200][39m /calendar/ [2m84ms[22m
+[2m19:24:22[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m10ms[22m
+[2m19:24:22[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m10ms[22m
+[2m19:24:22[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m10ms[22m
+[2m19:24:22[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m9ms[22m
+[2m19:24:22[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m10ms[22m
+[2m19:24:22[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:24:22[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:24:22[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:24:22[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:24:22[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:24:22[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:24:22[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:24:23[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:03[22m [34m[watch][39m src/config/homeConfig.ts
+[2m19:30:04[22m [34m[200][39m /list/ [2m22ms[22m
+[2m19:30:04[22m [34m[200][39m /list/ [2m16ms[22m
+[2m19:30:05[22m [34m[200][39m / [2m14ms[22m
+[2m19:30:05[22m [34m[200][39m /collections/ [2m13ms[22m
+[2m19:30:05[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:05[22m [34m[200][39m /categories/ [2m10ms[22m
+[2m19:30:05[22m [34m[200][39m /friends/ [2m8ms[22m
+[2m19:30:05[22m [34m[200][39m /guestbook/ [2m7ms[22m
+[2m19:30:05[22m [34m[200][39m /gallery/ [2m15ms[22m
+[2m19:30:05[22m [34m[200][39m /sponsor/ [2m13ms[22m
+[2m19:30:05[22m [34m[200][39m /about/ [2m10ms[22m
+[2m19:30:05[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m13ms[22m
+[2m19:30:05[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m11ms[22m
+[2m19:30:05[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m9ms[22m
+[2m19:30:05[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m7ms[22m
+[31m[1m19:30:05[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:30:05[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:30:05[22m [34m[200][39m /calendar/ [2m191ms[22m
+[2m19:30:05[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m14ms[22m
+[2m19:30:05[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:05[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:05[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:05[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:05[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:30:05[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m8ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:30:06[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:12[22m [34m[watch][39m src/config/siteConfig.ts
+[2m19:30:13[22m [34m[200][39m /list/ [2m24ms[22m
+[2m19:30:13[22m [34m[200][39m /list/ [2m16ms[22m
+[2m19:30:14[22m [34m[200][39m / [2m14ms[22m
+[2m19:30:14[22m [34m[200][39m /collections/ [2m10ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:14[22m [34m[200][39m /categories/ [2m8ms[22m
+[2m19:30:14[22m [34m[200][39m /friends/ [2m10ms[22m
+[2m19:30:14[22m [34m[200][39m /guestbook/ [2m9ms[22m
+[2m19:30:14[22m [34m[200][39m /gallery/ [2m12ms[22m
+[2m19:30:14[22m [34m[200][39m /sponsor/ [2m8ms[22m
+[2m19:30:14[22m [34m[200][39m /about/ [2m9ms[22m
+[2m19:30:14[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m14ms[22m
+[2m19:30:14[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m11ms[22m
+[2m19:30:14[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m9ms[22m
+[2m19:30:14[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m11ms[22m
+[2m19:30:14[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m12ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m11ms[22m
+[31m[1m19:30:14[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:30:14[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:30:14[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:14[22m [34m[200][39m /calendar/ [2m430ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m20ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:14[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:15[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:15[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:15[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:30:15[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:25[22m [34m[watch][39m src/config/siteConfig.ts
+[2m19:30:26[22m [34m[200][39m /list/ [2m40ms[22m
+[2m19:30:26[22m [34m[200][39m /list/ [2m13ms[22m
+[2m19:30:27[22m [34m[200][39m / [2m12ms[22m
+[2m19:30:27[22m [34m[200][39m /collections/ [2m7ms[22m
+[2m19:30:27[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:27[22m [34m[200][39m /categories/ [2m8ms[22m
+[2m19:30:27[22m [34m[200][39m /friends/ [2m11ms[22m
+[2m19:30:27[22m [34m[200][39m /guestbook/ [2m8ms[22m
+[2m19:30:27[22m [34m[200][39m /gallery/ [2m12ms[22m
+[2m19:30:27[22m [34m[200][39m /sponsor/ [2m12ms[22m
+[31m[1m19:30:27[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:30:27[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:30:27[22m [34m[200][39m /calendar/ [2m69ms[22m
+[2m19:30:27[22m [34m[200][39m /about/ [2m8ms[22m
+[2m19:30:27[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m14ms[22m
+[2m19:30:27[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m9ms[22m
+[2m19:30:27[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m10ms[22m
+[2m19:30:27[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m17ms[22m
+[2m19:30:27[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m11ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:28[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m20ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m19ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m18ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m22ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:30:29[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:01[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/ProfileCard.astro?astro&type=style&index=0&lang.css
+[2m19:31:01[22m [34m[200][39m /list/ [2m93ms[22m
+[2m19:31:02[22m [34m[200][39m /list/ [2m18ms[22m
+[2m19:31:02[22m [34m[200][39m / [2m12ms[22m
+[2m19:31:02[22m [34m[200][39m /collections/ [2m10ms[22m
+[2m19:31:02[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:03[22m [34m[200][39m /categories/ [2m13ms[22m
+[2m19:31:03[22m [34m[200][39m /friends/ [2m13ms[22m
+[2m19:31:03[22m [34m[200][39m /guestbook/ [2m9ms[22m
+[2m19:31:03[22m [34m[200][39m /gallery/ [2m13ms[22m
+[2m19:31:03[22m [34m[200][39m /sponsor/ [2m10ms[22m
+[2m19:31:03[22m [34m[200][39m /about/ [2m10ms[22m
+[2m19:31:03[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m12ms[22m
+[2m19:31:03[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m16ms[22m
+[2m19:31:03[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m17ms[22m
+[2m19:31:03[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m13ms[22m
+[2m19:31:03[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m13ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[31m[1m19:31:03[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:31:03[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:31:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:03[22m [34m[200][39m /calendar/ [2m416ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m18ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:03[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:31:30[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/RightDashboard.astro?astro&type=style&index=0&lang.css
+[2m19:31:30[22m [34m[200][39m /list/ [2m82ms[22m
+[2m19:31:30[22m [34m[200][39m /list/ [2m15ms[22m
+[2m19:31:31[22m [34m[200][39m / [2m14ms[22m
+[2m19:31:31[22m [34m[200][39m /collections/ [2m13ms[22m
+[2m19:31:31[22m [34m[200][39m /archive/ [2m19ms[22m
+[2m19:31:31[22m [34m[200][39m /categories/ [2m16ms[22m
+[2m19:31:31[22m [34m[200][39m /friends/ [2m15ms[22m
+[2m19:31:31[22m [34m[200][39m /guestbook/ [2m12ms[22m
+[2m19:31:31[22m [34m[200][39m /gallery/ [2m23ms[22m
+[2m19:31:31[22m [34m[200][39m /sponsor/ [2m15ms[22m
+[31m[1m19:31:31[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:31:31[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:31:31[22m [34m[200][39m /calendar/ [2m110ms[22m
+[2m19:31:31[22m [34m[200][39m /about/ [2m8ms[22m
+[2m19:31:31[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m14ms[22m
+[2m19:31:31[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m11ms[22m
+[2m19:31:32[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m11ms[22m
+[2m19:31:32[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m12ms[22m
+[2m19:31:32[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m9ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m19ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m25ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:32[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:31:54[22m [34m[200][39m /list/ [2m13ms[22m
+[2m19:31:54[22m [34m[200][39m /list/ [2m23ms[22m
+[2m19:31:55[22m [34m[200][39m / [2m12ms[22m
+[2m19:31:55[22m [34m[200][39m /collections/ [2m10ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:55[22m [34m[200][39m /categories/ [2m15ms[22m
+[2m19:31:55[22m [34m[200][39m /friends/ [2m15ms[22m
+[2m19:31:55[22m [34m[200][39m /guestbook/ [2m11ms[22m
+[2m19:31:55[22m [34m[200][39m /gallery/ [2m31ms[22m
+[2m19:31:55[22m [34m[200][39m /sponsor/ [2m17ms[22m
+[2m19:31:55[22m [34m[200][39m /about/ [2m14ms[22m
+[2m19:31:55[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m13ms[22m
+[2m19:31:55[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m14ms[22m
+[2m19:31:55[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m14ms[22m
+[2m19:31:55[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m14ms[22m
+[2m19:31:55[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m17ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m10ms[22m
+[31m[1m19:31:55[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:31:55[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:31:55[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:31:55[22m [34m[200][39m /calendar/ [2m422ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:31:55[22m [34m[200][39m /archive/ [2m18ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:31:56[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:33:17[22m [34m[200][39m / [2m10ms[22m
+[2m19:33:17[22m [34m[200][39m / [2m11ms[22m
+[2m19:33:18[22m [34m[200][39m /collections/ [2m7ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:33:18[22m [34m[200][39m /categories/ [2m11ms[22m
+[2m19:33:18[22m [34m[200][39m /list/ [2m15ms[22m
+[2m19:33:18[22m [34m[200][39m /friends/ [2m8ms[22m
+[2m19:33:18[22m [34m[200][39m /guestbook/ [2m10ms[22m
+[2m19:33:18[22m [34m[200][39m /gallery/ [2m21ms[22m
+[2m19:33:18[22m [34m[200][39m /sponsor/ [2m9ms[22m
+[2m19:33:18[22m [34m[200][39m /about/ [2m10ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[31m[1m19:33:18[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:33:18[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:33:18[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:33:18[22m [34m[200][39m /calendar/ [2m401ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m20ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m25ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:33:18[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:34:36[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m9ms[22m
+[2m19:34:36[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m9ms[22m
+[2m19:34:36[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m11ms[22m
+[2m19:34:36[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m16ms[22m
+[2m19:34:36[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m11ms[22m
+[2m19:37:15[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/ProfileCard.astro?astro&type=style&index=0&lang.css
+[2m19:37:16[22m [34m[200][39m /list/ [2m78ms[22m
+[2m19:37:16[22m [34m[200][39m /list/ [2m17ms[22m
+[2m19:37:17[22m [34m[200][39m / [2m11ms[22m
+[2m19:37:17[22m [34m[200][39m /collections/ [2m10ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:37:17[22m [34m[200][39m /categories/ [2m9ms[22m
+[2m19:37:17[22m [34m[200][39m /friends/ [2m9ms[22m
+[2m19:37:17[22m [34m[200][39m /guestbook/ [2m7ms[22m
+[2m19:37:17[22m [34m[200][39m /gallery/ [2m12ms[22m
+[2m19:37:17[22m [34m[200][39m /sponsor/ [2m9ms[22m
+[2m19:37:17[22m [34m[200][39m /about/ [2m12ms[22m
+[2m19:37:17[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m19ms[22m
+[2m19:37:17[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m16ms[22m
+[2m19:37:17[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m13ms[22m
+[31m[1m19:37:17[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:37:17[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:37:17[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m16ms[22m
+[2m19:37:17[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m11ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:37:17[22m [34m[200][39m /calendar/ [2m239ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m19ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:37:17[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m20ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:37:18[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:53[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/RightDashboard.astro?astro&type=style&index=0&lang.css
+[2m19:37:53[22m [34m[200][39m /list/ [2m113ms[22m
+[2m19:37:53[22m [34m[200][39m /list/ [2m13ms[22m
+[2m19:37:54[22m [34m[200][39m / [2m12ms[22m
+[2m19:37:54[22m [34m[200][39m /collections/ [2m11ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:54[22m [34m[200][39m /categories/ [2m9ms[22m
+[2m19:37:54[22m [34m[200][39m /friends/ [2m8ms[22m
+[2m19:37:54[22m [34m[200][39m /guestbook/ [2m11ms[22m
+[2m19:37:54[22m [34m[200][39m /gallery/ [2m11ms[22m
+[2m19:37:54[22m [34m[200][39m /sponsor/ [2m17ms[22m
+[2m19:37:54[22m [34m[200][39m /about/ [2m13ms[22m
+[2m19:37:54[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m16ms[22m
+[2m19:37:54[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m16ms[22m
+[2m19:37:54[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m12ms[22m
+[2m19:37:54[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m8ms[22m
+[2m19:37:54[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m8ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m10ms[22m
+[31m[1m19:37:54[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:37:54[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:37:54[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:37:54[22m [34m[200][39m /calendar/ [2m387ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:54[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m18ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:37:55[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:07[22m [34m[watch][39m /src/styles/main.css, /src/pages/list.astro?astro&type=style&index=0&lang.css
+[2m19:38:07[22m [34m[200][39m /list/ [2m60ms[22m
+[2m19:38:07[22m [34m[200][39m /list/ [2m14ms[22m
+[2m19:38:08[22m [34m[200][39m / [2m20ms[22m
+[2m19:38:08[22m [34m[200][39m /collections/ [2m10ms[22m
+[2m19:38:08[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:08[22m [34m[200][39m /categories/ [2m12ms[22m
+[2m19:38:08[22m [34m[200][39m /friends/ [2m16ms[22m
+[2m19:38:08[22m [34m[200][39m /guestbook/ [2m9ms[22m
+[2m19:38:08[22m [34m[200][39m /gallery/ [2m12ms[22m
+[2m19:38:08[22m [34m[200][39m /sponsor/ [2m12ms[22m
+[31m[1m19:38:08[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:38:08[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:38:08[22m [34m[200][39m /calendar/ [2m64ms[22m
+[2m19:38:08[22m [34m[200][39m /about/ [2m10ms[22m
+[2m19:38:08[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m13ms[22m
+[2m19:38:08[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m11ms[22m
+[2m19:38:08[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m14ms[22m
+[2m19:38:08[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m14ms[22m
+[2m19:38:08[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m8ms[22m
+[2m19:38:08[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:38:08[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:38:08[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:08[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:08[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m19ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m20ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m23ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m21ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m18ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:38:09[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:17[22m [34m[watch][39m /src/styles/main.css, /src/pages/list.astro?astro&type=style&index=0&lang.css
+[2m19:38:18[22m [34m[200][39m /list/ [2m78ms[22m
+[2m19:38:18[22m [34m[200][39m /list/ [2m14ms[22m
+[2m19:38:18[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m9ms[22m
+[2m19:38:18[22m [34m[200][39m / [2m12ms[22m
+[2m19:38:18[22m [34m[200][39m /collections/ [2m10ms[22m
+[2m19:38:18[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:38:19[22m [34m[200][39m /categories/ [2m15ms[22m
+[2m19:38:19[22m [34m[200][39m /friends/ [2m14ms[22m
+[2m19:38:19[22m [34m[200][39m /guestbook/ [2m14ms[22m
+[2m19:38:19[22m [34m[200][39m /gallery/ [2m22ms[22m
+[2m19:38:19[22m [34m[200][39m /sponsor/ [2m8ms[22m
+[2m19:38:19[22m [34m[200][39m /about/ [2m11ms[22m
+[2m19:38:19[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m12ms[22m
+[2m19:38:19[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m11ms[22m
+[2m19:38:19[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m11ms[22m
+[2m19:38:19[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m13ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m21ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m18ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m28ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m13ms[22m
+[31m[1m19:38:19[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:38:19[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:38:19[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:19[22m [34m[200][39m /calendar/ [2m430ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m25ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:19[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:28[22m [34m[watch][39m /src/pages/list.astro?astro&type=style&index=0&lang.css
+[2m19:38:44[22m [34m[200][39m /list/ [2m18ms[22m
+[2m19:38:45[22m [34m[200][39m /list/ [2m21ms[22m
+[2m19:38:45[22m [34m[200][39m / [2m12ms[22m
+[2m19:38:45[22m [34m[200][39m /collections/ [2m9ms[22m
+[2m19:38:45[22m [34m[200][39m /archive/ [2m16ms[22m
+[2m19:38:45[22m [34m[200][39m /categories/ [2m9ms[22m
+[2m19:38:45[22m [34m[200][39m /friends/ [2m12ms[22m
+[2m19:38:45[22m [34m[200][39m /guestbook/ [2m9ms[22m
+[2m19:38:45[22m [34m[200][39m /gallery/ [2m15ms[22m
+[2m19:38:45[22m [34m[200][39m /sponsor/ [2m8ms[22m
+[2m19:38:45[22m [34m[200][39m /about/ [2m10ms[22m
+[2m19:38:45[22m [34m[200][39m /posts/others/others-blog-firefly-mod/ [2m12ms[22m
+[2m19:38:45[22m [34m[200][39m /posts/ai/ai-blog-ai-zero-editing/ [2m15ms[22m
+[2m19:38:45[22m [34m[200][39m /posts/ai/ai-prompt-collection/ [2m14ms[22m
+[2m19:38:45[22m [34m[200][39m /posts/ai/ai-openspec-superpowers-workflow/ [2m20ms[22m
+[2m19:38:45[22m [34m[200][39m /posts/ai/ai-blog-ai-search-vectorize/ [2m11ms[22m
+[2m19:38:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:45[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:45[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:45[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m19ms[22m
+[31m[1m19:38:46[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:38:46[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:38:46[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:46[22m [34m[200][39m /calendar/ [2m423ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m11ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m17ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m13ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m15ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:38:46[22m [34m[200][39m /archive/ [2m12ms[22m
+[2m19:40:55[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/ProfileCard.astro?astro&type=style&index=0&lang.css
+[2m19:40:56[22m [34m[200][39m /list/ [2m73ms[22m
+[31m[1m19:40:56[22m [ERROR][39m Unable to locate "mdi:qq" icon!
+  [1mHint:[22m
+[33m    The "mdi" set does not include an icon named "qq".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:40:56[22m [34m[200][39m /list/ [2m13ms[22m
+[31m[1m19:40:56[22m [ERROR][39m Unable to locate "mdi:qq" icon!
+  [1mHint:[22m
+[33m    The "mdi" set does not include an icon named "qq".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:40:56[22m [34m[200][39m / [2m8ms[22m
+[2m19:40:56[22m [34m[200][39m /collections/ [2m7ms[22m
+[2m19:40:56[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:40:56[22m [34m[200][39m /categories/ [2m7ms[22m
+[2m19:40:56[22m [34m[200][39m /friends/ [2m7ms[22m
+[2m19:40:56[22m [34m[200][39m /guestbook/ [2m9ms[22m
+[2m19:40:56[22m [34m[200][39m /gallery/ [2m7ms[22m
+[2m19:40:56[22m [34m[200][39m /sponsor/ [2m6ms[22m
+[2m19:40:56[22m [34m[200][39m /about/ [2m6ms[22m
+[31m[1m19:40:56[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:40:56[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:40:56[22m [34m[200][39m /calendar/ [2m53ms[22m
+[2m19:41:20[22m [34m[watch][39m /src/components/layout/ProfileCard.astro?astro&type=style&index=0&lang.css
+[2m19:41:20[22m [34m[200][39m /list/ [2m14ms[22m
+[31m[1m19:41:20[22m [ERROR][39m Unable to locate "mdi:qq" icon!
+  [1mHint:[22m
+[33m    The "mdi" set does not include an icon named "qq".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at eval (H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15)
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:41:20[22m [34m[200][39m /list/ [2m14ms[22m
+[31m[1m19:41:20[22m [ERROR][39m Unable to locate "mdi:qq" icon!
+  [1mHint:[22m
+[33m    The "mdi" set does not include an icon named "qq".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:41:20[22m [34m[200][39m / [2m8ms[22m
+[2m19:41:20[22m [34m[200][39m /collections/ [2m7ms[22m
+[2m19:41:20[22m [34m[200][39m /archive/ [2m14ms[22m
+[2m19:41:20[22m [34m[200][39m /categories/ [2m7ms[22m
+[2m19:41:20[22m [34m[200][39m /friends/ [2m7ms[22m
+[2m19:41:21[22m [34m[200][39m /guestbook/ [2m7ms[22m
+[2m19:41:21[22m [34m[200][39m /gallery/ [2m10ms[22m
+[2m19:41:21[22m [34m[200][39m /sponsor/ [2m7ms[22m
+[2m19:41:21[22m [34m[200][39m /about/ [2m7ms[22m
+[31m[1m19:41:21[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:41:21[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:41:21[22m [34m[200][39m /calendar/ [2m56ms[22m
+[2m19:41:38[22m [34m[watch][39m /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m19:41:38[22m [34m[200][39m /list/ [2m15ms[22m
+[31m[1m19:41:38[22m [ERROR][39m Unable to locate "mdi:qq" icon!
+  [1mHint:[22m
+[33m    The "mdi" set does not include an icon named "qq".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at eval (H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15)
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:41:38[22m [34m[200][39m /list/ [2m14ms[22m
+[31m[1m19:41:38[22m [ERROR][39m Unable to locate "mdi:qq" icon!
+  [1mHint:[22m
+[33m    The "mdi" set does not include an icon named "qq".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:41:39[22m [34m[200][39m / [2m9ms[22m
+[2m19:41:39[22m [34m[200][39m /collections/ [2m7ms[22m
+[2m19:41:39[22m [34m[200][39m /archive/ [2m10ms[22m
+[2m19:41:39[22m [34m[200][39m /categories/ [2m7ms[22m
+[2m19:41:39[22m [34m[200][39m /friends/ [2m10ms[22m
+[2m19:41:39[22m [34m[200][39m /guestbook/ [2m8ms[22m
+[2m19:41:39[22m [34m[200][39m /gallery/ [2m9ms[22m
+[2m19:41:39[22m [34m[200][39m /sponsor/ [2m7ms[22m
+[2m19:41:39[22m [34m[200][39m /about/ [2m6ms[22m
+[31m[1m19:41:39[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:41:39[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:41:39[22m [34m[200][39m /calendar/ [2m65ms[22m
+[2m19:41:55[22m [34m[watch][39m /src/components/layout/RightDashboard.astro?astro&type=style&index=0&lang.css
+[2m19:41:55[22m [34m[200][39m /list/ [2m19ms[22m
+[31m[1m19:41:55[22m [ERROR][39m Unable to locate "mdi:qq" icon!
+  [1mHint:[22m
+[33m    The "mdi" set does not include an icon named "qq".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at eval (H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15)
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:41:55[22m [34m[200][39m /list/ [2m12ms[22m
+[31m[1m19:41:55[22m [ERROR][39m Unable to locate "mdi:qq" icon!
+  [1mHint:[22m
+[33m    The "mdi" set does not include an icon named "qq".
+    
+    Is this a typo?[39m
+  [1mStack trace:[22m
+[2m    at H:\个人博客\博客信息\H:\个人博客\博客信息\node_modules\.pnpm\astro-icon@1.1.5\node_modules\astro-icon\components\Icon.astro:95:15
+    [...] See full stack trace in the browser, or rerun with --verbose.[22m
+[2m19:41:56[22m [34m[200][39m / [2m9ms[22m
+[2m19:41:56[22m [34m[200][39m /collections/ [2m7ms[22m
+[2m19:41:56[22m [34m[200][39m /archive/ [2m9ms[22m
+[2m19:41:56[22m [34m[200][39m /categories/ [2m6ms[22m
+[2m19:41:56[22m [34m[200][39m /friends/ [2m6ms[22m
+[2m19:41:56[22m [34m[200][39m /guestbook/ [2m6ms[22m
+[2m19:41:56[22m [34m[200][39m /gallery/ [2m10ms[22m
+[2m19:41:56[22m [34m[200][39m /sponsor/ [2m8ms[22m
+[2m19:41:56[22m [34m[200][39m /about/ [2m19ms[22m
+[31m[1m19:41:56[22m [ERROR] [vite][39m [31mhttp proxy error: /api/holidays.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[31m[1m19:41:56[22m [ERROR] [vite][39m [31mhttp proxy error: /api/allPostMeta.json[39m
+AggregateError [ECONNREFUSED]: 
+    at internalConnectMultiple (node:net:1194:18)
+    at afterConnectMultiple (node:net:1784:7)
+[2m19:41:56[22m [34m[200][39m /calendar/ [2m79ms[22m
+[2m19:44:14[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/ProfileCard.astro?astro&type=style&index=0&lang.css
+[2m19:54:00[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/ProfileCard.astro?astro&type=style&index=0&lang.css
+[2m19:54:13[22m [34m[watch][39m src/i18n/languages/zh_CN.ts
+[2m19:54:15[22m [34m[watch][39m src/i18n/languages/zh_TW.ts
+[2m19:54:16[22m [34m[watch][39m src/i18n/languages/en.ts
+[2m19:54:18[22m [34m[watch][39m src/i18n/languages/ja.ts
+[2m19:54:19[22m [34m[watch][39m src/i18n/languages/ru.ts
+[2m19:54:28[22m [34m[watch][39m src/constants/link-presets.ts
+[2m19:54:52[22m [34m[watch][39m src/config/navBarConfig.ts
+[2m19:55:11[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:11[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:11[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:12[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:12[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:12[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:12[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:13[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:13[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:13[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:13[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:14[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:14[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:14[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:14[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:15[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:15[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:15[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:15[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:16[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:16[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:16[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:17[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:17[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:17[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:17[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:18[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:18[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:18[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:19[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:19[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:19[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:20[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:20[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:20[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:20[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:21[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:21[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:21[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:21[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:22[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:22[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:22[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:22[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:23[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:23[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:23[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:23[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:23[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:24[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:24[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:24[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:25[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:25[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:25[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:25[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:26[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:26[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:26[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:27[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:27[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:27[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:27[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:28[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:28[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:28[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:29[22m [34m[watch][39m src/config/friendsConfig.ts
+[2m19:55:53[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m19:56:11[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/ProfileCard.astro?astro&type=style&index=0&lang.css
+[2m19:56:30[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/RightDashboard.astro?astro&type=style&index=0&lang.css
+[2m19:56:40[22m [34m[watch][39m /src/styles/main.css, /src/pages/list.astro?astro&type=style&index=0&lang.css
+[2m19:56:48[22m [34m[watch][39m /src/styles/main.css, /src/pages/list.astro?astro&type=style&index=0&lang.css
+[2m19:56:57[22m [34m[watch][39m /src/styles/main.css, /src/pages/list.astro?astro&type=style&index=0&lang.css
+[2m19:57:09[22m [34m[watch][39m src/config/homeConfig.ts
+[2m19:57:30[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/ProfileCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:51[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:51[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:51[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:51[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:52[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:52[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:53[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:53[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:53[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:53[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:54[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:54[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:54[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:55[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:55[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:55[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:55[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:56[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:56[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:56[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:56[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:57[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:57[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:57[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:57[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:58[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:58[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:58[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:58[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:59[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:59[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:59[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:05:59[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:00[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:00[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:00[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:00[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:01[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:01[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:01[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:01[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:02[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:02[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:02[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:03[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:03[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:03[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:03[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:04[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:04[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:04[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:04[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:05[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:05[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:05[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:06[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:06[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:06[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:06[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:07[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:07[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:07[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:07[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:08[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:08[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:06:08[22m [34m[watch][39m /src/styles/main.css, /src/components/layout/QuoteCard.astro?astro&type=style&index=0&lang.css
+[2m20:08:37[22m [34m[watch][39m /src/styles/main.css, /src/pages/list.astro?astro&type=style&index=0&lang.css
+[2m20:08:44[22m [34m[watch][39m /src/styles/main.css, /src/pages/list.astro?astro&type=style&index=0&lang.css

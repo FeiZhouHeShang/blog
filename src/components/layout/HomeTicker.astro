@@ -15,7 +15,13 @@ const items = [...announcementConfig.items].sort((a, b) => b.sort - a.sort);
 			<div class="home-ticker__inner">
 				<div class="home-ticker__track">
 					<div class="home-ticker__group">
+						{/* [已修改] data-ip-source 标记动态欢迎语插入位置 */}
 						<div class="home-ticker__sequence" data-ticker-source>
+							{/* [已修改] data-ip-placeholder 作为 IP 欢迎语占位，JS 会替换此元素 */}
+							<span class="home-ticker__item" data-ip-placeholder style="display:none">
+								<span class="home-ticker__text"></span>
+								<span class="home-ticker__sep" aria-hidden="true">×</span>
+							</span>
 							{items.map((item) => (
 								<span class="home-ticker__item">
 									<span class="home-ticker__text">[{item.tag}] {item.content}</span>
@@ -59,12 +65,79 @@ const items = [...announcementConfig.items].sort((a, b) => b.sort - a.sort);
 			document.fonts?.ready.then(() => {
 				if (this.isConnected) this.scheduleLayout();
 			});
+
+			// [已修改] 异步获取 IP 地理位置信息，动态插入欢迎语
+			this.fetchIpLocation();
 		}
 
 		disconnectedCallback() {
 			this.resizeObserver?.disconnect();
 			this.resizeObserver = null;
 			cancelAnimationFrame(this.layoutFrame);
+		}
+
+		// [已修改] 从 ip-api.com 获取用户地理位置，免费无需密钥
+		private async fetchIpLocation() {
+			try {
+				const resp = await fetch("https://ip-api.com/json?lang=zh-CN&fields=status,country,regionName,city");
+				if (!resp.ok) throw new Error("IP API request failed");
+				const data = (await resp.json()) as {
+					status: string;
+					country?: string;
+					regionName?: string;
+					city?: string;
+				};
+				if (data.status !== "success") throw new Error("IP API returned error");
+
+				const country = data.country || "未知";
+				const region = data.regionName || "";
+				const city = data.city || "";
+
+				// 拼接地理位置描述
+				let location = country;
+				if (region && city) {
+					location = `${region} ${city}`;
+				} else if (region) {
+					location = region;
+				}
+
+				this.insertWelcomeItem(location);
+			} catch {
+				// API 失败时使用默认欢迎语，不影响正常使用
+				this.insertWelcomeItem("地球");
+			}
+		}
+
+		// [已修改] 在滚动条最前面插入欢迎语
+		private insertWelcomeItem(location: string) {
+			const placeholder = this.querySelector<HTMLElement>("[data-ip-placeholder]");
+			if (!placeholder) {
+				this.scheduleLayout();
+				return;
+			}
+
+			// 创建欢迎语 item
+			const welcomeItem = document.createElement("span");
+			welcomeItem.className = "home-ticker__item";
+			welcomeItem.innerHTML = `
+				<span class="home-ticker__text">[欢迎] 欢迎来自 ${location} 的朋友！</span>
+				<span class="home-ticker__sep" aria-hidden="true">×</span>
+			`;
+
+			// 替换占位元素
+			placeholder.replaceWith(welcomeItem);
+
+			// 同步更新 sourceSequence（用于克隆）
+			if (this.sourceSequence) {
+				const newPlaceholder = this.sourceSequence.querySelector<HTMLElement>("[data-ip-placeholder]");
+				if (newPlaceholder) {
+					const clonedWelcome = welcomeItem.cloneNode(true) as HTMLElement;
+					newPlaceholder.replaceWith(clonedWelcome);
+				}
+			}
+
+			// 重新布局滚动条
+			this.scheduleLayout();
 		}
 
 		private scheduleLayout() {

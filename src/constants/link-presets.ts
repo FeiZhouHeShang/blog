@@ -84,9 +84,12 @@ export const LinkPresets: { [key in LinkPreset]: NavBarLink } = {
 		url: "/contact/",
 		icon: "material-symbols:mail",
 	},
+	// [关键词: nav-qq-link] QQ联系方式 - 修改URL为你的QQ链接
+	// tencent://message/?uin=你的QQ号  为QQ私聊链接
+	// https://qm.qq.com/q/xxxxxx  为QQ群链接
 	[LinkPreset.QQGroup]: {
 		name: i18n(I18nKey.qqGroup),
-		url: "https://qm.qq.com/q/2R07cjGTZ0",
+		url: "tencent://message/?uin=5563000",
 		icon: "fa7-brands:qq",
 		external: true,
 	},

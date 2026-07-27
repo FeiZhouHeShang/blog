@@ -6,10 +6,9 @@ import Icon from "@components/common/Icon.astro";
  * 桌面端保持现有 FloatingDock 与顶部 Navbar 不变
  */
 import { announcementConfig, spineModelConfig } from "@/config";
-import { musicPlayerConfig } from "@/config/musicConfig";
+// [已修改] 移除 musicPlayerConfig，改用第三方播放器
 
 // 工具栏 sheet 内按钮显隐条件预计算
-const showMusic = musicPlayerConfig.showInNavbar !== false;
 const showAnnouncement = announcementConfig.items.length > 0;
 const showSpine = !!spineModelConfig?.enable;
 ---
@@ -65,12 +64,7 @@ const showSpine = !!spineModelConfig?.enable;
 			<span class="mobile-dock__sheet-item-icon"><Icon name="ri:ai" is:inline /></span>
 			<span class="mobile-dock__sheet-item-label">AI 搜索</span>
 		</button>
-		{showMusic && (
-			<button class="mobile-dock__sheet-item" id="md-music-btn" aria-label="音乐" type="button">
-				<span class="mobile-dock__sheet-item-icon"><Icon name="material-symbols:music-note-rounded" is:inline /></span>
-				<span class="mobile-dock__sheet-item-label">音乐</span>
-			</button>
-		)}
+		{/* [已修改] 移除音乐按钮，改用第三方播放器 */}
 		{showAnnouncement && (
 			<button class="mobile-dock__sheet-item" id="md-announcement-btn" aria-label="公告" type="button">
 				<span class="mobile-dock__sheet-item-icon"><Icon name="material-symbols:notifications-outline-rounded" is:inline /></span>

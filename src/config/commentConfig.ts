@@ -48,9 +48,9 @@ export const commentConfig: CommentConfig = {
 	//giscus评论系统配置
 	giscus: {
 		// 设置 Giscus 评论系统仓库
-		repo: "MmzMing/my-blog",
+		repo: "",
 		// 设置 Giscus 评论系统仓库ID
-		repoId: "R_kgDOSXWjBQ",
+		repoId: "",
 		// 设置 Giscus 评论系统分类
 		category: "General",
 		// 获取 Giscus 评论系统分类ID
