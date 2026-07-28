@@ -128,9 +128,9 @@ const DATA_VAR = "dailyGrumbles";
 			data-dg-editor=""
 			class="dg-editor-dialog"
 			data-imgbed-url={editorSecrets.imageBedUrl}
-			data-imgbed-auth={editorSecrets.imageBedAuthCode}
+			data-imgbed-auth={import.meta.env.PUBLIC_IMGBED_UPLOAD_CODE ?? ""}
 			data-imgbed-folder={editorSecrets.imageBedFolder}
-			data-imgbed-token={editorSecrets.imageBedApiToken}
+			data-imgbed-token={import.meta.env.PUBLIC_IMG_UPLOAD_TOKEN ?? ""}
 		>
 			<div class="dg-editor-panel">
 				<header class="dg-editor-head">
@@ -621,9 +621,16 @@ const DATA_VAR = "dailyGrumbles";
 			fd.append("file", file, file.name);
 			var base = (IMGBED_URL || "").replace(/\/+$/, "");
 			var url =
-				base + "/upload?returnFormat=full&uploadNameType=origin&authCode=" +
-				encodeURIComponent(IMGBED_AUTH) + "&uploadFolder=" + encodeURIComponent(IMGBED_FOLDER || "");
-			var r = await fetch(url, { method: "POST", body: fd });
+				base + "/upload?returnFormat=full&uploadNameType=origin&uploadFolder=" +
+				encodeURIComponent(IMGBED_FOLDER || "");
+			var headers = { Accept: "application/json" };
+			// 上传鉴权：优先 authCode（query）；若只配了 Bearer Token（含 upload 权限）也支持
+			if (IMGBED_AUTH) {
+				url += "&authCode=" + encodeURIComponent(IMGBED_AUTH);
+			} else if (IMGBED_API_TOKEN) {
+				headers["Authorization"] = "Bearer " + IMGBED_API_TOKEN;
+			}
+			var r = await fetch(url, { method: "POST", body: fd, headers: headers });
 			if (!r.ok) throw new Error("上传失败 HTTP " + r.status);
 			var data;
 			try { data = await r.json(); } catch (e) { throw new Error("图床返回非 JSON（可能 CORS 拦截）"); }
@@ -1113,7 +1120,7 @@ const DATA_VAR = "dailyGrumbles";
 			parts.push("📚 本地文件名索引：<b>" + n + "</b> 个");
 			parts.push(IMGBED_API_TOKEN
 				? "🌐 跨浏览器同步：<b style=\"color:#10b981;\">已启用</b>（API Token · 5min 缓存）"
-				: "🌐 跨浏览器同步：<b style=\"color:#f59e0b;\">未启用</b>（填图床 API Token 可启用）");
+				: "🌐 跨浏览器同步：<b style=\"color:#f59e0b;\">未启用</b>（在 .env 配置 PUBLIC_IMG_UPLOAD_TOKEN 启用）");
 			el.innerHTML = "图床查重 · " + parts.join(" · ");
 		}
 		function init() {

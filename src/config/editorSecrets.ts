@@ -16,18 +16,15 @@
  *    Contents: Read and write，并随时可吊销。更安全的做法是用 Cloudflare Worker
  *    代理（PAT 存为 Cloudflare Secret，永不进客户端），见 .workbuddy/memory。
  *
- *  - imageBed*：CloudFlare ImgBed 图床。前端编辑器要「直接上传图片到图床」，
- *    认证码（authCode）必须出现在浏览器 JS 里——没有后端可代理，所以只能烘焙。
- *    风险：拿到 authCode 的人可往你的图床传图（占用空间），但拿不到仓库/其他凭据。
- *    图床后台可随时改认证码让旧值失效。和 TMDB 只读令牌同理，属可接受暴露。
+ *  - imageBed*：CloudFlare ImgBed 图床。图床「地址 / 上传目录」是非机密配置，
+ *    保留在此（可提交）；而**图床秘钥（上传认证码 / API Token）已移出源码，
+ *    改走环境变量**，绝不写进仓库：
+ *      · PUBLIC_IMG_UPLOAD_TOKEN  → 图床 API Token（Bearer），用于跨浏览器「拉目录查重」
+ *      · PUBLIC_IMGBED_UPLOAD_CODE → 图床上传认证码（authCode），用于 /upload 直传
+ *    两者在 .env（本地）与部署平台的环境变量里配置。前端直传本就暴露凭证，故图床
+ *    秘钥应为「可吊销低危凭证」（仅能传图 / 读目录），后台可随时改值失效。
  *
- *    imageBedApiToken：图床 API Token（**可选**）。从图床后台「安全设置 → API
- *    Token」生成，至少勾选 `list` 权限。烘焙后，前端能主动拉取图床目录列表，
- *    做到"按图床现有文件名匹配去重"——比 localStorage 表更强（多浏览器同步）。
- *    拿到 token 的人可读你的图床文件清单（不暴露内容，但能猜出命名规则），属
- *    低风险。要严格保密可留空：留空时退化为 localStorage 跨会话去重。
- *
- * 编辑器取值优先级：浏览器 localStorage（你手填的）> 本文件默认值。
+ * 编辑器取值优先级（GitHub PAT）：浏览器 localStorage（你手填的）> 本文件默认值。
  * 即：你在本文件填了，首次打开会自动带出；之后手改过的以 localStorage 为准。
  */
 
@@ -36,14 +33,10 @@ export interface EditorSecrets {
 	tmdbApiToken: string;
 	/** GitHub fine-grained PAT（可选；写入权限，慎填，见上方说明） */
 	githubPat: string;
-	/** 图床部署地址（不带末尾斜杠），如 https://tc.d15.cc.cd */
+	/** 图床部署地址（不带末尾斜杠），如 https://tc.d15.cc.cd —— 非机密，可提交 */
 	imageBedUrl: string;
-	/** 图床上传认证码（authCode），用于 POST /upload，前端直传必需 */
-	imageBedAuthCode: string;
-	/** 图床上传目录（相对路径，留空传根目录） */
+	/** 图床上传目录（相对路径，留空传根目录）—— 非机密，可提交 */
 	imageBedFolder: string;
-	/** 图床 API Token（可选；带 list 权限可启用「拉图床目录」强去重；留空走 localStorage） */
-	imageBedApiToken: string;
 }
 
 export const editorSecrets: EditorSecrets = {
@@ -53,14 +46,11 @@ export const editorSecrets: EditorSecrets = {
 	// 留空 = 保存时仍需在编辑器里填 GitHub PAT（推荐）。
 	// 如要免填，填一个 fine-grained PAT（仅本仓库 Contents: RW），自负风险。
 	githubPat: "",
-	// 用户部署的 CloudFlare ImgBed 图床（日常吐槽编辑器图片直传用）
+	// 用户部署的 CloudFlare ImgBed 图床（日常吐槽编辑器图片直传用）—— 非机密
 	imageBedUrl: "https://tc.d15.cc.cd",
-	imageBedAuthCode:
-		"imgbed_a52f54222feea59a225e2a64cde089bca845ddb4f9f3f4e1aa5c413d3463c88e",
-	// 上传目录：吐槽图片统一归到「日常吐槽」文件夹（图床里按此目录分类存放）
+	// 上传目录：吐槽图片统一归到「日常吐槽」文件夹（图床里按此目录分类存放）—— 非机密
 	imageBedFolder: "日常吐槽",
-	// 可选：图床 API Token（带 list 权限可启用「拉图床目录」强去重）
-	// 在图床后台「安全设置 → API Token」生成，至少勾选 list 权限。
-	// 留空 = 退化为 localStorage 跨会话去重（够用，但不同浏览器不同步）。
-	imageBedApiToken: "",
+	// ⚠️ 图床秘钥已移出源码 → 改由环境变量注入（详见 .env / 部署平台）：
+	//    PUBLIC_IMGBED_UPLOAD_CODE  → /upload 直传用 authCode
+	//    PUBLIC_IMG_UPLOAD_TOKEN     → /api/manage/list 查重用 Bearer Token
 };

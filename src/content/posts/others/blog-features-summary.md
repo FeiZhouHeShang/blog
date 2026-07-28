@@ -1,7 +1,7 @@
 ---
 title: 博客功能全解析 | 配置指南与二次开发手册
 published: 2026-07-28
-updated: 2026-07-28T22:00
+updated: 2026-07-28
 description: 全面解析博客的所有功能模块、配置选项、修改方法和二次开发指南。包含主题、组件、API集成、部署等完整说明。
 tags: [博客, 配置指南, 二开, Firefly, Astro, 萌新]
 category: 学习文档
@@ -530,13 +530,22 @@ src/
 
 - 修图床重复：之前每次开编辑器再传同图都会重复入库（4 张一样）。现在加了**两层去重**
   1. **跨会话去重（localStorage）**：浏览器记「`目录/原文件名` → URL」表，30 天内同文件直接复用，**零网络请求**。这是默认行为，不需要任何 token
-  2. **跨浏览器同步（API Token）**：可选。把图床后台「安全设置 → API Token」生成的 token 填到 `editorSecrets.imageBedApiToken`，前端会拉 `/api/manage/list?dir=日常吐槽` 拿到真实目录做 5min 缓存，**多浏览器共享查重**。未配置时降级为 localStorage
+  2. **跨浏览器同步（API Token）**：可选。在 `.env`（本地）与部署平台环境变量配置 `PUBLIC_IMG_UPLOAD_TOKEN`（图床后台「安全设置 → API Token」生成的 list 权限令牌），前端会拉 `/api/manage/list?dir=日常吐槽` 拿到真实目录做 5min 缓存，**多浏览器共享查重**。未配置时降级为 localStorage
 - **上传文件名匹配必须**：上传 URL 已带 `uploadNameType=origin` —— 用原文件名（不再随机串）。这样 localStorage 才能用 `file.name` 匹配。CF ImgBed 默认转 WebP 仍会产生 `.webp` 副本（衍生品，不影响）
 - **UI 提示**细化为「复用图床已有 N 张（零上传）」/「已上传 N 张 · 复用 M」/「跳过同会话 M」，让用户能感知去重在工作
 - 修 bug：旧版本 final tip 把循环里的「复用」字样覆盖成「已上传 0 张」，现在按场景分支保留关键信息
 - 状态栏加「图床查重 · 📁 目录 · 📚 本地 N 个 · 🌐 跨浏览器 已/未启用」让配置透明
 - 9 项去重单测全过（`_test_imgbed_dedup.mjs`）；14 项 Playwright 端到端验证（`_verify_imgbed_dedup.mjs`）覆盖 localStorage 命中 / SHA-256 命中 / 新文件 / 清空索引 / 状态栏
 - 仍无图床 Token 时也立即生效；想 100% 去重 + 多设备共享则填 API Token
+
+### 2026-07-28 图床秘钥移出源码（环境变量注入）
+
+- 参考 fqzlr 的 Waline+ImgBed 方案，把图床秘钥从 `editorSecrets.ts` **移出源码**，改走环境变量，源码仓库不再含任何图床秘钥
+  1. `PUBLIC_IMG_UPLOAD_TOKEN`：list 权限 Bearer 令牌，用于跨浏览器「拉目录查重」（前端直传必需，构建时注入客户端 JS）
+  2. `PUBLIC_IMGBED_UPLOAD_CODE`：上传认证码（authCode），用于 `/upload` 直传
+- 已创建根目录 `.env`（已被 `.gitignore` 忽略，不提交），并同步更新 `.env.example` 与 `src/env.d.ts` 类型声明
+- `moments.astro` 的图床 url/token/folder 改为构建时从 `import.meta.env` 读取；上传逻辑兼容「authCode 优先 / Bearer 令牌兜底」，日后若把令牌权限加上传即可纯单令牌
+- ⚠️ 部署提醒：本博客部署在 **Cloudflare Pages**，需在 Cloudflare Pages 控制台「Settings → Environment variables」也配置这两个变量（Vercel 的变量对本站构建无效）
 
 ### 2026-07-28 影视游戏可视化编辑 · 「日常吐槽」模块 · 图床直传去重
 

@@ -83,7 +83,7 @@ try {
 	// 查 imgbed status 显示
 	const statusText = await page.locator("#dg-imgbed-status").textContent();
 	check("④ 图床查重状态显示本地 1 个文件名", /本地文件名索引[：:]\s*1\s*个/.test(statusText), statusText.trim().slice(0, 120));
-	check("⑤ 跨浏览器同步未启用（无 token）", /跨浏览器同步[：:]\s*未启用/.test(statusText));
+	check("⑤ 跨浏览器同步已启用（已配置 PUBLIC_IMG_UPLOAD_TOKEN）", /跨浏览器同步[：:]\s*已启用/.test(statusText), statusText.trim().slice(0, 140));
 
 	// 进入种子行编辑态
 	await page.locator('#dg-editor-list .dg-row [data-act="edit"]').first().click();
