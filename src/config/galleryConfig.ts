@@ -14,12 +14,12 @@ export const galleryConfig: GalleryConfig = {
 		// tags: 相册标签，用于分类和过滤
 		// 每添加一个数组项就相当于添加了一个相册，记得在 public/gallery/ 目录下创建对应的子目录并放入图片
 		{
-			id: "ai-2026",
-			name: "祖国人",
-			description: "逆天AI生图",
-			location: "沃特公司",
-			date: "2026-05-06",
-			tags: ["AI", "祖国人"],
+			id: "mxdl-2026",
+			name: "测试",
+			description: "测试1",
+			location: "萌新大佬",
+			date: "2026-07-29",
+			tags: ["AI", "测试2"],
 		},
 		{
 			id: "gpt-img2-2026",
