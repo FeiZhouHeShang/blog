@@ -63,19 +63,26 @@ const buildNavBarConfig = (): NavBarConfig => {
 		children: myChildren,
 	};
 
-	// [关键词: nav-moments] 日常吐槽下拉菜单（原「动态」，现承载 /moments/ 吐槽页）
-	// 始终渲染（该页面已落地）；相册作为子项保留。
+	// [关键词: nav-moments] 动态下拉菜单（相册 + 日常吐槽均作为子项）
+	// 日常吐槽 = 复刻自「团子和蛋糕」说说模块的 /moments/ 吐槽页，作为「动态」的子项存在。
+	// 相册（Gallery）位置保持不变，仍挂在「动态」下。
 	const momentsChildren: (NavBarLink | LinkPreset)[] = [];
 	if (siteConfig.pages.gallery) {
 		momentsChildren.push(LinkPreset.Gallery);
 	}
+	// 日常吐槽：内联子项，指向 /moments/ 吐槽页（说说内容都在该列表下）
+	momentsChildren.push({
+		name: "日常吐槽",
+		url: "/moments/",
+		icon: "material-symbols:chat-bubble",
+	});
 
 	const momentsNav: NavBarLink = {
 		...LinkPresets[LinkPreset.Moments],
 		children: momentsChildren,
 	};
 
-	// [关键词: nav-order] 导航顺序：主页 → 文章 → 工具导航 → 日常吐槽 → 记录(含影视游戏) → 关于
+	// [关键词: nav-order] 导航顺序：主页 → 文章 → 工具导航 → 动态(相册/日常吐槽) → 记录(含影视游戏) → 关于
 	const links: (NavBarLink | LinkPreset)[] = [
 		LinkPreset.Home,
 		postsNav,
