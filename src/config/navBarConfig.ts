@@ -37,6 +37,8 @@ const buildNavBarConfig = (): NavBarConfig => {
 	}
 	// [关键词: nav-qq-link] QQ联系方式（原QQ群已改为个人QQ）
 	contactChildren.push(LinkPreset.QQGroup);
+	// [关键词: nav-movies-games] 影视游戏收藏墙（从顶部独立项移入「记录」子菜单）
+	contactChildren.push(LinkPreset.MoviesGames);
 
 	const contactNav: NavBarLink | null =
 		contactChildren.length > 0
@@ -72,12 +74,11 @@ const buildNavBarConfig = (): NavBarConfig => {
 		children: momentsChildren,
 	};
 
-	// [关键词: nav-order] 导航顺序：主页 → 文章 → 工具导航 → 影视游戏 → 动态 → 记录 → 关于
+	// [关键词: nav-order] 导航顺序：主页 → 文章 → 工具导航 → 动态 → 记录(含影视游戏) → 关于
 	const links: (NavBarLink | LinkPreset)[] = [
 		LinkPreset.Home,
 		postsNav,
 		...(siteConfig.pages.collections ? [LinkPreset.Collections] : []),
-		LinkPreset.MoviesGames,
 		...(momentsChildren.length > 0 ? [momentsNav] : []),
 		...(contactNav ? [contactNav] : []),
 		myNav,
