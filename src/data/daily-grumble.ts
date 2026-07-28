@@ -25,13 +25,15 @@ export interface DailyGrumble {
 }
 
 export const dailyGrumbles: DailyGrumble[] = [
-	{
-		id: "test-upload-image",
-		content:
-			"吐槽 测试上传图片\n\n这是一条测试吐槽，用来验证图片上传功能。\n点右上角「编辑列表」→ 新增条目，在「图片」栏上传图片到图床即可。",
-		date: "2026-07-28 19:41",
-		location: "中国",
-		tags: ["测试", "吐槽"],
-		pinned: true,
-	},
+  {
+    "id": "test-upload-image",
+    "content": "吐槽 测试上传图片\n\n这是一条测试吐槽，用来验证图片上传功能。\n点右上角「编辑列表」→ 新增条目，在「图片」栏上传图片到图床即可。",
+    "date": "2026-07-28 19:41",
+    "location": "中国",
+    "tags": [
+      "测试",
+      "吐槽"
+    ],
+    "pinned": true
+  }
 ];
