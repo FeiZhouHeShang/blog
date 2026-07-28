@@ -130,6 +130,7 @@ const DATA_VAR = "dailyGrumbles";
 			data-imgbed-url={editorSecrets.imageBedUrl}
 			data-imgbed-auth={editorSecrets.imageBedAuthCode}
 			data-imgbed-folder={editorSecrets.imageBedFolder}
+			data-imgbed-token={editorSecrets.imageBedApiToken}
 		>
 			<div class="dg-editor-panel">
 				<header class="dg-editor-head">
@@ -162,6 +163,7 @@ const DATA_VAR = "dailyGrumbles";
 						<button type="button" id="dg-editor-load" class="dg-editor-btn dg-editor-btn-secondary">🔄 加载远端</button>
 					</div>
 					<p id="dg-editor-status" class="dg-editor-status">未加载远端数据</p>
+					<p id="dg-imgbed-status" class="dg-editor-status" data-imgbed-status></p>
 				</section>
 
 				<section class="dg-editor-toolbar">
@@ -458,6 +460,7 @@ const DATA_VAR = "dailyGrumbles";
 		var IMGBED_URL = (dgDialog && dgDialog.getAttribute("data-imgbed-url")) || "";
 		var IMGBED_AUTH = (dgDialog && dgDialog.getAttribute("data-imgbed-auth")) || "";
 		var IMGBED_FOLDER = (dgDialog && dgDialog.getAttribute("data-imgbed-folder")) || "";
+		var IMGBED_API_TOKEN = (dgDialog && dgDialog.getAttribute("data-imgbed-token")) || "";
 
 		// ===== 状态 =====
 		var state = {
@@ -472,6 +475,72 @@ const DATA_VAR = "dailyGrumbles";
 		var rowImages = {}; // rowId -> string[]
 		// 本次会话已上传文件的 SHA-256 -> URL，用于去重（同一文件不重复上传，图床不产生副本）
 		var uploadedHashes = {};
+		// 跨会话去重：localStorage 持久化的「原始文件名 → 图床 URL」表。
+		// key 用「folder/filename」组合，不同目录下的同名文件互不干扰。
+		// 写入时机：上传成功拿到新 URL 后；查询时机：每次上传前。
+		// 30 天无访问的条目自动剔除，避免 localStorage 无限膨胀。
+		var FILENAME_INDEX_KEY = "__dg_imgbed_filename_index_v1__";
+		var FILENAME_INDEX_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 天
+		// 可选：图床目录远程去重（带 API Token 才启用，否则只走 localStorage 表）
+		var REMOTE_INDEX_TTL_MS = 5 * 60 * 1000; // 5 分钟
+		var imgbedRemoteIndex = null; // { ts, map } | null
+
+		function loadFilenameIndex() {
+			try {
+				var raw = localStorage.getItem(FILENAME_INDEX_KEY);
+				if (!raw) return {};
+				var obj = JSON.parse(raw);
+				if (!obj || typeof obj !== "object" || !obj.map) return {};
+				var now = Date.now();
+				var out = {};
+				var changed = false;
+				Object.keys(obj.map).forEach(function (k) {
+					var v = obj.map[k];
+					if (!v || typeof v !== "object" || !v.url || !v.t) return;
+					if (now - v.t > FILENAME_INDEX_TTL_MS) { changed = true; return; }
+					out[k] = v;
+				});
+				if (changed) saveFilenameIndex(out);
+				return out;
+			} catch (_e) { return {}; }
+		}
+		function saveFilenameIndex(map) {
+			try { localStorage.setItem(FILENAME_INDEX_KEY, JSON.stringify({ map: map, ts: Date.now() })); } catch (_e) {}
+		}
+		function indexKey(folder, filename) { return (folder || "") + "/" + filename; }
+		function lookupFilenameIndex(folder, filename) {
+			var idx = loadFilenameIndex();
+			return idx[indexKey(folder, filename)] || null;
+		}
+		function writeFilenameIndex(folder, filename, url) {
+			var idx = loadFilenameIndex();
+			idx[indexKey(folder, filename)] = { url: url, t: Date.now() };
+			saveFilenameIndex(idx);
+		}
+		// 可选：拉图床目录做强去重（要 API Token）
+		async function loadImgbedRemoteIndex(folder) {
+			if (!IMGBED_API_TOKEN || !folder) return null;
+			if (imgbedRemoteIndex && Date.now() - imgbedRemoteIndex.ts < REMOTE_INDEX_TTL_MS) return imgbedRemoteIndex.map;
+			var base = (IMGBED_URL || "").replace(/\/+$/, "");
+			var url = base + "/api/manage/list?dir=" + encodeURIComponent(folder) + "&count=500";
+			try {
+				var r = await fetch(url, {
+					headers: { Accept: "application/json", Authorization: "Bearer " + IMGBED_API_TOKEN },
+				});
+				if (!r.ok) return null;
+				var data = await r.json();
+				var files = (data && (data.files || data.data)) || [];
+				var map = {};
+				files.forEach(function (f) {
+					if (!f || typeof f !== "object") return;
+					var name = f.name || f.filename || f.key || f.id;
+					var u = f.src || f.url || f.publicUrl || f.link || f.full_url;
+					if (name && u) map[name] = u;
+				});
+				imgbedRemoteIndex = { ts: Date.now(), map: map };
+				return map;
+			} catch (_e) { return null; }
+		}
 		// 计算文件 SHA-256（hex），用于前端去重
 		async function hashFile(file) {
 			try {
@@ -733,19 +802,34 @@ const DATA_VAR = "dailyGrumbles";
 			var tip = rowEl.querySelector("[data-img-tip]");
 			var btn = rowEl.querySelector('[data-act="upload-img"]');
 			if (btn) btn.disabled = true;
-			var done = 0, skipped = 0;
+			var done = 0, reused = 0, shaDup = 0, urlDup = 0;
 			if (tip) { tip.classList.remove("is-error"); tip.textContent = "上传中 0/" + files.length; }
 			try {
+				// 可选：拉图床目录做强去重（要 API Token，5min 缓存）
+				var remoteMap = await loadImgbedRemoteIndex(IMGBED_FOLDER);
 				for (var i = 0; i < files.length; i++) {
 					var file = files[i];
+					// 去重 0：跨会话——文件名匹配（localStorage 历史表 + 可选图床目录）
+					var existing = lookupFilenameIndex(IMGBED_FOLDER, file.name);
+					if (!existing && remoteMap) existing = remoteMap[file.name];
+					if (existing && existing.url) {
+						if (rowImages[rowId].indexOf(existing.url) === -1) rowImages[rowId].push(existing.url);
+						// 同时把哈希记到 uploadedHashes，让本会话按内容也跳过
+						var h0 = await hashFile(file);
+						if (h0) uploadedHashes[h0] = existing.url;
+						reused++;
+						if (tip) tip.textContent = "已复用图床已有同名 " + reused + " · 上传 " + done + "/" + files.length;
+						renderImagePreview(rowEl);
+						continue;
+					}
+					// 去重 1：本次会话内同一文件（同哈希）已上传过 → 直接复用 URL，不再上传
 					var h = await hashFile(file);
-					// 去重 1：本次会话内同一文件（同哈希）已上传过 → 直接复用 URL，不再上传（图床不产生副本）
 					if (h && uploadedHashes[h]) {
 						if (rowImages[rowId].indexOf(uploadedHashes[h]) === -1) {
 							rowImages[rowId].push(uploadedHashes[h]);
 						}
-						skipped++;
-						if (tip) tip.textContent = "已跳过重复 " + skipped + " · 上传 " + done + "/" + files.length;
+						shaDup++;
+						if (tip) tip.textContent = "已跳过重复 " + shaDup + " · 上传 " + done + "/" + files.length;
 						renderImagePreview(rowEl);
 						continue;
 					}
@@ -755,13 +839,33 @@ const DATA_VAR = "dailyGrumbles";
 					if (rowImages[rowId].indexOf(url) === -1) {
 						rowImages[rowId].push(url);
 					} else {
-						skipped++;
+						urlDup++;
 					}
+					// 去重 3：把「原始文件名 → URL」写进 localStorage，下次同文件直接复用
+					writeFilenameIndex(IMGBED_FOLDER, file.name, url);
+					// 同步图床目录缓存（避免后续命中还走网络）
+					if (remoteMap) remoteMap[file.name] = url;
 					done++;
-					if (tip) tip.textContent = "上传 " + done + "/" + files.length + (skipped ? " · 跳过重复 " + skipped : "");
+					if (tip) tip.textContent = "上传 " + done + "/" + files.length + (reused ? " · 复用 " + reused : "") + (shaDup ? " · 跳过 " + shaDup : "");
 					renderImagePreview(rowEl);
 				}
-				if (tip) tip.textContent = "已上传 " + done + " 张" + (skipped ? " · 跳过重复 " + skipped + " 张" : "");
+				// 最终提示：优先用「复用」字眼（比「已上传 0 张」更有用）
+				if (tip) {
+					if (done > 0) {
+						var parts = ["已上传 " + done + " 张"];
+						if (reused) parts.push("复用 " + reused);
+						if (shaDup) parts.push("跳过 " + shaDup);
+						if (urlDup) parts.push("URL 已存在 " + urlDup);
+						tip.textContent = parts.join(" · ");
+					} else {
+						// 零上传场景：明确告诉用户没浪费图床空间
+						var parts2 = [];
+						if (reused) parts2.push("复用图床已有 " + reused + " 张（零上传）");
+						if (shaDup) parts2.push("跳过同会话 " + shaDup + " 张（零上传）");
+						if (urlDup) parts2.push("URL 已存在 " + urlDup + " 张");
+						tip.textContent = parts2.join(" · ") || "无可上传";
+					}
+				}
 			} catch (e) {
 				if (tip) { tip.classList.add("is-error"); tip.textContent = "❌ " + e.message; }
 			} finally {
@@ -898,6 +1002,7 @@ const DATA_VAR = "dailyGrumbles";
 			else dlg.setAttribute("open", "");
 			var patInput = $("dg-editor-pat");
 			if (patInput) { patInput.value = getPat(); setTimeout(function () { patInput.focus(); }, 50); }
+			refreshImgbedStatus();
 			if (getPat() && state.items.length === 0 && !state.sourceContent) loadRemote();
 		}
 		function closeEditor() {
@@ -998,6 +1103,19 @@ const DATA_VAR = "dailyGrumbles";
 		}
 
 		// ===== 初始化 =====
+		function refreshImgbedStatus() {
+			var el = $("dg-imgbed-status");
+			if (!el) return;
+			var idx = loadFilenameIndex();
+			var n = Object.keys(idx).length;
+			var parts = [];
+			parts.push("📁 上传目录：<b>" + escHtml(IMGBED_FOLDER || "(根)") + "</b>");
+			parts.push("📚 本地文件名索引：<b>" + n + "</b> 个");
+			parts.push(IMGBED_API_TOKEN
+				? "🌐 跨浏览器同步：<b style=\"color:#10b981;\">已启用</b>（API Token · 5min 缓存）"
+				: "🌐 跨浏览器同步：<b style=\"color:#f59e0b;\">未启用</b>（填图床 API Token 可启用）");
+			el.innerHTML = "图床查重 · " + parts.join(" · ");
+		}
 		function init() {
 			// 从 seed 直接填充编辑器列表（无需先「加载远端」）
 			var seedEl = document.getElementById("dg-seed");
@@ -1009,6 +1127,7 @@ const DATA_VAR = "dailyGrumbles";
 			}
 			bind();
 			renderList();
+			refreshImgbedStatus();
 			// 公开列表的空状态
 			var emptyEl = document.querySelector("[data-dg-empty]");
 			if (emptyEl) emptyEl.style.display = state.items.length === 0 ? "" : "none";

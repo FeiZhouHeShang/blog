@@ -20,7 +20,12 @@
  *    认证码（authCode）必须出现在浏览器 JS 里——没有后端可代理，所以只能烘焙。
  *    风险：拿到 authCode 的人可往你的图床传图（占用空间），但拿不到仓库/其他凭据。
  *    图床后台可随时改认证码让旧值失效。和 TMDB 只读令牌同理，属可接受暴露。
- *    （查重用的 API Token 我们没配，所以上传跳过查重，不影响功能。）
+ *
+ *    imageBedApiToken：图床 API Token（**可选**）。从图床后台「安全设置 → API
+ *    Token」生成，至少勾选 `list` 权限。烘焙后，前端能主动拉取图床目录列表，
+ *    做到"按图床现有文件名匹配去重"——比 localStorage 表更强（多浏览器同步）。
+ *    拿到 token 的人可读你的图床文件清单（不暴露内容，但能猜出命名规则），属
+ *    低风险。要严格保密可留空：留空时退化为 localStorage 跨会话去重。
  *
  * 编辑器取值优先级：浏览器 localStorage（你手填的）> 本文件默认值。
  * 即：你在本文件填了，首次打开会自动带出；之后手改过的以 localStorage 为准。
@@ -37,6 +42,8 @@ export interface EditorSecrets {
 	imageBedAuthCode: string;
 	/** 图床上传目录（相对路径，留空传根目录） */
 	imageBedFolder: string;
+	/** 图床 API Token（可选；带 list 权限可启用「拉图床目录」强去重；留空走 localStorage） */
+	imageBedApiToken: string;
 }
 
 export const editorSecrets: EditorSecrets = {
@@ -52,4 +59,8 @@ export const editorSecrets: EditorSecrets = {
 		"imgbed_a52f54222feea59a225e2a64cde089bca845ddb4f9f3f4e1aa5c413d3463c88e",
 	// 上传目录：吐槽图片统一归到「日常吐槽」文件夹（图床里按此目录分类存放）
 	imageBedFolder: "日常吐槽",
+	// 可选：图床 API Token（带 list 权限可启用「拉图床目录」强去重）
+	// 在图床后台「安全设置 → API Token」生成，至少勾选 list 权限。
+	// 留空 = 退化为 localStorage 跨会话去重（够用，但不同浏览器不同步）。
+	imageBedApiToken: "",
 };
