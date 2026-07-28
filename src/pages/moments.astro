@@ -523,11 +523,29 @@ const DATA_VAR = "dailyGrumbles";
 		}
 
 		// ===== 图床上传 =====
+		// CloudFlare ImgBed 真实响应：[{ src: "...", publicUrl?: "..." }] —— 顶层是数组
+		// 兼容各种历史/衍生方案：扁平对象 / {data:...} / 数组 / 字符串直返
 		function extractImgUrl(data) {
 			if (!data) return "";
 			if (typeof data === "string") return data;
-			var d = data.data || data;
-			return d.src || d.url || d.link || d.absolute_url || d.full_url || d.pathname || "";
+			// ① 顶层就是数组（CF ImgBed 标准）
+			if (Array.isArray(data)) {
+				var first = data[0];
+				if (!first || typeof first !== "object") return "";
+				return first.src || first.url || first.link || first.absolute_url || first.full_url || first.pathname || first.publicUrl || "";
+			}
+			// ② {data: [...] | {...}} —— 兼容旧版/API Token 模式返回
+			var inner = data.data;
+			if (inner && typeof inner === "object") {
+				if (Array.isArray(inner)) {
+					var f = inner[0];
+					if (!f || typeof f !== "object") return "";
+					return f.src || f.url || f.link || f.publicUrl || "";
+				}
+				return inner.src || inner.url || inner.link || inner.absolute_url || inner.full_url || inner.pathname || inner.publicUrl || "";
+			}
+			// ③ 扁平对象
+			return data.src || data.url || data.link || data.absolute_url || data.full_url || data.pathname || data.publicUrl || "";
 		}
 		async function uploadToImgbed(file) {
 			var fd = new FormData();
