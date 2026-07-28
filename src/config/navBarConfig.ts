@@ -63,7 +63,8 @@ const buildNavBarConfig = (): NavBarConfig => {
 		children: myChildren,
 	};
 
-	// [关键词: nav-moments] 动态下拉菜单（原「我的」里的相册迁到这里）
+	// [关键词: nav-moments] 日常吐槽下拉菜单（原「动态」，现承载 /moments/ 吐槽页）
+	// 始终渲染（该页面已落地）；相册作为子项保留。
 	const momentsChildren: (NavBarLink | LinkPreset)[] = [];
 	if (siteConfig.pages.gallery) {
 		momentsChildren.push(LinkPreset.Gallery);
@@ -74,12 +75,12 @@ const buildNavBarConfig = (): NavBarConfig => {
 		children: momentsChildren,
 	};
 
-	// [关键词: nav-order] 导航顺序：主页 → 文章 → 工具导航 → 动态 → 记录(含影视游戏) → 关于
+	// [关键词: nav-order] 导航顺序：主页 → 文章 → 工具导航 → 日常吐槽 → 记录(含影视游戏) → 关于
 	const links: (NavBarLink | LinkPreset)[] = [
 		LinkPreset.Home,
 		postsNav,
 		...(siteConfig.pages.collections ? [LinkPreset.Collections] : []),
-		...(momentsChildren.length > 0 ? [momentsNav] : []),
+		momentsNav,
 		...(contactNav ? [contactNav] : []),
 		myNav,
 	];

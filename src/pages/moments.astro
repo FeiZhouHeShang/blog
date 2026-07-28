@@ -1,0 +1,976 @@
+---
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import LeftSidebar from "@/components/layout/LeftSidebar.astro";
+import RightSidebar from "@/components/layout/RightSidebar.astro";
+import { dailyGrumbles, type DailyGrumble } from "@/data/daily-grumble";
+import { editorSecrets } from "@/config/editorSecrets";
+import { marked } from "marked";
+
+// 日常吐槽（Daily Grumble）
+// 数据：src/data/daily-grumble.ts
+// 编辑：页面顶部「编辑列表」→ 前端编辑器（GitHub Contents API 保存 + 图床图片直传）
+const title = "日常吐槽";
+const description = "随手记录生活里想吐槽的事儿";
+
+// 排序：置顶优先，其次按时间倒序
+function parseDate(s?: string): number {
+	if (!s) return 0;
+	const t = Date.parse((s || "").replace(" ", "T"));
+	return isNaN(t) ? 0 : t;
+}
+const sorted: DailyGrumble[] = [...dailyGrumbles].sort((a, b) => {
+	if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+	return parseDate(b.date) - parseDate(a.date);
+});
+
+// 正文渲染（支持 Markdown）
+function renderMarkdown(md: string): string {
+	if (!md) return "";
+	const html = marked.parse(md, { async: false, breaks: true, gfm: true }) as string;
+	return html;
+}
+
+// GitHub 编辑回链 / Contents API（与 git remote 对齐：FeiZhouHeShang/blog @ main）
+const EDIT_URL =
+	"https://github.com/FeiZhouHeShang/blog/edit/main/src/data/daily-grumble.ts";
+const API_FILE_URL =
+	"https://api.github.com/repos/FeiZhouHeShang/blog/contents/src/data/daily-grumble.ts?ref=main";
+const COMMIT_URL_BASE =
+	"https://github.com/FeiZhouHeShang/blog/commits/main/src/data/daily-grumble.ts";
+const PAT_HELP_URL =
+	"https://github.com/settings/personal-access-tokens/new?description=daily-grumble-editor&contents=write";
+// 数据数组在源文件里的变量名（findArrayRange 据此定位）
+const DATA_VAR = "dailyGrumbles";
+---
+
+<MainGridLayout title={title} description={description}>
+	<LeftSidebar slot="sidebar-left" />
+	<RightSidebar slot="sidebar-right" />
+
+	<div class="dg-page-wrapper w-full rounded-(--radius-large) overflow-hidden relative min-h-32" id="dg-root">
+		<!-- 头部：标题 + 编辑按钮 -->
+		<div class="dg-header relative w-full mb-8 flex flex-wrap items-end justify-between gap-4">
+			<div>
+				<h1 class="text-2xl font-bold tracking-tight text-[var(--deep-text)]">日常吐槽</h1>
+				<p class="mt-1 text-sm text-[var(--content-meta)]">
+					共 {sorted.length} 条 · 生活里那些想吐槽的事儿，都记这儿
+				</p>
+			</div>
+			<div class="flex items-center gap-2">
+				<button
+					type="button"
+					id="dg-open-editor"
+					class="btn-card inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm hover:shadow-md transition-all duration-150"
+					title="在网页上直接增删改吐槽，输入 GitHub PAT 即可保存到 GitHub"
+				>
+					<svg width="1.1em" height="1.1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+						<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+					</svg>
+					编辑列表
+				</button>
+				<a
+					href={EDIT_URL}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="btn-card inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--btn-card-bg-hover)] transition-all duration-150"
+					title="GitHub 网页编辑器（不熟 API 时用）"
+				>
+					<svg width="1.05em" height="1.05em" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+						<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+					</svg>
+				</a>
+			</div>
+		</div>
+
+		<!-- 吐槽列表 -->
+		<div class="dg-list flex flex-col gap-4" data-dg-list="">
+			{
+				sorted.map((item) => (
+					<article class="dg-item" id={item.id}>
+						<div class="dg-meta">
+							{item.pinned && <span class="dg-pinned">📌 置顶</span>}
+							{item.date && <span class="dg-date">🕒 {item.date}</span>}
+							{item.location && <span class="dg-loc">📍 {item.location}</span>}
+						</div>
+						<div
+							class="dg-content prose dark:prose-invert max-w-none text-[var(--deep-text)]"
+							set:html={renderMarkdown(item.content)}
+						/>
+						{item.images && item.images.length > 0 && (
+							<div class="dg-images">
+								{item.images.map((src) => (
+									<a href={src} target="_blank" rel="noopener noreferrer" class="dg-img">
+										<img src={src} alt="" loading="lazy" onerror="this.style.display='none'" />
+									</a>
+								))}
+							</div>
+						)}
+						{item.tags && item.tags.length > 0 && (
+							<div class="dg-tags">
+								{item.tags.map((t) => (
+									<span class="dg-tag">#{t}</span>
+								))}
+							</div>
+						)}
+					</article>
+				))
+			}
+		</div>
+
+		<!-- 空状态 -->
+		<div class="dg-empty py-16 text-center text-[var(--content-meta)]" data-dg-empty="" style="display:none;">
+			还没有吐槽，点右上角「编辑列表」开始吐槽吧～
+		</div>
+
+		<!-- ========== 前端编辑器模态框 ========== -->
+		<dialog
+			id="dg-editor"
+			data-dg-editor=""
+			class="dg-editor-dialog"
+			data-imgbed-url={editorSecrets.imageBedUrl}
+			data-imgbed-auth={editorSecrets.imageBedAuthCode}
+			data-imgbed-folder={editorSecrets.imageBedFolder}
+		>
+			<div class="dg-editor-panel">
+				<header class="dg-editor-head">
+					<div>
+						<h2 class="dg-editor-title">编辑日常吐槽</h2>
+						<p class="dg-editor-sub">输入 GitHub PAT 即可保存改动（自动部署）；图片直传图床</p>
+					</div>
+					<button type="button" id="dg-editor-close" class="dg-editor-close" aria-label="关闭">×</button>
+				</header>
+
+				<section class="dg-editor-token">
+					<label class="dg-editor-label">
+						<span>GitHub Personal Access Token</span>
+						<span class="dg-editor-label-tip">
+							仅存浏览器 localStorage
+							· <a href={PAT_HELP_URL} target="_blank" rel="noopener noreferrer" class="dg-editor-link">生成 fine-grained PAT</a>
+						</span>
+					</label>
+					<div class="dg-editor-token-row">
+						<input
+							type="password"
+							id="dg-editor-pat"
+							placeholder="github_pat_xxxxxxxxxxxxxx"
+							autocomplete="off"
+							spellcheck="false"
+							class="dg-editor-input"
+						/>
+						<button type="button" id="dg-editor-pat-toggle" class="dg-editor-mini" title="显示/隐藏">👁</button>
+						<button type="button" id="dg-editor-pat-clear" class="dg-editor-mini dg-editor-mini-danger" title="清除本地保存的 Token">🗑</button>
+						<button type="button" id="dg-editor-load" class="dg-editor-btn dg-editor-btn-secondary">🔄 加载远端</button>
+					</div>
+					<p id="dg-editor-status" class="dg-editor-status">未加载远端数据</p>
+				</section>
+
+				<section class="dg-editor-toolbar">
+					<button type="button" id="dg-editor-add" class="dg-editor-btn dg-editor-btn-primary">+ 新增吐槽</button>
+					<span class="dg-editor-count">共 <span id="dg-editor-count">0</span> 条</span>
+				</section>
+
+				<section id="dg-editor-list" class="dg-editor-list"></section>
+
+				<footer class="dg-editor-foot">
+					<p id="dg-editor-foot-status" class="dg-editor-foot-status">准备就绪</p>
+					<div class="dg-editor-foot-actions">
+						<a id="dg-editor-commits" href={COMMIT_URL_BASE} target="_blank" rel="noopener noreferrer" class="dg-editor-link" style="display:none;">查看提交历史</a>
+						<button type="button" id="dg-editor-cancel" class="dg-editor-btn">关闭</button>
+						<button type="button" id="dg-editor-save" class="dg-editor-btn dg-editor-btn-primary">💾 保存到 GitHub</button>
+					</div>
+				</footer>
+			</div>
+		</dialog>
+		<!-- ========== /前端编辑器模态框 ========== -->
+
+		<!-- 初始数据（供编辑器直接展示，无需先「加载远端」） -->
+		<script type="application/json" id="dg-seed" set:html={JSON.stringify(dailyGrumbles)}></script>
+	</div>
+</MainGridLayout>
+
+<style>
+	/* 列表卡片（SSR 渲染，scoped 生效） */
+	.dg-item {
+		position: relative;
+		padding: 1rem 1.15rem;
+		border-radius: 0.85rem;
+		background: var(--float-panel-bg);
+		border: 1px solid var(--line-divider);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+		transition: transform 0.2s ease, box-shadow 0.2s ease;
+	}
+	.dg-item:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+	}
+	.dg-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		align-items: center;
+		margin-bottom: 0.4rem;
+		font-size: 0.72rem;
+		color: var(--content-meta);
+	}
+	.dg-pinned {
+		color: #b45309;
+		font-weight: 600;
+	}
+	.dg-content {
+		font-size: 0.95rem;
+		line-height: 1.65;
+	}
+	.dg-content :where(p):first-child {
+		margin-top: 0;
+	}
+	.dg-content :where(p):last-child {
+		margin-bottom: 0;
+	}
+	.dg-images {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+		gap: 0.5rem;
+		margin-top: 0.7rem;
+	}
+	.dg-img {
+		display: block;
+		aspect-ratio: 4 / 3;
+		overflow: hidden;
+		border-radius: 0.5rem;
+		border: 1px solid var(--line-divider);
+		background: linear-gradient(135deg, var(--primary) 0%, var(--deep-text) 100%);
+	}
+	.dg-img img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.3s ease;
+	}
+	.dg-img:hover img {
+		transform: scale(1.05);
+	}
+	.dg-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		margin-top: 0.6rem;
+	}
+	.dg-tag {
+		font-size: 0.72rem;
+		padding: 0.1rem 0.5rem;
+		border-radius: 0.4rem;
+		color: var(--primary);
+		background: var(--btn-card-bg-hover);
+		font-weight: 500;
+	}
+	@media (prefers-color-scheme: dark) {
+		.dg-item {
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+		}
+	}
+</style>
+
+<style is:global>
+	/* ===== 前端编辑器模态框（[data-dg-editor] 限定作用域，动态 innerHTML 也能命中） ===== */
+	[data-dg-editor].dg-editor-dialog {
+		border: none;
+		padding: 0;
+		background: transparent;
+		max-width: 100vw;
+		max-height: 100vh;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		inset: 0;
+	}
+	[data-dg-editor].dg-editor-dialog::backdrop {
+		background: rgba(0, 0, 0, 0.55);
+		backdrop-filter: blur(4px);
+	}
+	[data-dg-editor] .dg-editor-panel {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: min(860px, 96vw);
+		max-height: 92vh;
+		background: var(--float-panel-bg, #fff);
+		color: var(--deep-text, #222);
+		border-radius: 1rem;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+	[data-dg-editor] .dg-editor-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 1rem 1.25rem;
+		border-bottom: 1px solid var(--line-divider, #e5e7eb);
+	}
+	[data-dg-editor] .dg-editor-title { font-size: 1.05rem; font-weight: 700; margin: 0; }
+	[data-dg-editor] .dg-editor-sub { font-size: 0.75rem; color: var(--content-meta, #6b7280); margin: 0.15rem 0 0; }
+	[data-dg-editor] .dg-editor-close {
+		background: transparent; border: none; font-size: 1.6rem; line-height: 1;
+		cursor: pointer; color: var(--content-meta, #6b7280); padding: 0.25rem 0.5rem; border-radius: 0.4rem;
+		transition: background 0.15s;
+	}
+	[data-dg-editor] .dg-editor-close:hover { background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05)); }
+
+	[data-dg-editor] .dg-editor-token,
+	[data-dg-editor] .dg-editor-toolbar,
+	[data-dg-editor] .dg-editor-foot { padding: 0.75rem 1.25rem; }
+	[data-dg-editor] .dg-editor-token { background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.02)); border-bottom: 1px solid var(--line-divider, #e5e7eb); }
+	[data-dg-editor] .dg-editor-label { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.4rem; }
+	[data-dg-editor] .dg-editor-label-tip { font-size: 0.7rem; font-weight: 400; color: var(--content-meta, #6b7280); }
+	[data-dg-editor] .dg-editor-link { color: var(--primary, #6366f1); text-decoration: underline; text-underline-offset: 2px; }
+	[data-dg-editor] .dg-editor-token-row { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+	[data-dg-editor] .dg-editor-input,
+	[data-dg-editor] .dg-editor-input-sm,
+	[data-dg-editor] .dg-editor-textarea,
+	[data-dg-editor] .dg-editor-select {
+		width: 100%; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.6rem;
+		border-radius: 0.5rem; border: 1px solid var(--line-divider, #e5e7eb);
+		background: var(--card-bg, #fff); color: var(--deep-text, #222);
+		outline: none; transition: border-color 0.15s; box-sizing: border-box;
+	}
+	[data-dg-editor] .dg-editor-input:focus,
+	[data-dg-editor] .dg-editor-input-sm:focus,
+	[data-dg-editor] .dg-editor-textarea:focus,
+	[data-dg-editor] .dg-editor-select:focus { border-color: var(--primary, #6366f1); }
+	[data-dg-editor] .dg-editor-input { flex: 1 1 280px; min-width: 200px; font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace; }
+	[data-dg-editor] .dg-editor-mini {
+		font-size: 0.9rem; padding: 0.4rem 0.6rem; border-radius: 0.5rem;
+		border: 1px solid var(--line-divider, #e5e7eb); background: var(--card-bg, #fff);
+		cursor: pointer; transition: all 0.15s;
+	}
+	[data-dg-editor] .dg-editor-mini:hover { background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05)); }
+	[data-dg-editor] .dg-editor-mini-danger:hover { background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.4); }
+
+	[data-dg-editor] .dg-editor-btn {
+		font-size: 0.85rem; font-weight: 500; padding: 0.5rem 0.9rem; border-radius: 0.5rem;
+		border: 1px solid var(--line-divider, #e5e7eb); background: var(--card-bg, #fff);
+		color: var(--deep-text, #222); cursor: pointer; transition: all 0.15s;
+	}
+	[data-dg-editor] .dg-editor-btn:hover { background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05)); }
+	[data-dg-editor] .dg-editor-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+	[data-dg-editor] .dg-editor-btn-primary {
+		background: #4f46e5; color: #fff; border-color: transparent;
+		box-shadow: 0 1px 2px rgba(79, 70, 229, 0.25);
+	}
+	[data-dg-editor] .dg-editor-btn-primary:hover { background: #4338ca; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35); }
+	[data-dg-editor] .dg-editor-btn-primary:active { background: #3730a3; }
+	[data-dg-editor] .dg-editor-btn-secondary { background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05)); }
+
+	[data-dg-editor] .dg-editor-status { font-size: 0.72rem; margin: 0.5rem 0 0; color: var(--content-meta, #6b7280); }
+	[data-dg-editor] .dg-editor-status.is-error { color: #f43f5e; }
+	[data-dg-editor] .dg-editor-status.is-ok { color: #10b981; }
+
+	[data-dg-editor] .dg-editor-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; border-bottom: 1px solid var(--line-divider, #e5e7eb); }
+	[data-dg-editor] .dg-editor-count { font-size: 0.78rem; color: var(--content-meta, #6b7280); }
+
+	[data-dg-editor] .dg-editor-list { flex: 1 1 auto; overflow-y: auto; padding: 0.5rem 1.25rem 1rem; }
+	[data-dg-editor] .dg-editor-empty { padding: 2rem 1rem; text-align: center; color: var(--content-meta, #6b7280); font-size: 0.85rem; }
+
+	/* 单条卡片 */
+	[data-dg-editor] .dg-row {
+		display: flex; gap: 0.5rem; padding: 0.5rem; margin-bottom: 0.5rem;
+		border: 1px solid var(--line-divider, #e5e7eb); border-radius: 0.6rem;
+		background: var(--card-bg, #fff); transition: border-color 0.15s;
+	}
+	[data-dg-editor] .dg-row:hover { border-color: var(--primary, #6366f1); }
+	[data-dg-editor] .dg-row.is-editing { flex-direction: column; border-color: var(--primary, #6366f1); background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.02)); }
+	[data-dg-editor] .dg-row-info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+	[data-dg-editor] .dg-row-title { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+	[data-dg-editor] .dg-row-meta { font-size: 0.7rem; color: var(--content-meta, #6b7280); display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
+	[data-dg-editor] .dg-row-badge { padding: 0.05rem 0.4rem; border-radius: 0.3rem; font-size: 0.65rem; color: #fff; }
+	[data-dg-editor] .dg-row-actions { display: flex; gap: 0.3rem; align-items: flex-start; flex-shrink: 0; }
+	[data-dg-editor] .dg-row-act {
+		font-size: 0.72rem; padding: 0.3rem 0.55rem; border-radius: 0.4rem;
+		border: 1px solid var(--line-divider, #e5e7eb); background: var(--card-bg, #fff);
+		cursor: pointer; color: var(--deep-text, #222); transition: all 0.15s;
+	}
+	[data-dg-editor] .dg-row-act:hover { background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05)); }
+	[data-dg-editor] .dg-row-act-danger:hover { background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.4); color: #f43f5e; }
+
+	/* 表单 */
+	[data-dg-editor] .dg-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 0.7rem; }
+	[data-dg-editor] .dg-form-grid .dg-form-full { grid-column: 1 / -1; }
+	[data-dg-editor] .dg-form-field { display: flex; flex-direction: column; gap: 0.2rem; }
+	[data-dg-editor] .dg-form-field label { font-size: 0.7rem; font-weight: 600; color: var(--content-meta, #6b7280); }
+	[data-dg-editor] .dg-form-field .dg-editor-input-sm { font-size: 0.82rem; padding: 0.35rem 0.5rem; }
+	[data-dg-editor] .dg-form-field .dg-editor-textarea { font-size: 0.82rem; padding: 0.4rem 0.5rem; resize: vertical; }
+	[data-dg-editor] .dg-form-field.dg-form-check label { flex-direction: row; align-items: center; gap: 0.35rem; font-size: 0.78rem; }
+	[data-dg-editor] .dg-form-actions { grid-column: 1 / -1; display: flex; gap: 0.4rem; justify-content: flex-end; margin-top: 0.25rem; }
+
+	/* 图片上传 */
+	[data-dg-editor] .dg-img-preview { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.4rem; min-height: 0; }
+	[data-dg-editor] .dg-img-empty { font-size: 0.72rem; color: var(--content-meta, #6b7280); }
+	[data-dg-editor] .dg-thumb { position: relative; width: 64px; height: 64px; border-radius: 0.45rem; overflow: hidden; border: 1px solid var(--line-divider, #e5e7eb); background: linear-gradient(135deg, var(--primary, #6366f1), var(--deep-text, #222)); }
+	[data-dg-editor] .dg-thumb img { width: 100%; height: 100%; object-fit: cover; }
+	[data-dg-editor] .dg-thumb-x {
+		position: absolute; top: 1px; right: 1px; width: 18px; height: 18px; line-height: 16px;
+		text-align: center; font-size: 0.9rem; border: none; border-radius: 50%;
+		background: rgba(0, 0, 0, 0.6); color: #fff; cursor: pointer; padding: 0;
+	}
+	[data-dg-editor] .dg-thumb-x:hover { background: #f43f5e; }
+	[data-dg-editor] .dg-img-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+	[data-dg-editor] .dg-form-upload-btn {
+		background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #fff;
+		border: 1px solid transparent; box-shadow: 0 1px 2px rgba(99, 102, 241, 0.25);
+	}
+	[data-dg-editor] .dg-form-upload-btn:hover { background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4); }
+	[data-dg-editor] .dg-form-upload-btn:disabled { opacity: 0.6; cursor: wait; }
+	[data-dg-editor] .dg-editor-label-tip.is-error { color: #f43f5e; }
+
+	[data-dg-editor] .dg-editor-foot {
+		display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+		border-top: 1px solid var(--line-divider, #e5e7eb); background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.02)); flex-wrap: wrap;
+	}
+	[data-dg-editor] .dg-editor-foot-status { font-size: 0.78rem; margin: 0; color: var(--content-meta, #6b7280); flex: 1 1 200px; }
+	[data-dg-editor] .dg-editor-foot-status.is-error { color: #f43f5e; }
+	[data-dg-editor] .dg-editor-foot-status.is-ok { color: #10b981; }
+	[data-dg-editor] .dg-editor-foot-actions { display: flex; gap: 0.4rem; align-items: center; }
+
+	@media (prefers-color-scheme: dark) {
+		[data-dg-editor] .dg-editor-input,
+		[data-dg-editor] .dg-editor-input-sm,
+		[data-dg-editor] .dg-editor-textarea,
+		[data-dg-editor] .dg-editor-select,
+		[data-dg-editor] .dg-editor-mini,
+		[data-dg-editor] .dg-editor-btn,
+		[data-dg-editor] .dg-row,
+		[data-dg-editor] .dg-row-act { background: rgba(255, 255, 255, 0.04); }
+	}
+</style>
+
+<script is:inline>
+	(function () {
+		// ===== 配置 =====
+		var API_FILE_URL =
+			"https://api.github.com/repos/FeiZhouHeShang/blog/contents/src/data/daily-grumble.ts?ref=main";
+		var DATA_VAR = "dailyGrumbles";
+		var PAT_STORAGE_KEY = "__dg_pat__";
+
+		// 图床配置（烘焙进客户端 JS，前端直传必需）
+		var dgDialog = document.getElementById("dg-editor");
+		var IMGBED_URL = (dgDialog && dgDialog.getAttribute("data-imgbed-url")) || "";
+		var IMGBED_AUTH = (dgDialog && dgDialog.getAttribute("data-imgbed-auth")) || "";
+		var IMGBED_FOLDER = (dgDialog && dgDialog.getAttribute("data-imgbed-folder")) || "";
+
+		// ===== 状态 =====
+		var state = {
+			items: [],
+			sourceContent: "",
+			sha: "",
+			loading: false,
+			saving: false,
+			editingId: null,
+		};
+		// 每行编辑态的图片 URL（独立于表单字段，上传后回填）
+		var rowImages = {}; // rowId -> string[]
+
+		// ===== 工具 =====
+		function $(id) { return document.getElementById(id); }
+		function escHtml(s) {
+			return String(s == null ? "" : s)
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#39;");
+		}
+		function nowLocal() {
+			var d = new Date();
+			function p(n) { return (n < 10 ? "0" : "") + n; }
+			return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) +
+				" " + p(d.getHours()) + ":" + p(d.getMinutes());
+		}
+		function genId(title) {
+			var base = (title || "grumble")
+				.toLowerCase()
+				.replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "-")
+				.replace(/^-+|-+$/g, "")
+				.slice(0, 32);
+			if (!base) base = "grumble";
+			return base + "-" + Math.random().toString(36).slice(2, 6);
+		}
+		function setStatus(el, msg, kind) {
+			if (!el) return;
+			el.textContent = msg || "";
+			el.classList.remove("is-error", "is-ok");
+			if (kind) el.classList.add("is-" + kind);
+		}
+		function getPat() {
+			return localStorage.getItem(PAT_STORAGE_KEY) || "";
+		}
+		function setPat(v) {
+			if (v) localStorage.setItem(PAT_STORAGE_KEY, v);
+			else localStorage.removeItem(PAT_STORAGE_KEY);
+		}
+
+		// ===== 图床上传 =====
+		function extractImgUrl(data) {
+			if (!data) return "";
+			if (typeof data === "string") return data;
+			var d = data.data || data;
+			return d.src || d.url || d.link || d.absolute_url || d.full_url || d.pathname || "";
+		}
+		async function uploadToImgbed(file) {
+			var fd = new FormData();
+			fd.append("file", file, file.name);
+			var base = (IMGBED_URL || "").replace(/\/+$/, "");
+			var url =
+				base + "/upload?returnFormat=full&uploadNameType=origin&authCode=" +
+				encodeURIComponent(IMGBED_AUTH) + "&uploadFolder=" + encodeURIComponent(IMGBED_FOLDER || "");
+			var r = await fetch(url, { method: "POST", body: fd });
+			if (!r.ok) throw new Error("上传失败 HTTP " + r.status);
+			var data;
+			try { data = await r.json(); } catch (e) { throw new Error("图床返回非 JSON（可能 CORS 拦截）"); }
+			console.log("[日常吐槽] 图床返回:", data);
+			// 失败态
+			if (data && (data.result === "failed" || data.status === "error")) {
+				throw new Error(data.message || "图床拒绝上传");
+			}
+			var u = extractImgUrl(data);
+			if (!u) throw new Error("无法从图床响应解析图片 URL（见控制台）");
+			return u;
+		}
+
+		// ===== 数据序列化 =====
+		function findArrayRange(source, varName) {
+			var kwIdx = source.indexOf(varName);
+			if (kwIdx < 0) return null;
+			var eqIdx = source.indexOf("=", kwIdx);
+			if (eqIdx < 0) return null;
+			var bracketIdx = source.indexOf("[", eqIdx);
+			if (bracketIdx < 0) return null;
+			var depth = 0, inStr = false, strCh = "";
+			for (var i = bracketIdx; i < source.length; i++) {
+				var c = source[i];
+				if (inStr) {
+					if (c === "\\") { i++; continue; }
+					if (c === strCh) inStr = false;
+					continue;
+				}
+				if (c === '"' || c === "'" || c === "`") { inStr = true; strCh = c; continue; }
+				if (c === "[") depth++;
+				else if (c === "]") {
+					depth--;
+					if (depth === 0) return { start: bracketIdx, end: i + 1 };
+				}
+			}
+			return null;
+		}
+		function serializeToSource(originalSource, newItems, varName) {
+			var range = findArrayRange(originalSource, varName);
+			if (!range) throw new Error("源文件中未找到 `" + varName + " = [...]` 数组");
+			var headStart = originalSource.lastIndexOf("=", range.start) + 1;
+			var arrJson = JSON.stringify(newItems, null, 2);
+			var head = originalSource.substring(headStart, range.start);
+			var tail = originalSource.substring(range.end);
+			return originalSource.substring(0, headStart) + head + arrJson + tail;
+		}
+		function utf8ToBase64(s) { return btoa(unescape(encodeURIComponent(s))); }
+		function base64ToUtf8(b64) { return decodeURIComponent(escape(atob(b64.replace(/\n/g, "")))); }
+
+		// ===== GitHub API =====
+		async function loadRemote() {
+			var token = getPat();
+			if (!token) { setStatus($("dg-editor-status"), "请先填写 GitHub PAT", "error"); return; }
+			setStatus($("dg-editor-status"), "正在从 GitHub 加载...", "");
+			state.loading = true;
+			try {
+				var r = await fetch(API_FILE_URL, {
+					headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token },
+				});
+				if (!r.ok) {
+					var err = await r.json().catch(function () { return {}; });
+					throw new Error("加载失败 " + r.status + "： " + (err.message || r.statusText));
+				}
+				var file = await r.json();
+				state.sha = file.sha;
+				state.sourceContent = base64ToUtf8(file.content || "");
+				var range = findArrayRange(state.sourceContent, DATA_VAR);
+				if (!range) throw new Error("源文件格式异常，找不到 " + DATA_VAR + " 数组");
+				var arrLiteral = state.sourceContent.substring(range.start, range.end);
+				var parsed;
+				try { parsed = new Function("return (" + arrLiteral + ");")(); }
+				catch (parseErr) { throw new Error("解析数组失败：" + parseErr.message); }
+				if (!Array.isArray(parsed)) throw new Error("解析结果不是数组");
+				state.items = parsed;
+				setStatus($("dg-editor-status"), "已加载 " + state.items.length + " 条 · SHA " + state.sha.slice(0, 7), "ok");
+				renderList();
+			} catch (e) {
+				setStatus($("dg-editor-status"), "❌ " + e.message, "error");
+			} finally {
+				state.loading = false;
+			}
+		}
+
+		async function saveRemote() {
+			var token = getPat();
+			if (!token) { setStatus($("dg-editor-foot-status"), "请先填写 GitHub PAT", "error"); return; }
+			if (state.saving) return;
+			state.saving = true;
+			var saveBtn = $("dg-editor-save");
+			saveBtn.disabled = true;
+			setStatus($("dg-editor-foot-status"), "正在重新拉取最新 sha 防冲突...", "");
+			try {
+				var r1 = await fetch(API_FILE_URL, {
+					headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token },
+				});
+				if (!r1.ok) {
+					var err1 = await r1.json().catch(function () { return {}; });
+					throw new Error("拉取 sha 失败 " + r1.status + "：" + (err1.message || r1.statusText));
+				}
+				var file = await r1.json();
+				var latestSha = file.sha;
+				var latestSource = base64ToUtf8(file.content || "");
+				if (latestSha !== state.sha) {
+					var remoteRange = findArrayRange(latestSource, DATA_VAR);
+					var differs = false;
+					if (remoteRange) {
+						try {
+							var remoteArr = new Function("return (" + latestSource.substring(remoteRange.start, remoteRange.end) + ");")();
+							differs = JSON.stringify(remoteArr) !== JSON.stringify(state.items);
+						} catch (_e) { differs = true; }
+					}
+					if (differs) {
+						var overwrite = confirm(
+							"⚠️ 远端文件已于「你加载后」被修改。\n\n" +
+							"点击「确定」用本地版本覆盖远端；\n" +
+							"点击「取消」放弃保存，先点「加载远端」重新拉取。"
+						);
+						if (!overwrite) {
+							setStatus($("dg-editor-foot-status"), "已取消保存。请先「加载远端」同步最新数据。", "");
+							return;
+						}
+					}
+				}
+				state.sha = latestSha;
+				var newSource = serializeToSource(latestSource, state.items, DATA_VAR);
+				var newContent = utf8ToBase64(newSource);
+				setStatus($("dg-editor-foot-status"), "正在提交到 GitHub...", "");
+				var r2 = await fetch(
+					"https://api.github.com/repos/FeiZhouHeShang/blog/contents/src/data/daily-grumble.ts",
+					{
+						method: "PUT",
+						headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token, "Content-Type": "application/json" },
+						body: JSON.stringify({
+							message: "chore(daily-grumble): update via web editor (" + state.items.length + " items)",
+							content: newContent,
+							sha: latestSha,
+							branch: "main",
+						}),
+					}
+				);
+				if (!r2.ok) {
+					var err2 = await r2.json().catch(function () { return {}; });
+					throw new Error("提交失败 " + r2.status + "：" + (err2.message || r2.statusText));
+				}
+				var result = await r2.json();
+				state.sha = result.content.sha;
+				state.sourceContent = newSource;
+				setStatus($("dg-editor-foot-status"), "✅ 已提交！Cloudflare 部署约 1 分钟后刷新可见", "ok");
+				var commitsLink = $("dg-editor-commits");
+				if (commitsLink) commitsLink.style.display = "";
+			} catch (e) {
+				setStatus($("dg-editor-foot-status"), "❌ " + e.message, "error");
+			} finally {
+				state.saving = false;
+				saveBtn.disabled = false;
+			}
+		}
+
+		// ===== 图片预览渲染 =====
+		function renderImagePreview(rowEl) {
+			var rowId = rowEl.getAttribute("data-row-id");
+			var preview = rowEl.querySelector("[data-img-preview]");
+			if (!preview) return;
+			var imgs = rowImages[rowId] || [];
+			preview.innerHTML = imgs.length
+				? imgs.map(function (src, i) {
+					return '<div class="dg-thumb"><img src="' + escHtml(src) + '" alt="" onerror="this.style.display=\'none\'"/>' +
+						'<button type="button" class="dg-thumb-x" data-img-remove="' + i + '" title="移除">×</button></div>';
+				}).join("")
+				: '<span class="dg-img-empty">还没有图片</span>';
+		}
+		async function uploadFiles(rowEl, files) {
+			var rowId = rowEl.getAttribute("data-row-id");
+			if (!rowImages[rowId]) rowImages[rowId] = [];
+			var tip = rowEl.querySelector("[data-img-tip]");
+			var btn = rowEl.querySelector('[data-act="upload-img"]');
+			if (btn) btn.disabled = true;
+			var done = 0;
+			if (tip) { tip.classList.remove("is-error"); tip.textContent = "上传中 0/" + files.length; }
+			try {
+				for (var i = 0; i < files.length; i++) {
+					var url = await uploadToImgbed(files[i]);
+					rowImages[rowId].push(url);
+					done++;
+					if (tip) tip.textContent = "上传中 " + done + "/" + files.length;
+					renderImagePreview(rowEl);
+				}
+				if (tip) tip.textContent = "已上传 " + done + " 张";
+			} catch (e) {
+				if (tip) { tip.classList.add("is-error"); tip.textContent = "❌ " + e.message; }
+			} finally {
+				if (btn) btn.disabled = false;
+			}
+		}
+
+		// ===== 列表渲染 =====
+		function renderList() {
+			var list = $("dg-editor-list");
+			if (!list) return;
+			$("dg-editor-count").textContent = state.items.length;
+			if (state.items.length === 0) {
+				list.innerHTML = '<div class="dg-editor-empty">暂无吐槽，点击上方「+ 新增吐槽」开始</div>';
+				return;
+			}
+			var html = state.items.map(function (it) {
+				var isEditing = state.editingId === it.id;
+				if (isEditing) {
+					return '<div class="dg-row is-editing" data-row-id="' + escHtml(it.id) + '">' + renderForm(it) + "</div>";
+				}
+				var imgCount = (it.images || []).length;
+				var tagsHtml = (it.tags || []).map(function (t) {
+					return '<span class="dg-row-badge" style="background:var(--primary,#6366f1);">#' + escHtml(t) + "</span>";
+				}).join("");
+				return (
+					'<div class="dg-row" data-row-id="' + escHtml(it.id) + '">' +
+						'<div class="dg-row-info">' +
+							(it.pinned ? '<span class="dg-row-badge" style="background:#f59e0b;">📌 置顶</span>' : '') +
+							'<div class="dg-row-title">' + escHtml((it.content || "(空)").slice(0, 60)) + "</div>" +
+							'<div class="dg-row-meta">' +
+								(it.date ? "<span>🕒 " + escHtml(it.date) + "</span>" : "") +
+								(it.location ? "<span>📍 " + escHtml(it.location) + "</span>" : "") +
+								(imgCount ? "<span>🖼 " + imgCount + " 图</span>" : "") +
+								tagsHtml +
+							"</div>" +
+						"</div>" +
+						'<div class="dg-row-actions">' +
+							'<button type="button" class="dg-row-act" data-act="edit" data-id="' + escHtml(it.id) + '">编辑</button>' +
+							'<button type="button" class="dg-row-act dg-row-act-danger" data-act="del" data-id="' + escHtml(it.id) + '">删除</button>' +
+						"</div>" +
+					"</div>"
+				);
+			}).join("");
+			list.innerHTML = html;
+			// 编辑态：初始化图片 state + 预览
+			state.items.forEach(function (it) {
+				if (state.editingId === it.id) {
+					var rowEl = list.querySelector('.dg-row[data-row-id="' + cssEscape(it.id) + '"]');
+					if (rowEl) {
+						rowImages[it.id] = (it.images || []).slice();
+						renderImagePreview(rowEl);
+					}
+				}
+			});
+		}
+		function cssEscape(s) {
+			return String(s).replace(/["\\]/g, "\\$&");
+		}
+
+		function renderForm(item) {
+			var tagsVal = (item.tags || []).join(", ");
+			var dateVal = item.date || nowLocal();
+			return (
+				'<div class="dg-form-grid">' +
+					'<div class="dg-form-field dg-form-full">' +
+						'<label>正文（支持 Markdown）*</label>' +
+						'<textarea class="dg-editor-textarea" data-f="content" rows="5" placeholder="说点什么…">' + escHtml(item.content || "") + "</textarea>" +
+					"</div>" +
+					'<div class="dg-form-field">' +
+						'<label>时间</label>' +
+						'<input type="text" class="dg-editor-input-sm" data-f="date" value="' + escHtml(dateVal) + '" placeholder="YYYY-MM-DD HH:mm" />' +
+					"</div>" +
+					'<div class="dg-form-field">' +
+						'<label>地点</label>' +
+						'<input type="text" class="dg-editor-input-sm" data-f="location" value="' + escHtml(item.location || "") + '" placeholder="如 杭州" />' +
+					"</div>" +
+					'<div class="dg-form-field dg-form-full">' +
+						'<label>标签（逗号分隔）</label>' +
+						'<input type="text" class="dg-editor-input-sm" data-f="tags" value="' + escHtml(tagsVal) + '" placeholder="测试, 吐槽" />' +
+					"</div>" +
+					'<div class="dg-form-field dg-form-full">' +
+						'<label>图片（上传到图床）</label>' +
+						'<div class="dg-img-preview" data-img-preview></div>' +
+						'<div class="dg-img-actions">' +
+							'<button type="button" class="dg-editor-btn dg-form-upload-btn" data-act="upload-img">📤 上传图片</button>' +
+							'<input type="file" accept="image/*" multiple hidden data-img-input />' +
+							'<span class="dg-editor-label-tip" data-img-tip>支持多张 · 直传图床</span>' +
+						"</div>" +
+					"</div>" +
+					'<div class="dg-form-field">' +
+						'<label>唯一 ID</label>' +
+						'<input type="text" class="dg-editor-input-sm" data-f="id" value="' + escHtml(item.id || "") + '" />' +
+					"</div>" +
+					'<div class="dg-form-field dg-form-check">' +
+						'<label><input type="checkbox" data-f="pinned" ' + (item.pinned ? "checked" : "") + " /> 置顶</label>" +
+					"</div>" +
+					'<div class="dg-form-actions">' +
+						'<button type="button" class="dg-editor-btn" data-act="cancel">取消</button>' +
+						'<button type="button" class="dg-editor-btn dg-editor-btn-primary" data-act="save-row">保存这条</button>' +
+					"</div>" +
+				"</div>"
+			);
+		}
+
+		function collectForm(rowEl) {
+			var item = { id: "", content: "", images: [] };
+			rowEl.querySelectorAll("[data-f]").forEach(function (inp) {
+				var k = inp.getAttribute("data-f");
+				var v;
+				if (inp.type === "checkbox") v = inp.checked;
+				else v = inp.value;
+				if (k === "tags") v = v.split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+				if (k === "images") return; // 单独处理
+				item[k] = v;
+			});
+			var rowId = rowEl.getAttribute("data-row-id");
+			item.images = (rowImages[rowId] || []).slice();
+			// 清理可选空字段
+			if (!item.images || item.images.length === 0) delete item.images;
+			if (!item.tags || item.tags.length === 0) delete item.tags;
+			if (item.location === "" || item.location == null) delete item.location;
+			if (item.date === "" || item.date == null) delete item.date;
+			if (item.pinned === false || item.pinned == null) delete item.pinned;
+			return item;
+		}
+
+		// ===== 事件 =====
+		function openEditor() {
+			var dlg = $("dg-editor");
+			if (!dlg) return;
+			if (typeof dlg.showModal === "function") dlg.showModal();
+			else dlg.setAttribute("open", "");
+			var patInput = $("dg-editor-pat");
+			if (patInput) { patInput.value = getPat(); setTimeout(function () { patInput.focus(); }, 50); }
+			if (getPat() && state.items.length === 0 && !state.sourceContent) loadRemote();
+		}
+		function closeEditor() {
+			var dlg = $("dg-editor");
+			if (!dlg) return;
+			if (typeof dlg.close === "function") dlg.close();
+			else dlg.removeAttribute("open");
+			state.editingId = null;
+		}
+
+		function bind() {
+			var openBtn = $("dg-open-editor");
+			if (openBtn) openBtn.addEventListener("click", openEditor);
+			$("dg-editor-close")?.addEventListener("click", closeEditor);
+			$("dg-editor-cancel")?.addEventListener("click", closeEditor);
+			$("dg-editor")?.addEventListener("click", function (e) { if (e.target === $("dg-editor")) closeEditor(); });
+			$("dg-editor")?.addEventListener("cancel", function (e) { e.preventDefault(); closeEditor(); });
+
+			$("dg-editor-pat")?.addEventListener("input", function (e) { setPat(e.target.value); });
+			$("dg-editor-pat-toggle")?.addEventListener("click", function () {
+				var inp = $("dg-editor-pat"); if (!inp) return;
+				inp.type = inp.type === "password" ? "text" : "password";
+			});
+			$("dg-editor-pat-clear")?.addEventListener("click", function () {
+				if (!confirm("确定清除本地保存的 GitHub PAT？")) return;
+				setPat(""); var inp = $("dg-editor-pat"); if (inp) inp.value = "";
+				setStatus($("dg-editor-status"), "已清除本地 Token", "ok");
+			});
+
+			$("dg-editor-load")?.addEventListener("click", function () { state.editingId = null; loadRemote(); });
+			$("dg-editor-add")?.addEventListener("click", function () {
+				var newItem = { id: genId("grumble"), content: "", date: nowLocal(), images: [] };
+				state.items.unshift(newItem);
+				state.editingId = newItem.id;
+				renderList();
+			});
+			$("dg-editor-save")?.addEventListener("click", saveRemote);
+
+			// 列表点击（编辑/删除/上传按钮/移除图片）
+			$("dg-editor-list")?.addEventListener("click", function (e) {
+				// 移除图片
+				var rm = e.target.closest("[data-img-remove]");
+				if (rm) {
+					var rEl = rm.closest(".dg-row");
+					var rid = rEl.getAttribute("data-row-id");
+					var idx = parseInt(rm.getAttribute("data-img-remove"), 10);
+					if (rowImages[rid]) rowImages[rid].splice(idx, 1);
+					renderImagePreview(rEl);
+					return;
+				}
+				var btn = e.target.closest("[data-act]");
+				if (!btn) return;
+				var act = btn.getAttribute("data-act");
+				var id = btn.getAttribute("data-id");
+				var rowEl = btn.closest(".dg-row");
+				if (act === "edit") {
+					state.editingId = id; renderList();
+				} else if (act === "del") {
+					if (!confirm("确定删除这条吐槽？")) return;
+					state.items = state.items.filter(function (x) { return x.id !== id; });
+					if (state.editingId === id) state.editingId = null;
+					renderList();
+				} else if (act === "cancel") {
+					var item = state.items.find(function (x) { return x.id === state.editingId; });
+					if (item && !item.content) {
+						state.items = state.items.filter(function (x) { return x.id !== state.editingId; });
+					}
+					state.editingId = null; renderList();
+				} else if (act === "save-row") {
+					if (!rowEl) return;
+					var data = collectForm(rowEl);
+					if (!data.content || !data.content.trim()) { alert("请填写正文"); return; }
+					var idx = state.items.findIndex(function (x) { return x.id === state.editingId; });
+					if (idx >= 0) {
+						if (data.id !== state.editingId && state.items.some(function (x) { return x.id === data.id; })) {
+							alert("ID 已被占用：" + data.id); return;
+						}
+						state.items[idx] = data;
+					}
+					state.editingId = null; renderList();
+				} else if (act === "upload-img") {
+					var fileInput = rowEl && rowEl.querySelector("[data-img-input]");
+					if (fileInput) fileInput.click();
+				}
+			});
+
+			// 文件选择 → 上传
+			$("dg-editor-list")?.addEventListener("change", function (e) {
+				var inp = e.target.closest("[data-img-input]");
+				if (!inp) return;
+				var rowEl = inp.closest(".dg-row");
+				if (!rowEl) return;
+				var files = Array.from(inp.files || []);
+				if (!files.length) return;
+				uploadFiles(rowEl, files);
+				inp.value = "";
+			});
+		}
+
+		// ===== 初始化 =====
+		function init() {
+			// 从 seed 直接填充编辑器列表（无需先「加载远端」）
+			var seedEl = document.getElementById("dg-seed");
+			if (seedEl) {
+				try {
+					var seed = JSON.parse(seedEl.textContent || "[]");
+					if (Array.isArray(seed)) state.items = seed;
+				} catch (_e) {}
+			}
+			bind();
+			renderList();
+			// 公开列表的空状态
+			var emptyEl = document.querySelector("[data-dg-empty]");
+			if (emptyEl) emptyEl.style.display = state.items.length === 0 ? "" : "none";
+		}
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", init);
+		} else {
+			init();
+		}
+		if (typeof window !== "undefined" && window.Astro && window.Astro.on) {
+			window.Astro.on("page-load", init);
+		}
+	})();
+</script>
