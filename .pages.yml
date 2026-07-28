@@ -1,8 +1,21 @@
 # PagesCMS 配置 - Firefly 博客
 # 基于 PagesCMS v2.x 官方 schema 编写
 # 文档: https://pagescms.org/docs/configuration/
+# 注意：本文件必须位于仓库根目录（与 package.json 同级），PagesCMS 才能扫描到。
 
+# ============================================================
+# 📁 媒体资源库（按功能分目录，后台「站点资源」可见）
+# input  = 仓库内目录；output = 站点访问 URL 前缀
+# 当前博客图片多走图床，后续转本地时按对应目录落盘即可
+# ============================================================
 media:
+  # 站点全量资源（兜底查看）
+  - name: site-assets
+    label: 站点资源(全部)
+    input: public/assets
+    output: /assets
+    categories: [image, video]
+
   # 文章配图 - 上传到文章目录的 images 子文件夹
   - name: post-images
     label: 文章配图
@@ -10,19 +23,86 @@ media:
     output: /images
     categories: [image]
 
-  # public 静态资源 - 封面图、音乐封面等
-  - name: assets
-    label: 站点资源
-    input: public/assets
-    output: /assets
-    categories: [image]
-
   # 头图 / 壁纸
   - name: banner
     label: 站点头图
     input: public/assets/images
     output: /assets/images
+    categories: [image, video]
+
+  # ---- 按功能分目录 ----
+  - name: media-home
+    label: 首页资源
+    input: public/assets/images/home
+    output: /assets/images/home
     categories: [image]
+
+  - name: media-profile
+    label: 个人信息头像
+    input: public/assets/images/profile
+    output: /assets/images/profile
+    categories: [image]
+
+  - name: media-movies-games
+    label: 影视游戏封面
+    input: public/assets/images/movies-games
+    output: /assets/images/movies-games
+    categories: [image]
+
+  - name: media-moments
+    label: 日常吐槽图片
+    input: public/assets/images/moments
+    output: /assets/images/moments
+    categories: [image]
+
+  - name: media-gallery
+    label: 相册图片
+    input: public/assets/images/gallery
+    output: /assets/images/gallery
+    categories: [image]
+
+  - name: media-friends
+    label: 友链头像
+    input: public/assets/images/friends
+    output: /assets/images/friends
+    categories: [image]
+
+  - name: media-guestbook
+    label: 留言板图片
+    input: public/assets/images/guestbook
+    output: /assets/images/guestbook
+    categories: [image]
+
+  - name: media-sponsor
+    label: 打赏二维码
+    input: public/assets/images/sponsor
+    output: /assets/images/sponsor
+    categories: [image]
+
+  - name: media-about
+    label: 关于页图片
+    input: public/assets/images/about
+    output: /assets/images/about
+    categories: [image]
+
+  - name: media-music
+    label: 音乐封面
+    input: public/assets/music/cover
+    output: /assets/music/cover
+    categories: [image]
+
+  - name: media-pio
+    label: 看板娘模型
+    input: public/assets/images/pio
+    output: /assets/images/pio
+    categories: [image]
+
+  # 视频资源
+  - name: site-videos
+    label: 站点视频
+    input: public/assets/videos
+    output: /assets/videos
+    categories: [video]
 
 content:
   # ============================================================
@@ -215,6 +295,36 @@ content:
             label: 正文
             type: rich-text
 
+      # 隐私政策
+      - name: privacy
+        label: 🔒 隐私政策
+        type: file
+        path: src/content/spec/privacy.md
+        format: yaml-frontmatter
+        fields:
+          - name: title
+            label: 页面标题
+            type: string
+            default: 隐私政策
+          - name: body
+            label: 正文
+            type: rich-text
+
+      # 用户协议
+      - name: user-agreement
+        label: 📜 用户协议
+        type: file
+        path: src/content/spec/user-agreement.md
+        format: yaml-frontmatter
+        fields:
+          - name: title
+            label: 页面标题
+            type: string
+            default: 用户协议
+          - name: body
+            label: 正文
+            type: rich-text
+
   # ============================================================
   # ⚙️ 站点设置
   # ============================================================
@@ -228,14 +338,14 @@ content:
         type: file
         path: src/config/siteConfig.ts
         format: code
-        description: 站点标题、URL、主题色、分页、Bangumi 等核心设置
+        description: 站点标题、URL、主题色、分页、归档统计、图片优化等核心设置
 
       - name: profile-config
         label: 👤 个人信息
         type: file
-        path: src/config/profileConfig.ts
+        path: src/config/homeConfig.ts
         format: code
-        description: 头像、昵称、签名、社交链接等个人资料配置
+        description: 头像、昵称、签名、社交链接、技能、首页作品等个人资料与首页配置
 
       - name: announcement-config
         label: 📢 公告栏
@@ -250,6 +360,20 @@ content:
         path: src/config/licenseConfig.ts
         format: code
         description: 文章底部版权声明（如 CC BY-NC-SA 4.0）
+
+      - name: calendar-config
+        label: 📅 日历配置
+        type: file
+        path: src/config/calendarConfig.ts
+        format: code
+        description: 日历页面配置（节假日、生日、日程等）
+
+      - name: ai-search-config
+        label: 🤖 AI 搜索配置
+        type: file
+        path: src/config/aiSearchConfig.ts
+        format: code
+        description: AI 语义搜索的模型、Embedding、向量索引名称等
 
   # ============================================================
   # 🎨 布局与外观
@@ -278,14 +402,7 @@ content:
         type: file
         path: src/config/footerConfig.ts
         format: code
-        description: 页脚开关控制
-
-      - name: footer-html
-        label: 📏 页脚 HTML
-        type: file
-        path: src/config/FooterConfig.html
-        format: code
-        description: 页脚自定义 HTML 内容（备案号、版权信息等）
+        description: 页脚开关控制 + 自定义 HTML 内容（备案号、版权信息等）
 
       - name: font-config
         label: 🔤 字体设置
@@ -306,7 +423,7 @@ content:
         type: file
         path: src/config/backgroundWallpaper.ts
         format: code
-        description: 全屏壁纸、横幅壁纸、视频背景、水波纹、渐变等背景特效
+        description: 全屏壁纸、横幅壁纸、视频背景、水波纹、渐变等背景特效（当前未启用）
 
       - name: expressive-code-config
         label: 💻 代码块样式
@@ -358,12 +475,19 @@ content:
         format: code
         description: 友链列表（站点名、头像、描述、链接、标签、权重）
 
+      - name: guestbook-config
+        label: 📬 留言板配置
+        type: file
+        path: src/config/guestbookConfig.ts
+        format: code
+        description: 留言板规则公告等配置
+
       - name: effects-config
         label: 🌸 樱花特效
         type: file
         path: src/config/effectsConfig.ts
         format: code
-        description: 樱花飘落动画的数量、速度、尺寸、透明度等参数
+        description: 樱花飘落动画的数量、速度、尺寸、透明度等参数（当前未启用）
 
       - name: gallery-config
         label: 🖼️ 相册配置
@@ -385,6 +509,13 @@ content:
         path: src/config/plantumlConfig.ts
         format: code
         description: PlantUML 服务器地址和明暗主题配置
+
+      - name: collections-api-config
+        label: 🧰 工具导航/收藏 API
+        type: file
+        path: src/config/collectionsApiConfig.ts
+        format: code
+        description: 工具导航页的收藏 API 分组与条目配置
 
 settings:
   content:
