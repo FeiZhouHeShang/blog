@@ -266,27 +266,35 @@ const STAR_PATH =
 					</div>
 					<p id="mg-editor-status" class="mg-editor-status">未加载远端数据</p>
 
-					<!-- TMDB API Key：用于智能匹配（搜名称→自动填封面/标题/分类） -->
-					<label class="mg-editor-label" style="margin-top: 0.85rem;">
-						<span>TMDB API Key <span style="font-weight:400;color:var(--content-meta);font-size:0.7rem;">(用于智能匹配，可选)</span></span>
-						<span class="mg-editor-label-tip">
-							仅存浏览器 localStorage
-							· 支持 v3 key 或 v4 读令牌
-							· <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" class="mg-editor-link">TMDB API 设置</a>
-						</span>
-					</label>
-					<div class="mg-editor-token-row">
-						<input
-							type="password"
-							id="mg-editor-tmdb-key"
-							placeholder="TMDB v3 key（32 位 hex）或 v4 读令牌（eyJ...）"
-							autocomplete="off"
-							spellcheck="false"
-							class="mg-editor-input"
-						/>
-						<button type="button" id="mg-editor-tmdb-toggle" class="mg-editor-mini" title="显示/隐藏">👁</button>
-						<button type="button" id="mg-editor-tmdb-clear" class="mg-editor-mini mg-editor-mini-danger" title="清除本地保存的 TMDB key">🗑</button>
-					</div>
+					<!-- TMDB 智能匹配：默认走烘焙令牌，UI 收起在「高级设置」里；需要时展开可临时替换 -->
+					<details class="mg-editor-advanced" id="mg-editor-tmdb-details">
+						<summary>
+							<span>⚙️ 高级设置 · TMDB 智能匹配</span>
+							<span class="mg-editor-advanced-hint" id="mg-editor-tmdb-hint">使用预置令牌</span>
+						</summary>
+						<div class="mg-editor-advanced-body">
+							<label class="mg-editor-label">
+								<span>TMDB API Key <span style="font-weight:400;color:var(--content-meta);font-size:0.7rem;">(留空则使用预置令牌)</span></span>
+								<span class="mg-editor-label-tip">
+									仅存浏览器 localStorage
+									· 支持 v3 key 或 v4 读令牌
+									· <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" class="mg-editor-link">TMDB API 设置</a>
+								</span>
+							</label>
+							<div class="mg-editor-token-row">
+								<input
+									type="password"
+									id="mg-editor-tmdb-key"
+									placeholder="留空使用预置令牌；或填自己的 v3 key / v4 读令牌"
+									autocomplete="off"
+									spellcheck="false"
+									class="mg-editor-input"
+								/>
+								<button type="button" id="mg-editor-tmdb-toggle" class="mg-editor-mini" title="显示/隐藏">👁</button>
+								<button type="button" id="mg-editor-tmdb-clear" class="mg-editor-mini mg-editor-mini-danger" title="清除本地保存的 TMDB key">🗑</button>
+							</div>
+						</div>
+					</details>
 				</section>
 
 				<!-- 工具条 -->
@@ -593,6 +601,59 @@ const STAR_PATH =
 	[data-mg-editor] .mg-editor-mini-danger:hover {
 		background: rgba(244, 63, 94, 0.1);
 		border-color: rgba(244, 63, 94, 0.4);
+	}
+
+	/* 高级设置折叠区（默认收起，隐藏 TMDB key 输入框） */
+	[data-mg-editor] .mg-editor-advanced {
+		margin-top: 0.85rem;
+		border: 1px solid var(--line-divider, #e5e7eb);
+		border-radius: 0.6rem;
+		background: rgba(0, 0, 0, 0.02);
+		overflow: hidden;
+	}
+	[data-mg-editor] .mg-editor-advanced > summary {
+		list-style: none;
+		cursor: pointer;
+		padding: 0.55rem 0.85rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.82rem;
+		color: var(--content-meta, #666);
+		user-select: none;
+		transition: background 0.15s;
+	}
+	[data-mg-editor] .mg-editor-advanced > summary::-webkit-details-marker { display: none; }
+	[data-mg-editor] .mg-editor-advanced > summary::before {
+		content: "▸";
+		display: inline-block;
+		transition: transform 0.2s;
+		color: var(--content-meta, #999);
+		margin-right: 0.25rem;
+	}
+	[data-mg-editor] .mg-editor-advanced[open] > summary::before {
+		transform: rotate(90deg);
+	}
+	[data-mg-editor] .mg-editor-advanced > summary:hover {
+		background: rgba(99, 102, 241, 0.06);
+	}
+	[data-mg-editor] .mg-editor-advanced-hint {
+		font-size: 0.72rem;
+		color: var(--content-meta, #999);
+		font-weight: 400;
+	}
+	[data-mg-editor] .mg-editor-advanced-hint.has-user {
+		color: #4f46e5;
+	}
+	[data-mg-editor] .mg-editor-advanced-body {
+		padding: 0.85rem 0.85rem 0.5rem;
+		border-top: 1px solid var(--line-divider, #e5e7eb);
+	}
+	@media (prefers-color-scheme: dark) {
+		[data-mg-editor] .mg-editor-advanced {
+			background: rgba(255, 255, 255, 0.03);
+		}
 	}
 
 	[data-mg-editor] .mg-editor-btn {
@@ -1590,9 +1651,19 @@ const STAR_PATH =
 				patInput.value = getPat();
 				setTimeout(function () { patInput.focus(); }, 50);
 			}
-			// 自动填 TMDB key
+			// TMDB 智能匹配：默认收起，按钮 hint 提示当前用的哪把 key
 			var tmdbInput = $("mg-editor-tmdb-key");
+			var tmdbHint = $("mg-editor-tmdb-hint");
 			if (tmdbInput) tmdbInput.value = getTmdbKey();
+			if (tmdbHint) {
+				if (localStorage.getItem(TMDB_KEY_STORAGE)) {
+					tmdbHint.textContent = "使用本地自定义令牌";
+					tmdbHint.classList.add("has-user");
+				} else {
+					tmdbHint.textContent = "使用预置令牌";
+					tmdbHint.classList.remove("has-user");
+				}
+			}
 			// 第一次打开若本地已有 token 但未加载，则自动加载
 			if (getPat() && state.items.length === 0 && !state.sourceContent) {
 				loadRemote();
