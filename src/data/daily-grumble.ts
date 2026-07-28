@@ -26,16 +26,14 @@ export interface DailyGrumble {
 
 export const dailyGrumbles: DailyGrumble[] = [
   {
-    "id": "test-upload-image",
-    "content": "吐槽 测试上传图片\n\n这是一条测试吐槽，用来验证图片上传功能。\n点右上角「编辑列表」→ 新增条目，在「图片」栏上传图片到图床即可。",
+    "id": "grumble-627o",
+    "content": "测试",
     "images": [
-      "https://tc.d15.cc.cd/file/日常吐槽/ZEWOMAC4JLYM76OT03SFF6S(3).png"
+      "https://tc.d15.cc.cd/file/日常吐槽/_YM0Y__NEN9G_DQ_VQ_RTWM(1).png"
     ],
-    "date": "2026-07-28 19:41",
-    "location": "中国",
+    "date": "2026-07-28 23:00",
     "tags": [
-      "测试",
-      "吐槽"
+      "测试"
     ]
   }
 ];
