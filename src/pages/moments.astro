@@ -145,7 +145,7 @@ const DATA_VAR = "dailyGrumbles";
 					<label class="dg-editor-label">
 						<span>GitHub Personal Access Token</span>
 						<span class="dg-editor-label-tip">
-							仅存浏览器 localStorage
+							本次浏览会话有效（关闭浏览器需重输）
 							· <a href={PAT_HELP_URL} target="_blank" rel="noopener noreferrer" class="dg-editor-link">生成 fine-grained PAT</a>
 						</span>
 					</label>
@@ -159,10 +159,15 @@ const DATA_VAR = "dailyGrumbles";
 							class="dg-editor-input"
 						/>
 						<button type="button" id="dg-editor-pat-toggle" class="dg-editor-mini" title="显示/隐藏">👁</button>
-						<button type="button" id="dg-editor-pat-clear" class="dg-editor-mini dg-editor-mini-danger" title="清除本地保存的 Token">🗑</button>
+						<button type="button" id="dg-editor-pat-validate" class="dg-editor-btn dg-editor-btn-secondary" title="校验并记住到本次浏览会话">✅ 验证令牌</button>
+						<button type="button" id="dg-editor-pat-clear" class="dg-editor-mini dg-editor-mini-danger" title="退出本次会话（清除令牌）">🗑</button>
 						<button type="button" id="dg-editor-load" class="dg-editor-btn dg-editor-btn-secondary">🔄 加载远端</button>
 					</div>
-					<p id="dg-editor-status" class="dg-editor-status">未加载远端数据</p>
+					<div class="dg-editor-token-meta">
+						<span id="dg-session-chip" class="dg-session-chip is-lock">🔒 未验证</span>
+						<span class="dg-editor-label-tip">验证后，本次浏览内保存/删除均无需再次输入</span>
+					</div>
+					<p id="dg-editor-status" class="dg-editor-status">未验证令牌</p>
 					<p id="dg-imgbed-status" class="dg-editor-status" data-imgbed-status></p>
 				</section>
 
@@ -368,6 +373,10 @@ const DATA_VAR = "dailyGrumbles";
 	[data-dg-editor] .dg-editor-status { font-size: 0.72rem; margin: 0.5rem 0 0; color: var(--content-meta, #6b7280); }
 	[data-dg-editor] .dg-editor-status.is-error { color: #f43f5e; }
 	[data-dg-editor] .dg-editor-status.is-ok { color: #10b981; }
+	[data-dg-editor] .dg-editor-token-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
+	[data-dg-editor] .dg-session-chip { font-size: 0.72rem; padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid transparent; font-weight: 500; }
+	[data-dg-editor] .dg-session-chip.is-ok { color: #047857; background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); }
+	[data-dg-editor] .dg-session-chip.is-lock { color: #b45309; background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.35); }
 
 	[data-dg-editor] .dg-editor-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; border-bottom: 1px solid var(--line-divider, #e5e7eb); }
 	[data-dg-editor] .dg-editor-count { font-size: 0.78rem; color: var(--content-meta, #6b7280); }
@@ -583,12 +592,36 @@ const DATA_VAR = "dailyGrumbles";
 			el.classList.remove("is-error", "is-ok");
 			if (kind) el.classList.add("is-" + kind);
 		}
+		// 会话令牌：存 sessionStorage —— 本次浏览（同一 tab）有效，关闭/重开浏览器即清空需重输
 		function getPat() {
-			return localStorage.getItem(PAT_STORAGE_KEY) || "";
+			return sessionStorage.getItem(PAT_STORAGE_KEY) || "";
 		}
 		function setPat(v) {
-			if (v) localStorage.setItem(PAT_STORAGE_KEY, v);
-			else localStorage.removeItem(PAT_STORAGE_KEY);
+			if (v) sessionStorage.setItem(PAT_STORAGE_KEY, v);
+			else sessionStorage.removeItem(PAT_STORAGE_KEY);
+		}
+		// 校验令牌：调 GitHub /user，200 即有效（fine-grained PAT 需 contents:read/write）
+		async function validatePat(token) {
+			var r = await fetch("https://api.github.com/user", {
+				headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" },
+			});
+			if (!r.ok) {
+				var err = await r.json().catch(function () { return {}; });
+				throw new Error("令牌无效（" + r.status + "：" + (err.message || r.statusText) + "）");
+			}
+			return true;
+		}
+		// 渲染会话状态小标：已验证 / 未验证
+		function renderSessionState() {
+			var chip = $("dg-session-chip");
+			if (!chip) return;
+			if (getPat()) {
+				chip.textContent = "🔓 本次浏览已验证";
+				chip.className = "dg-session-chip is-ok";
+			} else {
+				chip.textContent = "🔒 未验证";
+				chip.className = "dg-session-chip is-lock";
+			}
 		}
 
 		// ===== 图床上传 =====
@@ -1011,6 +1044,7 @@ const DATA_VAR = "dailyGrumbles";
 			var patInput = $("dg-editor-pat");
 			if (patInput) { patInput.value = getPat(); setTimeout(function () { patInput.focus(); }, 50); }
 			refreshImgbedStatus();
+			renderSessionState();
 			if (getPat() && state.items.length === 0 && !state.sourceContent) loadRemote();
 		}
 		function closeEditor() {
@@ -1029,15 +1063,38 @@ const DATA_VAR = "dailyGrumbles";
 			$("dg-editor")?.addEventListener("click", function (e) { if (e.target === $("dg-editor")) closeEditor(); });
 			$("dg-editor")?.addEventListener("cancel", function (e) { e.preventDefault(); closeEditor(); });
 
-			$("dg-editor-pat")?.addEventListener("input", function (e) { setPat(e.target.value); });
+			$("dg-editor-pat")?.addEventListener("input", function (e) {
+				// 修改输入即视为未验证，清除会话令牌，需重新点「验证令牌」
+				if (sessionStorage.getItem(PAT_STORAGE_KEY)) {
+					sessionStorage.removeItem(PAT_STORAGE_KEY);
+					renderSessionState();
+				}
+			});
 			$("dg-editor-pat-toggle")?.addEventListener("click", function () {
 				var inp = $("dg-editor-pat"); if (!inp) return;
 				inp.type = inp.type === "password" ? "text" : "password";
 			});
+			$("dg-editor-pat-validate")?.addEventListener("click", async function () {
+				var inp = $("dg-editor-pat");
+				if (!inp || !inp.value.trim()) { setStatus($("dg-editor-status"), "请先填写 GitHub PAT", "error"); return; }
+				this.disabled = true;
+				setStatus($("dg-editor-status"), "正在校验令牌...", "");
+				try {
+					await validatePat(inp.value.trim());
+					setPat(inp.value.trim());
+					setStatus($("dg-editor-status"), "✓ 令牌有效，本次浏览期间免重复输入", "ok");
+					renderSessionState();
+				} catch (e) {
+					setStatus($("dg-editor-status"), "✗ " + e.message, "error");
+				} finally {
+					this.disabled = false;
+				}
+			});
 			$("dg-editor-pat-clear")?.addEventListener("click", function () {
-				if (!confirm("确定清除本地保存的 GitHub PAT？")) return;
+				if (!confirm("确定退出本次浏览会话（清除已验证的令牌）？")) return;
 				setPat(""); var inp = $("dg-editor-pat"); if (inp) inp.value = "";
-				setStatus($("dg-editor-status"), "已清除本地 Token", "ok");
+				setStatus($("dg-editor-status"), "已退出会话，下次需重新验证", "ok");
+				renderSessionState();
 			});
 
 			$("dg-editor-load")?.addEventListener("click", function () { state.editingId = null; loadRemote(); });

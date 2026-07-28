@@ -4,7 +4,7 @@ published: 2026-07-23
 description: 基于 Astro、Svelte 和 Cloudflare Workers 的 Firefly 二次开发记录。
 tags: [博客, 二开, firefly]
 category: 学习文档
-pinned: true
+pinned: false
 draft: false
 ---
 

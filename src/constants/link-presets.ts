@@ -113,6 +113,11 @@ export const LinkPresets: { [key in LinkPreset]: NavBarLink } = {
 		url: "/movies-games/",
 		icon: "material-symbols:movie",
 	},
+	[LinkPreset.PostEditor]: {
+		name: "文章编辑器",
+		url: "/posts-editor/",
+		icon: "material-symbols:edit-document",
+	},
 	[LinkPreset.Music]: {
 		name: i18n(I18nKey.music),
 		url: "/music/",

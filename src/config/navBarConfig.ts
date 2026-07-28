@@ -24,7 +24,7 @@ const buildNavBarConfig = (): NavBarConfig => {
 	// [关键词: nav-posts] 文章下拉菜单
 	const postsNav: NavBarLink = {
 		...LinkPresets[LinkPreset.NavPosts],
-		children: [LinkPreset.Archive, LinkPreset.Categories, LinkPreset.PostList],
+		children: [LinkPreset.Archive, LinkPreset.Categories, LinkPreset.PostList, LinkPreset.PostEditor],
 	};
 
 	// [关键词: nav-friends] 交友互动下拉菜单
