@@ -3,6 +3,7 @@ import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import LeftSidebar from "@/components/layout/LeftSidebar.astro";
 import RightSidebar from "@/components/layout/RightSidebar.astro";
 import { moviesGames, type MediaItem, type MediaSection, type MediaStatus } from "@/data/movies-games";
+import { editorSecrets } from "@/config/editorSecrets";
 
 // 影视与游戏页（Bangumi 风格收藏墙）
 // 数据来源：src/data/movies-games.ts
@@ -224,7 +225,13 @@ const STAR_PATH =
 
 		<!-- ========== 前端编辑器模态框 ========== -->
 		<!-- 用 <dialog> 原生元素 + is:global 样式（动态注入的 innerHTML 走 [data-mg-editor] 限定） -->
-		<dialog id="mg-editor" data-mg-editor="" class="mg-editor-dialog">
+		<dialog
+			id="mg-editor"
+			data-mg-editor=""
+			class="mg-editor-dialog"
+			data-tmdb-default={editorSecrets.tmdbApiToken}
+			data-gh-default={editorSecrets.githubPat}
+		>
 			<div class="mg-editor-panel">
 				<!-- 头部 -->
 				<header class="mg-editor-head">
@@ -973,6 +980,13 @@ const STAR_PATH =
 			"https://github.com/settings/personal-access-tokens/new?description=movies-games-editor&contents=write";
 		var PAT_STORAGE_KEY = "__mg_pat__";
 		var TMDB_KEY_STORAGE = "__mg_tmdb_key__";
+
+		// 烘焙默认值（来自 src/config/editorSecrets.ts，经 data-* 属性传入）。
+		// 这些值已打包进客户端 JS（公开可见），仅用于免去 owner 每次手填。
+		var mgDialogEl = document.getElementById("mg-editor");
+		var TMDB_DEFAULT = (mgDialogEl && mgDialogEl.getAttribute("data-tmdb-default")) || "";
+		var GH_DEFAULT = (mgDialogEl && mgDialogEl.getAttribute("data-gh-default")) || "";
+		var TMDB_KEY_STORAGE = "__mg_tmdb_key__";
 		var TMDB_API_BASE = "https://api.themoviedb.org/3";
 		var TMDB_IMG_BASE = "https://image.tmdb.org/t/p";
 		// TMDB genre_id → 中文含义（用于智能匹配 section）
@@ -1053,14 +1067,15 @@ const STAR_PATH =
 			if (kind) el.classList.add("is-" + kind);
 		}
 		function getPat() {
-			return localStorage.getItem(PAT_STORAGE_KEY) || "";
+			// localStorage（手填）优先；否则回落到烘焙默认值
+			return localStorage.getItem(PAT_STORAGE_KEY) || GH_DEFAULT || "";
 		}
 		function setPat(v) {
 			if (v) localStorage.setItem(PAT_STORAGE_KEY, v);
 			else localStorage.removeItem(PAT_STORAGE_KEY);
 		}
 		function getTmdbKey() {
-			return localStorage.getItem(TMDB_KEY_STORAGE) || "";
+			return localStorage.getItem(TMDB_KEY_STORAGE) || TMDB_DEFAULT || "";
 		}
 		function setTmdbKey(v) {
 			if (v) localStorage.setItem(TMDB_KEY_STORAGE, v);
