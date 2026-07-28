@@ -33,7 +33,6 @@ export const dailyGrumbles: DailyGrumble[] = [
     "tags": [
       "测试",
       "吐槽"
-    ],
-    "pinned": true
+    ]
   }
 ];
