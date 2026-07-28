@@ -55,9 +55,25 @@ function statusLabel(item: MediaItem): string {
 	return STATUS_LABEL[item.status];
 }
 
+/**
+ * 编辑方式（双通道）：
+ *  1) 页面顶部「✏️ 编辑列表」按钮 → 弹出管理面板，可在前端增/删/改条目
+ *     输入 GitHub PAT 后点保存 → 浏览器直接调 GitHub Contents API
+ *     (GET 拿 sha → 替换数组字面量 → base64 → PUT)
+ *     PAT 仅存浏览器 localStorage，零后端。
+ *  2) 「在 GitHub 编辑」按钮 → 跳到 GitHub 网页编辑器（不熟 API 时用）
+ */
+
 // GitHub 编辑回链（与 git remote 对齐：FeiZhouHeShang/blog @ main）
 const EDIT_URL =
 	"https://github.com/FeiZhouHeShang/blog/edit/main/src/data/movies-games.ts";
+// GitHub Contents API（前端编辑器用）
+const API_FILE_URL =
+	"https://api.github.com/repos/FeiZhouHeShang/blog/contents/src/data/movies-games.ts?ref=main";
+const COMMIT_URL_BASE = "https://github.com/FeiZhouHeShang/blog/commits/main/src/data/movies-games.ts";
+// 推荐用 fine-grained PAT，只勾 Contents: Read and write for this repo
+const PAT_HELP_URL =
+	"https://github.com/settings/personal-access-tokens/new?description=movies-games-editor&contents=write";
 
 const STAR_PATH =
 	"M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z";
@@ -68,7 +84,7 @@ const STAR_PATH =
 	<RightSidebar slot="sidebar-right" />
 
 	<div class="mg-page-wrapper w-full rounded-(--radius-large) overflow-hidden relative min-h-32" id="mg-root">
-		<!-- 头部：标题 + 在 GitHub 编辑回链 -->
+		<!-- 头部：标题 + 编辑按钮组 -->
 		<div class="mg-header relative w-full mb-8 flex flex-wrap items-end justify-between gap-4">
 			<div>
 				<h1 class="text-2xl font-bold tracking-tight text-[var(--deep-text)]">影视与游戏</h1>
@@ -76,18 +92,30 @@ const STAR_PATH =
 					共 {moviesGames.length} 部 · 看完的、在追的、想看的，都在这
 				</p>
 			</div>
-			<a
-				href={EDIT_URL}
-				target="_blank"
-				rel="noopener noreferrer"
-				class="btn-card inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--btn-card-bg-hover)] transition-all duration-150"
-				title="在 GitHub 网页编辑器修改数据后提交，自动部署"
-			>
-				<svg width="1.1em" height="1.1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-					<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
-				</svg>
-				在 GitHub 编辑
-			</a>
+			<div class="flex items-center gap-2">
+				<button
+					type="button"
+					id="mg-open-editor"
+					class="btn-card inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium text-white bg-[var(--primary)] hover:opacity-90 transition-all duration-150"
+					title="在网页上直接增删改影视/游戏记录，输入 GitHub PAT 即可保存到 GitHub"
+				>
+					<svg width="1.1em" height="1.1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+						<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+					</svg>
+					编辑列表
+				</button>
+				<a
+					href={EDIT_URL}
+					target="_blank"
+					rel="noopener noreferrer"
+					class="btn-card inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--btn-card-bg-hover)] transition-all duration-150"
+					title="GitHub 网页编辑器（不熟 API 时用）"
+				>
+					<svg width="1.05em" height="1.05em" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
+						<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+					</svg>
+				</a>
+			</div>
 		</div>
 
 		<!-- 类型 Tab -->
@@ -193,6 +221,66 @@ const STAR_PATH =
 			data-mg-pagination=""
 		>
 		</div>
+
+		<!-- ========== 前端编辑器模态框 ========== -->
+		<!-- 用 <dialog> 原生元素 + is:global 样式（动态注入的 innerHTML 走 [data-mg-editor] 限定） -->
+		<dialog id="mg-editor" data-mg-editor="" class="mg-editor-dialog">
+			<div class="mg-editor-panel">
+				<!-- 头部 -->
+				<header class="mg-editor-head">
+					<div>
+						<h2 class="mg-editor-title">编辑影视/游戏列表</h2>
+						<p class="mg-editor-sub">输入 GitHub PAT 即可保存改动到 GitHub（自动部署）</p>
+					</div>
+					<button type="button" id="mg-editor-close" class="mg-editor-close" aria-label="关闭">×</button>
+				</header>
+
+				<!-- Token 区 -->
+				<section class="mg-editor-token">
+					<label class="mg-editor-label">
+						<span>GitHub Personal Access Token</span>
+						<span class="mg-editor-label-tip">
+							仅存浏览器 localStorage
+							· <a href={PAT_HELP_URL} target="_blank" rel="noopener noreferrer" class="mg-editor-link">生成 fine-grained PAT</a>
+						</span>
+					</label>
+					<div class="mg-editor-token-row">
+						<input
+							type="password"
+							id="mg-editor-pat"
+							placeholder="github_pat_xxxxxxxxxxxxxx"
+							autocomplete="off"
+							spellcheck="false"
+							class="mg-editor-input"
+						/>
+						<button type="button" id="mg-editor-pat-toggle" class="mg-editor-mini" title="显示/隐藏">👁</button>
+						<button type="button" id="mg-editor-pat-clear" class="mg-editor-mini mg-editor-mini-danger" title="清除本地保存的 Token">🗑</button>
+						<button type="button" id="mg-editor-load" class="mg-editor-btn mg-editor-btn-secondary">🔄 加载远端</button>
+					</div>
+					<p id="mg-editor-status" class="mg-editor-status">未加载远端数据</p>
+				</section>
+
+				<!-- 工具条 -->
+				<section class="mg-editor-toolbar">
+					<button type="button" id="mg-editor-add" class="mg-editor-btn mg-editor-btn-primary">+ 新增条目</button>
+					<span class="mg-editor-count">共 <span id="mg-editor-count">0</span> 条</span>
+				</section>
+
+				<!-- 条目列表 -->
+				<section id="mg-editor-list" class="mg-editor-list"></section>
+
+				<!-- 底部操作 -->
+				<footer class="mg-editor-foot">
+					<p id="mg-editor-foot-status" class="mg-editor-foot-status">准备就绪</p>
+					<div class="mg-editor-foot-actions">
+						<a id="mg-editor-commits" href={COMMIT_URL_BASE} target="_blank" rel="noopener noreferrer" class="mg-editor-link" style="display:none;">查看提交历史</a>
+						<button type="button" id="mg-editor-cancel" class="mg-editor-btn">关闭</button>
+						<button type="button" id="mg-editor-save" class="mg-editor-btn mg-editor-btn-primary">💾 保存到 GitHub</button>
+					</div>
+				</footer>
+			</div>
+		</dialog>
+		<!-- ========== /前端编辑器模态框 ========== -->
 	</div>
 </MainGridLayout>
 
@@ -321,122 +409,957 @@ const STAR_PATH =
 	}
 </style>
 
+<style is:global>
+	/* ===== 前端编辑器模态框 =====
+	 * 用 [data-mg-editor] 限定作用域，确保动态 innerHTML 注入的元素也能命中。
+	 * 若用 <style scoped> + :global(.mg-editor-xxx)，Astro 会把作用域属性加在静态元素上，
+	 * 动态元素无该属性 → 整条规则失效（天气组件踩过同款坑）。
+	 */
+	[data-mg-editor].mg-editor-dialog {
+		border: none;
+		padding: 0;
+		background: transparent;
+		max-width: 100vw;
+		max-height: 100vh;
+		width: 100%;
+		height: 100%;
+		margin: 0;
+		inset: 0;
+	}
+	[data-mg-editor].mg-editor-dialog::backdrop {
+		background: rgba(0, 0, 0, 0.55);
+		backdrop-filter: blur(4px);
+	}
+	[data-mg-editor] .mg-editor-panel {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: min(960px, 96vw);
+		max-height: 92vh;
+		background: var(--float-panel-bg, #fff);
+		color: var(--deep-text, #222);
+		border-radius: 1rem;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+		display: flex;
+		flex-direction: column;
+		overflow: hidden;
+	}
+	[data-mg-editor] .mg-editor-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 1rem 1.25rem;
+		border-bottom: 1px solid var(--line-divider, #e5e7eb);
+	}
+	[data-mg-editor] .mg-editor-title {
+		font-size: 1.05rem;
+		font-weight: 700;
+		margin: 0;
+	}
+	[data-mg-editor] .mg-editor-sub {
+		font-size: 0.75rem;
+		color: var(--content-meta, #6b7280);
+		margin: 0.15rem 0 0;
+	}
+	[data-mg-editor] .mg-editor-close {
+		background: transparent;
+		border: none;
+		font-size: 1.6rem;
+		line-height: 1;
+		cursor: pointer;
+		color: var(--content-meta, #6b7280);
+		padding: 0.25rem 0.5rem;
+		border-radius: 0.4rem;
+		transition: background 0.15s;
+	}
+	[data-mg-editor] .mg-editor-close:hover {
+		background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05));
+	}
+
+	[data-mg-editor] .mg-editor-token,
+	[data-mg-editor] .mg-editor-toolbar,
+	[data-mg-editor] .mg-editor-foot {
+		padding: 0.75rem 1.25rem;
+	}
+	[data-mg-editor] .mg-editor-token {
+		background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.02));
+		border-bottom: 1px solid var(--line-divider, #e5e7eb);
+	}
+	[data-mg-editor] .mg-editor-label {
+		display: flex;
+		flex-direction: column;
+		gap: 0.15rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		margin-bottom: 0.4rem;
+	}
+	[data-mg-editor] .mg-editor-label-tip {
+		font-size: 0.7rem;
+		font-weight: 400;
+		color: var(--content-meta, #6b7280);
+	}
+	[data-mg-editor] .mg-editor-link {
+		color: var(--primary, #6366f1);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	[data-mg-editor] .mg-editor-token-row {
+		display: flex;
+		gap: 0.4rem;
+		align-items: center;
+		flex-wrap: wrap;
+	}
+	[data-mg-editor] .mg-editor-input,
+	[data-mg-editor] .mg-editor-input-sm,
+	[data-mg-editor] .mg-editor-textarea,
+	[data-mg-editor] .mg-editor-select {
+		width: 100%;
+		font: inherit;
+		font-size: 0.85rem;
+		padding: 0.45rem 0.6rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--line-divider, #e5e7eb);
+		background: var(--card-bg, #fff);
+		color: var(--deep-text, #222);
+		outline: none;
+		transition: border-color 0.15s;
+		box-sizing: border-box;
+	}
+	[data-mg-editor] .mg-editor-input:focus,
+	[data-mg-editor] .mg-editor-input-sm:focus,
+	[data-mg-editor] .mg-editor-textarea:focus,
+	[data-mg-editor] .mg-editor-select:focus {
+		border-color: var(--primary, #6366f1);
+	}
+	[data-mg-editor] .mg-editor-input {
+		flex: 1 1 280px;
+		min-width: 200px;
+		font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+	}
+	[data-mg-editor] .mg-editor-mini {
+		font-size: 0.9rem;
+		padding: 0.4rem 0.6rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--line-divider, #e5e7eb);
+		background: var(--card-bg, #fff);
+		cursor: pointer;
+		transition: all 0.15s;
+	}
+	[data-mg-editor] .mg-editor-mini:hover {
+		background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05));
+	}
+	[data-mg-editor] .mg-editor-mini-danger:hover {
+		background: rgba(244, 63, 94, 0.1);
+		border-color: rgba(244, 63, 94, 0.4);
+	}
+
+	[data-mg-editor] .mg-editor-btn {
+		font-size: 0.85rem;
+		font-weight: 500;
+		padding: 0.5rem 0.9rem;
+		border-radius: 0.5rem;
+		border: 1px solid var(--line-divider, #e5e7eb);
+		background: var(--card-bg, #fff);
+		color: var(--deep-text, #222);
+		cursor: pointer;
+		transition: all 0.15s;
+	}
+	[data-mg-editor] .mg-editor-btn:hover {
+		background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05));
+	}
+	[data-mg-editor] .mg-editor-btn:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+	[data-mg-editor] .mg-editor-btn-primary {
+		background: var(--primary, #6366f1);
+		color: #fff;
+		border-color: transparent;
+	}
+	[data-mg-editor] .mg-editor-btn-primary:hover {
+		opacity: 0.9;
+		background: var(--primary, #6366f1);
+	}
+	[data-mg-editor] .mg-editor-btn-secondary {
+		background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05));
+	}
+
+	[data-mg-editor] .mg-editor-status {
+		font-size: 0.72rem;
+		margin: 0.5rem 0 0;
+		color: var(--content-meta, #6b7280);
+	}
+	[data-mg-editor] .mg-editor-status.is-error { color: #f43f5e; }
+	[data-mg-editor] .mg-editor-status.is-ok { color: #10b981; }
+
+	[data-mg-editor] .mg-editor-toolbar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		border-bottom: 1px solid var(--line-divider, #e5e7eb);
+	}
+	[data-mg-editor] .mg-editor-count {
+		font-size: 0.78rem;
+		color: var(--content-meta, #6b7280);
+	}
+
+	[data-mg-editor] .mg-editor-list {
+		flex: 1 1 auto;
+		overflow-y: auto;
+		padding: 0.5rem 1.25rem 1rem;
+	}
+	[data-mg-editor] .mg-editor-empty {
+		padding: 2rem 1rem;
+		text-align: center;
+		color: var(--content-meta, #6b7280);
+		font-size: 0.85rem;
+	}
+
+	/* 单条卡片 */
+	[data-mg-editor] .mg-row {
+		display: flex;
+		gap: 0.5rem;
+		padding: 0.5rem;
+		margin-bottom: 0.5rem;
+		border: 1px solid var(--line-divider, #e5e7eb);
+		border-radius: 0.6rem;
+		background: var(--card-bg, #fff);
+		transition: border-color 0.15s;
+	}
+	[data-mg-editor] .mg-row:hover {
+		border-color: var(--primary, #6366f1);
+	}
+	[data-mg-editor] .mg-row.is-editing {
+		flex-direction: column;
+		border-color: var(--primary, #6366f1);
+		background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.02));
+	}
+	[data-mg-editor] .mg-row-thumb {
+		width: 50px;
+		height: 75px;
+		border-radius: 0.4rem;
+		background: linear-gradient(135deg, var(--primary, #6366f1), var(--deep-text, #222));
+		overflow: hidden;
+		flex-shrink: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: rgba(255, 255, 255, 0.85);
+		font-weight: 700;
+		font-size: 1.1rem;
+	}
+	[data-mg-editor] .mg-row-thumb img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+	[data-mg-editor] .mg-row-info {
+		flex: 1 1 auto;
+		min-width: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+	[data-mg-editor] .mg-row-title {
+		font-weight: 600;
+		font-size: 0.88rem;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	[data-mg-editor] .mg-row-meta {
+		font-size: 0.7rem;
+		color: var(--content-meta, #6b7280);
+		display: flex;
+		gap: 0.3rem;
+		flex-wrap: wrap;
+	}
+	[data-mg-editor] .mg-row-badge {
+		padding: 0.05rem 0.4rem;
+		border-radius: 0.3rem;
+		font-size: 0.65rem;
+		color: #fff;
+	}
+	[data-mg-editor] .mg-row-actions {
+		display: flex;
+		gap: 0.3rem;
+		align-items: flex-start;
+		flex-shrink: 0;
+	}
+	[data-mg-editor] .mg-row-act {
+		font-size: 0.72rem;
+		padding: 0.3rem 0.55rem;
+		border-radius: 0.4rem;
+		border: 1px solid var(--line-divider, #e5e7eb);
+		background: var(--card-bg, #fff);
+		cursor: pointer;
+		color: var(--deep-text, #222);
+		transition: all 0.15s;
+	}
+	[data-mg-editor] .mg-row-act:hover {
+		background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05));
+	}
+	[data-mg-editor] .mg-row-act-danger:hover {
+		background: rgba(244, 63, 94, 0.1);
+		border-color: rgba(244, 63, 94, 0.4);
+		color: #f43f5e;
+	}
+
+	/* 表单（编辑态） */
+	[data-mg-editor] .mg-form-grid {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.5rem 0.7rem;
+	}
+	[data-mg-editor] .mg-form-grid .mg-form-full { grid-column: 1 / -1; }
+	[data-mg-editor] .mg-form-field {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+	}
+	[data-mg-editor] .mg-form-field label {
+		font-size: 0.7rem;
+		font-weight: 600;
+		color: var(--content-meta, #6b7280);
+	}
+	[data-mg-editor] .mg-form-field .mg-editor-input-sm { font-size: 0.82rem; padding: 0.35rem 0.5rem; }
+	[data-mg-editor] .mg-form-field .mg-editor-textarea { font-size: 0.82rem; padding: 0.4rem 0.5rem; min-height: 60px; resize: vertical; }
+	[data-mg-editor] .mg-form-actions {
+		grid-column: 1 / -1;
+		display: flex;
+		gap: 0.4rem;
+		justify-content: flex-end;
+		margin-top: 0.25rem;
+	}
+
+	[data-mg-editor] .mg-editor-foot {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.5rem;
+		border-top: 1px solid var(--line-divider, #e5e7eb);
+		background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.02));
+		flex-wrap: wrap;
+	}
+	[data-mg-editor] .mg-editor-foot-status {
+		font-size: 0.78rem;
+		margin: 0;
+		color: var(--content-meta, #6b7280);
+		flex: 1 1 200px;
+	}
+	[data-mg-editor] .mg-editor-foot-status.is-error { color: #f43f5e; }
+	[data-mg-editor] .mg-editor-foot-status.is-ok { color: #10b981; }
+	[data-mg-editor] .mg-editor-foot-actions {
+		display: flex;
+		gap: 0.4rem;
+		align-items: center;
+	}
+
+	/* 暗色模式微调 */
+	@media (prefers-color-scheme: dark) {
+		[data-mg-editor] .mg-editor-input,
+		[data-mg-editor] .mg-editor-input-sm,
+		[data-mg-editor] .mg-editor-textarea,
+		[data-mg-editor] .mg-editor-select,
+		[data-mg-editor] .mg-editor-mini,
+		[data-mg-editor] .mg-editor-btn,
+		[data-mg-editor] .mg-row,
+		[data-mg-editor] .mg-row-act {
+			background: rgba(255, 255, 255, 0.04);
+		}
+	}
+</style>
+
 <script is:inline>
 	(function () {
-		var root = document.getElementById("mg-root");
-		if (!root) return;
-		var typePill = root.querySelector("[data-mg-type-pill]");
-		var filterPill = root.querySelector("[data-mg-filter-pill]");
-		var grid = root.querySelector("[data-mg-grid]");
-		var pagWrap = root.querySelector("[data-mg-pagination]");
-		var emptyEl = root.querySelector("[data-mg-empty]");
-		if (!grid) return;
-		var items = Array.prototype.slice.call(grid.querySelectorAll(".mg-item"));
-		var PAGE_SIZE = 12;
-		var curTab = "all";
-		var curFilter = "all";
-		var curPage = 1;
+		// ===== 配置 =====
+		var API_FILE_URL =
+			"https://api.github.com/repos/FeiZhouHeShang/blog/contents/src/data/movies-games.ts?ref=main";
+		var COMMIT_URL_BASE =
+			"https://github.com/FeiZhouHeShang/blog/commits/main/src/data/movies-games.ts";
+		var PAT_HELP_URL =
+			"https://github.com/settings/personal-access-tokens/new?description=movies-games-editor&contents=write";
+		var PAT_STORAGE_KEY = "__mg_pat__";
 
-		function moveIndicator(pill) {
-			if (!pill) return;
-			var ind = pill.querySelector("[data-mg-indicator]");
-			var active = pill.querySelector(".tools-tab-btn-active");
-			if (!ind || !active) return;
-			ind.style.left = active.offsetLeft + "px";
-			ind.style.width = active.offsetWidth + "px";
-			ind.style.opacity = "1";
+		// 类型/状态枚举（与 src/data/movies-games.ts 对齐）
+		var SECTIONS = [
+			{ key: "movie", label: "电影" },
+			{ key: "tv", label: "电视剧" },
+			{ key: "anime", label: "动漫" },
+			{ key: "documentary", label: "纪录片" },
+			{ key: "game", label: "游戏" },
+		];
+		var STATUSES = [
+			{ key: "collect", label: "看过" },
+			{ key: "doing", label: "在看" },
+			{ key: "wish", label: "想看" },
+			{ key: "on_hold", label: "搁置" },
+			{ key: "dropped", label: "抛弃" },
+		];
+
+		// ===== 状态 =====
+		var state = {
+			items: [], // 当前编辑的数组（用户增删改都在这里）
+			sourceContent: "", // 远端原始文件内容
+			sha: "", // 远端文件 sha
+			loading: false,
+			saving: false,
+			editingId: null, // 当前展开编辑表单的条目 id（"new" 表示新增）
+		};
+
+		// ===== 工具 =====
+		function $(id) { return document.getElementById(id); }
+		function escHtml(s) {
+			return String(s == null ? "" : s)
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/"/g, "&quot;")
+				.replace(/'/g, "&#39;");
+		}
+		function statusLabel(item) {
+			if (item.section === "game" && item.status === "doing") return "在玩";
+			var s = STATUSES.find(function (x) { return x.key === item.status; });
+			return s ? s.label : item.status;
+		}
+		function sectionLabel(key) {
+			var s = SECTIONS.find(function (x) { return x.key === key; });
+			return s ? s.label : key;
+		}
+		function statusColor(key) {
+			return {
+				collect: "#10b981",
+				doing: "#f59e0b",
+				wish: "#0ea5e9",
+				on_hold: "#8b5cf6",
+				dropped: "#fb7185",
+			}[key] || "#6b7280";
+		}
+		function genId(title) {
+			var base = (title || "untitled")
+				.toLowerCase()
+				.replace(/[^a-z0-9\u4e00-\u9fa5]+/g, "-")
+				.replace(/^-+|-+$/g, "")
+				.slice(0, 32);
+			if (!base) base = "item";
+			var suffix = Math.random().toString(36).slice(2, 6);
+			return base + "-" + suffix;
+		}
+		function setStatus(el, msg, kind) {
+			if (!el) return;
+			el.textContent = msg || "";
+			el.classList.remove("is-error", "is-ok");
+			if (kind) el.classList.add("is-" + kind);
+		}
+		function getPat() {
+			return localStorage.getItem(PAT_STORAGE_KEY) || "";
+		}
+		function setPat(v) {
+			if (v) localStorage.setItem(PAT_STORAGE_KEY, v);
+			else localStorage.removeItem(PAT_STORAGE_KEY);
 		}
 
-		function visibleItems() {
-			return items.filter(function (it) {
-				var s = it.getAttribute("data-section");
-				var st = it.getAttribute("data-status");
-				var okTab = curTab === "all" || s === curTab;
-				var okFilter = curFilter === "all" || st === curFilter;
-				return okTab && okFilter;
-			});
+		// ===== 数据序列化 =====
+		// 在源文件中定位 moviesGames 数组字面量的精确区间（平衡 [] + 跳过字符串）
+		function findArrayRange(source) {
+			var kwIdx = source.indexOf("moviesGames");
+			if (kwIdx < 0) return null;
+			// 从声明等号之后找第一个 [，避开类型注解里的 MediaItem[]
+			var eqIdx = source.indexOf("=", kwIdx);
+			if (eqIdx < 0) return null;
+			var bracketIdx = source.indexOf("[", eqIdx);
+			if (bracketIdx < 0) return null;
+			var depth = 0;
+			var inStr = false;
+			var strCh = "";
+			for (var i = bracketIdx; i < source.length; i++) {
+				var c = source[i];
+				if (inStr) {
+					if (c === "\\") { i++; continue; }
+					if (c === strCh) inStr = false;
+					continue;
+				}
+				if (c === '"' || c === "'" || c === "`") {
+					inStr = true;
+					strCh = c;
+					continue;
+				}
+				if (c === "[") depth++;
+				else if (c === "]") {
+					depth--;
+					if (depth === 0) {
+						return { start: bracketIdx, end: i + 1 };
+					}
+				}
+			}
+			return null;
+		}
+		// 把整个 moviesGames 数组重新生成为 TS 源码（用 JSON 字面量 + 类型断言）
+		// 不去解析/重组原文件，只替换中间的数组字面量，imports/types/注释原样保留
+		function serializeToSource(originalSource, newItems) {
+			var range = findArrayRange(originalSource);
+			if (!range) {
+				throw new Error("源文件中未找到 `moviesGames = [...]` 数组，请保留该声明");
+			}
+			// 找 = 后到 [ 前的空白（保留等号周围格式）
+			var headStart = originalSource.lastIndexOf("=", range.start) + 1;
+			var arrJson = JSON.stringify(newItems, null, 2);
+			// 头：包含 = 和 [ 之间的空白
+			var head = originalSource.substring(headStart, range.start);
+			// 尾：] 之后到下一个换行或 ;
+			var tail = originalSource.substring(range.end);
+			return (
+				originalSource.substring(0, headStart) +
+				head +
+				arrJson +
+				tail
+			);
 		}
 
-		function renderPagination(pages) {
-			if (!pagWrap) return;
-			pagWrap.innerHTML = "";
-			if (pages <= 1) {
-				pagWrap.style.display = "none";
+		// base64 编码（兼容中文）
+		function utf8ToBase64(s) {
+			return btoa(unescape(encodeURIComponent(s)));
+		}
+
+		// base64 解码
+		function base64ToUtf8(b64) {
+			return decodeURIComponent(escape(atob(b64.replace(/\n/g, ""))));
+		}
+
+		// ===== GitHub API =====
+		async function loadRemote() {
+			var token = getPat();
+			if (!token) {
+				setStatus($("mg-editor-status"), "请先填写 GitHub PAT", "error");
 				return;
 			}
-			pagWrap.style.display = "";
-			function mk(label, page, opts) {
-				opts = opts || {};
-				var b = document.createElement("button");
-				b.type = "button";
-				b.className =
-					"btn-card flex items-center justify-center min-w-10 h-10 px-3 rounded-xl text-[var(--primary)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--btn-card-bg-hover)] transition-all duration-150";
-				if (opts.active) {
-					b.classList.add("!bg-[var(--primary)]", "!text-white");
+			setStatus($("mg-editor-status"), "正在从 GitHub 加载...", "");
+			state.loading = true;
+			try {
+				var r = await fetch(API_FILE_URL, {
+					headers: {
+						Accept: "application/vnd.github+json",
+						Authorization: "Bearer " + token,
+					},
+				});
+				if (!r.ok) {
+					var err = await r.json().catch(function () { return {}; });
+					throw new Error(
+						"加载失败 " + r.status + "： " + (err.message || r.statusText)
+					);
 				}
-				b.textContent = label;
-				if (opts.disabled) b.disabled = true;
-				b.addEventListener("click", function () {
-					if (b.disabled) return;
-					curPage = page;
-					render();
-					window.scrollTo({ top: grid.offsetTop - 80, behavior: "smooth" });
-				});
-				return b;
+				var file = await r.json();
+				state.sha = file.sha;
+				state.sourceContent = base64ToUtf8(file.content || "");
+
+				// 用平衡 [] 匹配找数组字面量区间（处理嵌套 tags 数组）
+				var range = findArrayRange(state.sourceContent);
+				if (!range) throw new Error("源文件格式异常，找不到 moviesGames 数组");
+				var arrLiteral = state.sourceContent.substring(range.start, range.end);
+				var parsed;
+				try {
+					parsed = new Function("return (" + arrLiteral + ");")();
+				} catch (parseErr) {
+					throw new Error("解析 moviesGames 数组失败：" + parseErr.message);
+				}
+				if (!Array.isArray(parsed)) throw new Error("解析结果不是数组");
+				state.items = parsed;
+				setStatus(
+					$("mg-editor-status"),
+					"已加载 " + state.items.length + " 条 · SHA " + state.sha.slice(0, 7),
+					"ok"
+				);
+				renderList();
+			} catch (e) {
+				setStatus($("mg-editor-status"), "❌ " + e.message, "error");
+			} finally {
+				state.loading = false;
 			}
-			pagWrap.appendChild(mk("‹", curPage - 1, { disabled: curPage === 1 }));
-			for (var p = 1; p <= pages; p++) {
-				pagWrap.appendChild(mk(String(p), p, { active: p === curPage }));
+		}
+
+		async function saveRemote() {
+			var token = getPat();
+			if (!token) {
+				setStatus($("mg-editor-foot-status"), "请先填写 GitHub PAT", "error");
+				return;
 			}
-			pagWrap.appendChild(mk("›", curPage + 1, { disabled: curPage === pages }));
-		}
-
-		function render() {
-			var vis = visibleItems();
-			var total = vis.length;
-			var pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-			if (curPage > pages) curPage = pages;
-			items.forEach(function (it) {
-				it.style.display = "none";
-			});
-			vis.forEach(function (it, i) {
-				it.style.display = i >= (curPage - 1) * PAGE_SIZE && i < curPage * PAGE_SIZE ? "" : "none";
-			});
-			renderPagination(pages);
-			if (emptyEl) emptyEl.style.display = total === 0 ? "" : "none";
-		}
-
-		function initPill(pill, onPick) {
-			if (!pill) return;
-			pill.querySelectorAll(".tools-tab-btn").forEach(function (btn) {
-				btn.addEventListener("click", function () {
-					pill.querySelectorAll(".tools-tab-btn").forEach(function (b) {
-						b.classList.remove("tools-tab-btn-active");
-						b.classList.add("tools-tab-btn-inactive");
-					});
-					btn.classList.remove("tools-tab-btn-inactive");
-					btn.classList.add("tools-tab-btn-active");
-					moveIndicator(pill);
-					onPick(btn);
+			if (state.saving) return;
+			state.saving = true;
+			var saveBtn = $("mg-editor-save");
+			saveBtn.disabled = true;
+			setStatus($("mg-editor-foot-status"), "正在重新拉取最新 sha 防冲突...", "");
+			try {
+				// 1) 重新 GET 拿最新 sha（避免本地副本过期）
+				var r1 = await fetch(API_FILE_URL, {
+					headers: {
+						Accept: "application/vnd.github+json",
+						Authorization: "Bearer " + token,
+					},
 				});
-			});
-			moveIndicator(pill);
+				if (!r1.ok) {
+					var err1 = await r1.json().catch(function () { return {}; });
+					throw new Error("拉取 sha 失败 " + r1.status + "：" + (err1.message || r1.statusText));
+				}
+				var file = await r1.json();
+				var latestSha = file.sha;
+				var latestSource = base64ToUtf8(file.content || "");
+
+				// 2) 防冲突：只有远端 sha 与加载时不同（说明别人在网页外改过）才 confirm
+				if (latestSha !== state.sha) {
+					// 远端数组与本地可能不同，提示覆盖
+					var remoteRange = findArrayRange(latestSource);
+					var differs = false;
+					if (remoteRange) {
+						try {
+							var remoteArr = new Function(
+								"return (" + latestSource.substring(remoteRange.start, remoteRange.end) + ");"
+							)();
+							differs = JSON.stringify(remoteArr) !== JSON.stringify(state.items);
+						} catch (_e) { differs = true; }
+					}
+					if (differs) {
+						var overwrite = confirm(
+							"⚠️ 远端文件已于「你加载后」被修改（可能有人在 GitHub 网页改过）。\n\n" +
+								"点击「确定」用本地版本覆盖远端；\n" +
+								"点击「取消」放弃保存，先点「加载远端」重新拉取。"
+						);
+						if (!overwrite) {
+							setStatus(
+								$("mg-editor-foot-status"),
+								"已取消保存。请先「加载远端」同步最新数据。",
+								""
+							);
+							return;
+						}
+					}
+				}
+				state.sha = latestSha;
+
+				// 3) 序列化新内容
+				var newSource = serializeToSource(latestSource, state.items);
+				var newContent = utf8ToBase64(newSource);
+
+				setStatus($("mg-editor-foot-status"), "正在提交到 GitHub...", "");
+				var r2 = await fetch(
+					"https://api.github.com/repos/FeiZhouHeShang/blog/contents/src/data/movies-games.ts",
+					{
+						method: "PUT",
+						headers: {
+							Accept: "application/vnd.github+json",
+							Authorization: "Bearer " + token,
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({
+							message: "chore(movies-games): update via web editor (" + state.items.length + " items)",
+							content: newContent,
+							sha: latestSha,
+							branch: "main",
+						}),
+					}
+				);
+				if (!r2.ok) {
+					var err2 = await r2.json().catch(function () { return {}; });
+					throw new Error(
+						"提交失败 " + r2.status + "：" + (err2.message || r2.statusText)
+					);
+				}
+				var result = await r2.json();
+				state.sha = result.content.sha;
+				state.sourceContent = newSource;
+				setStatus(
+					$("mg-editor-foot-status"),
+					"✅ 已提交！Cloudflare 部署约 1 分钟后刷新可见",
+					"ok"
+				);
+				var commitsLink = $("mg-editor-commits");
+				if (commitsLink) commitsLink.style.display = "";
+			} catch (e) {
+				setStatus($("mg-editor-foot-status"), "❌ " + e.message, "error");
+			} finally {
+				state.saving = false;
+				saveBtn.disabled = false;
+			}
 		}
 
-		initPill(typePill, function (btn) {
-			curTab = btn.getAttribute("data-tab") || "all";
-			curPage = 1;
-			render();
-		});
-		initPill(filterPill, function (btn) {
-			curFilter = btn.getAttribute("data-filter") || "all";
-			curPage = 1;
-			render();
-		});
-		window.addEventListener("resize", function () {
-			moveIndicator(typePill);
-			moveIndicator(filterPill);
-		});
-		render();
+		// ===== 列表渲染 =====
+		function renderList() {
+			var list = $("mg-editor-list");
+			if (!list) return;
+			$("mg-editor-count").textContent = state.items.length;
+			if (state.items.length === 0) {
+				list.innerHTML =
+					'<div class="mg-editor-empty">暂无条目，点击上方「+ 新增条目」开始添加</div>';
+				return;
+			}
+			var html = state.items
+				.map(function (it, idx) {
+					var isEditing = state.editingId === it.id;
+					var coverHtml = it.cover
+						? '<img src="' +
+							escHtml(it.cover) +
+							'" alt="" onerror="this.style.display=\'none\'" />'
+						: escHtml((it.title || "?").charAt(0));
+					var tagsHtml = (it.tags || [])
+						.slice(0, 3)
+						.map(function (t) {
+							return '<span class="mg-row-badge" style="background:' + statusColor(it.status) + ';">' + escHtml(t) + "</span>";
+						})
+						.join("");
+					var scoreHtml = it.score != null
+						? '<span class="mg-row-badge" style="background:#fde047;color:#92400e;">★ ' + escHtml(String(it.score)) + "</span>"
+						: "";
+					var row = "";
+					if (isEditing) {
+						row =
+							'<div class="mg-row is-editing" data-row-id="' + escHtml(it.id) + '">' +
+								renderForm(it) +
+							"</div>";
+					} else {
+						row =
+							'<div class="mg-row" data-row-id="' + escHtml(it.id) + '">' +
+								'<div class="mg-row-thumb">' + coverHtml + "</div>" +
+								'<div class="mg-row-info">' +
+									'<div class="mg-row-title">' + escHtml(it.title || "(无标题)") + "</div>" +
+									'<div class="mg-row-meta">' +
+										'<span class="mg-row-badge" style="background:var(--primary,#6366f1);">' + escHtml(sectionLabel(it.section)) + "</span>" +
+										'<span class="mg-row-badge" style="background:' + statusColor(it.status) + ';">' + escHtml(statusLabel(it)) + "</span>" +
+										scoreHtml +
+										tagsHtml +
+									"</div>" +
+								"</div>" +
+								'<div class="mg-row-actions">' +
+									'<button type="button" class="mg-row-act" data-act="edit" data-id="' + escHtml(it.id) + '">编辑</button>' +
+									'<button type="button" class="mg-row-act mg-row-act-danger" data-act="del" data-id="' + escHtml(it.id) + '">删除</button>' +
+								"</div>" +
+							"</div>";
+					}
+					return row;
+				})
+				.join("");
+			list.innerHTML = html;
+		}
+
+		function renderForm(item) {
+			var sectionOpts = SECTIONS.map(function (s) {
+				return '<option value="' + s.key + '"' + (s.key === item.section ? " selected" : "") + ">" + s.label + "</option>";
+			}).join("");
+			var statusOpts = STATUSES.map(function (s) {
+				return '<option value="' + s.key + '"' + (s.key === item.status ? " selected" : "") + ">" + s.label + "</option>";
+			}).join("");
+			var tagsVal = (item.tags || []).join(", ");
+			return (
+				'<div class="mg-form-grid">' +
+					'<div class="mg-form-field mg-form-full">' +
+						'<label>标题 *</label>' +
+						'<input type="text" class="mg-editor-input-sm" data-f="title" value="' + escHtml(item.title || "") + '" placeholder="影视/游戏名称" />' +
+					"</div>" +
+					'<div class="mg-form-field mg-form-full">' +
+						'<label>封面 URL（热链，留空显示首字占位）</label>' +
+						'<input type="text" class="mg-editor-input-sm" data-f="cover" value="' + escHtml(item.cover || "") + '" placeholder="https://... 或 /assets/xxx.jpg" />' +
+					"</div>" +
+					'<div class="mg-form-field">' +
+						'<label>类型</label>' +
+						'<select class="mg-editor-select" data-f="section">' + sectionOpts + "</select>" +
+					"</div>" +
+					'<div class="mg-form-field">' +
+						'<label>状态</label>' +
+						'<select class="mg-editor-select" data-f="status">' + statusOpts + "</select>" +
+					"</div>" +
+					'<div class="mg-form-field">' +
+						'<label>评分 (0-10)</label>' +
+						'<input type="number" min="0" max="10" step="0.5" class="mg-editor-input-sm" data-f="score" value="' + escHtml(item.score != null ? String(item.score) : "") + '" />' +
+					"</div>" +
+					'<div class="mg-form-field">' +
+						'<label>唯一 ID</label>' +
+						'<input type="text" class="mg-editor-input-sm" data-f="id" value="' + escHtml(item.id || "") + '" />' +
+					"</div>" +
+					'<div class="mg-form-field mg-form-full">' +
+						'<label>标签（英文逗号分隔）</label>' +
+						'<input type="text" class="mg-editor-input-sm" data-f="tags" value="' + escHtml(tagsVal) + '" placeholder="悬疑, 犯罪" />' +
+					"</div>" +
+					'<div class="mg-form-field mg-form-full">' +
+						'<label>Bangumi / 豆瓣链接</label>' +
+						'<input type="text" class="mg-editor-input-sm" data-f="bangumiUrl" value="' + escHtml(item.bangumiUrl || "") + '" placeholder="https://bangumi.tv/subject/xxx" />' +
+					"</div>" +
+					'<div class="mg-form-field mg-form-full">' +
+						'<label>悬停评语</label>' +
+						'<textarea class="mg-editor-textarea" data-f="comment" placeholder="一句话感想">' + escHtml(item.comment || "") + "</textarea>" +
+					"</div>" +
+					'<div class="mg-form-actions">' +
+						'<button type="button" class="mg-editor-btn" data-act="cancel">取消</button>' +
+						'<button type="button" class="mg-editor-btn mg-editor-btn-primary" data-act="save-row">保存这条</button>' +
+					"</div>" +
+				"</div>"
+			);
+		}
+
+		// 收集表单字段
+		function collectForm(rowEl) {
+			var item = { id: "", title: "", cover: "", section: "movie", status: "collect" };
+			rowEl.querySelectorAll("[data-f]").forEach(function (inp) {
+				var k = inp.getAttribute("data-f");
+				var v = inp.value;
+				if (k === "score") v = v === "" ? undefined : Number(v);
+				if (k === "tags")
+					v = v
+						.split(",")
+						.map(function (x) { return x.trim(); })
+						.filter(Boolean);
+				if (k === "cover" && v === "") v = "";
+				if (v === "" && (k === "comment" || k === "bangumiUrl" || k === "score")) {
+					// 保留 undefined
+				} else if (k === "tags" && (!v || v.length === 0)) {
+					// 保留 undefined
+				} else {
+					item[k] = v;
+				}
+			});
+			// 清理 undefined 字段
+			Object.keys(item).forEach(function (k) {
+				if (item[k] === undefined) delete item[k];
+			});
+			return item;
+		}
+
+		// ===== 事件绑定 =====
+		function openEditor() {
+			var dlg = $("mg-editor");
+			if (!dlg) return;
+			if (typeof dlg.showModal === "function") dlg.showModal();
+			else dlg.setAttribute("open", "");
+			// 自动填 token
+			var patInput = $("mg-editor-pat");
+			if (patInput) {
+				patInput.value = getPat();
+				setTimeout(function () { patInput.focus(); }, 50);
+			}
+			// 第一次打开若本地已有 token 但未加载，则自动加载
+			if (getPat() && state.items.length === 0 && !state.sourceContent) {
+				loadRemote();
+			}
+		}
+		function closeEditor() {
+			var dlg = $("mg-editor");
+			if (!dlg) return;
+			if (typeof dlg.close === "function") dlg.close();
+			else dlg.removeAttribute("open");
+			state.editingId = null;
+		}
+
+		function bind() {
+			var openBtn = $("mg-open-editor");
+			if (openBtn) openBtn.addEventListener("click", openEditor);
+			$("mg-editor-close")?.addEventListener("click", closeEditor);
+			$("mg-editor-cancel")?.addEventListener("click", closeEditor);
+
+			// 点击 backdrop 关闭
+			$("mg-editor")?.addEventListener("click", function (e) {
+				if (e.target === $("mg-editor")) closeEditor();
+			});
+
+			// Esc 关闭
+			$("mg-editor")?.addEventListener("cancel", function (e) {
+				e.preventDefault();
+				closeEditor();
+			});
+
+			// Token 输入实时存
+			$("mg-editor-pat")?.addEventListener("input", function (e) {
+				setPat(e.target.value);
+			});
+			// 显示/隐藏
+			$("mg-editor-pat-toggle")?.addEventListener("click", function () {
+				var inp = $("mg-editor-pat");
+				if (!inp) return;
+				inp.type = inp.type === "password" ? "text" : "password";
+			});
+			// 清除
+			$("mg-editor-pat-clear")?.addEventListener("click", function () {
+				if (!confirm("确定清除本地保存的 GitHub PAT？")) return;
+				setPat("");
+				var inp = $("mg-editor-pat");
+				if (inp) inp.value = "";
+				setStatus($("mg-editor-status"), "已清除本地 Token", "ok");
+			});
+			// 加载
+			$("mg-editor-load")?.addEventListener("click", function () {
+				state.editingId = null;
+				loadRemote();
+			});
+			// 新增
+			$("mg-editor-add")?.addEventListener("click", function () {
+				var newItem = {
+					id: genId("untitled"),
+					title: "",
+					cover: "",
+					section: "movie",
+					status: "wish",
+				};
+				state.items.unshift(newItem);
+				state.editingId = newItem.id;
+				renderList();
+			});
+			// 保存到 GitHub
+			$("mg-editor-save")?.addEventListener("click", saveRemote);
+
+			// 列表事件委托
+			$("mg-editor-list")?.addEventListener("click", function (e) {
+				var btn = e.target.closest("[data-act]");
+				if (!btn) return;
+				var act = btn.getAttribute("data-act");
+				var id = btn.getAttribute("data-id");
+				var rowEl = btn.closest(".mg-row");
+				if (act === "edit") {
+					state.editingId = id;
+					renderList();
+				} else if (act === "del") {
+					if (!confirm("确定删除「" + (state.items.find(function (x) { return x.id === id; })?.title || id) + "」？")) return;
+					state.items = state.items.filter(function (x) { return x.id !== id; });
+					if (state.editingId === id) state.editingId = null;
+					renderList();
+				} else if (act === "cancel") {
+					// 取消编辑：若 id 是新生成且无标题，从列表删除
+					var item = state.items.find(function (x) { return x.id === state.editingId; });
+					if (item && !item.title) {
+						state.items = state.items.filter(function (x) { return x.id !== state.editingId; });
+					}
+					state.editingId = null;
+					renderList();
+				} else if (act === "save-row") {
+					if (!rowEl) return;
+					var data = collectForm(rowEl);
+					if (!data.title || !data.title.trim()) {
+						alert("请填写标题");
+						return;
+					}
+					// 用表单中的 id（可能用户改过）
+					var idx = state.items.findIndex(function (x) { return x.id === state.editingId; });
+					if (idx >= 0) {
+						// 检查 id 冲突
+						if (data.id !== state.editingId &&
+							state.items.some(function (x) { return x.id === data.id; })) {
+							alert("ID 已被占用：" + data.id);
+							return;
+						}
+						state.items[idx] = data;
+					}
+					state.editingId = null;
+					renderList();
+				}
+			});
+		}
+
+		// Astro 软导航兼容
+		function init() { bind(); }
+		if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", init);
+		} else {
+			init();
+		}
+		if (typeof window !== "undefined" && window.Astro && window.Astro.on) {
+			window.Astro.on("page-load", bind);
+		}
 	})();
 </script>
