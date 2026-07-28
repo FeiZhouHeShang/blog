@@ -624,11 +624,12 @@ const DATA_VAR = "dailyGrumbles";
 				base + "/upload?returnFormat=full&uploadNameType=origin&uploadFolder=" +
 				encodeURIComponent(IMGBED_FOLDER || "");
 			var headers = { Accept: "application/json" };
-			// 上传鉴权：优先 authCode（query）；若只配了 Bearer Token（含 upload 权限）也支持
-			if (IMGBED_AUTH) {
-				url += "&authCode=" + encodeURIComponent(IMGBED_AUTH);
-			} else if (IMGBED_API_TOKEN) {
+			// 上传鉴权优先 Bearer Token（fqzlr 单令牌方案：list+upload 同令牌）；
+			// 若令牌仅 list 权限则降级到 authCode（query），二者皆无则明文失败
+			if (IMGBED_API_TOKEN) {
 				headers["Authorization"] = "Bearer " + IMGBED_API_TOKEN;
+			} else if (IMGBED_AUTH) {
+				url += "&authCode=" + encodeURIComponent(IMGBED_AUTH);
 			}
 			var r = await fetch(url, { method: "POST", body: fd, headers: headers });
 			if (!r.ok) throw new Error("上传失败 HTTP " + r.status);
