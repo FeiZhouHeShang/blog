@@ -14,6 +14,11 @@ if (!siteConfig.pages.guestbook) {
 // 页面标题和描述
 const title = i18n(I18nKey.guestbook);
 const description = i18n(I18nKey.guestbookDescription);
+
+// [关键词: guestbook-no-sidebar] 留言板页面不使用左右全局侧栏
+//   原因：留言板本身就是仿聊天面板的紧凑布局，自身含「访客信息」「一言」「热榜」等浮卡，
+//   再叠加三栏 grid 会导致组件相互重叠（参考 2026-07-28 反馈截图）。
+//   不传 sidebar-left/right 插槽 → MainGridLayout 自动 data-sidebar-position="none" → CSS 切单栏布局。
 ---
 
 <MainGridLayout title={title} description={description}>

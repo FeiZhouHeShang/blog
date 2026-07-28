@@ -1,0 +1,122 @@
+---
+/**
+ * ============================================================
+ * [关键词: site-stats] 站点统计小卡片（左右仪表盘通用）
+ * ============================================================
+ * 自动统计：文章数 / 标签数 / 分类数 / 运行天数
+ * 运行天数优先取 siteConfig.siteStartDate，没配置就按最早一篇文章算。
+ *
+ * 修改指南：
+ *   - 配建站日期：src/config/siteConfig.ts 里搜 siteStartDate（格式 "YYYY-MM-DD"）
+ *   - 改显示项：搜 site-stats-items
+ * ============================================================
+ */
+
+import Icon from "@components/common/Icon.astro";
+import { getSortedPosts } from "@/utils/content-utils";
+import { siteConfig } from "@/config";
+
+// 拿到所有文章（已按发布时间倒序）
+const posts = await getSortedPosts();
+
+/** [关键词: site-stats-items] 统计数字（全部自动算，不用手填） */
+const totalPosts = posts.length;
+const totalTags = posts.length > 0
+	? new Set(posts.flatMap((p) => p.data.tags || [])).size
+	: 0;
+const totalCategories = posts.length > 0
+	? new Set(posts.flatMap((p) => (p.data.category ? [p.data.category] : []))).size
+	: 0;
+
+// 运行天数：优先用站点配置的建站日期
+let runningDays = 0;
+if (siteConfig.siteStartDate) {
+	const start = new Date(siteConfig.siteStartDate);
+	runningDays = Math.max(0, Math.floor((Date.now() - start.getTime()) / 86400000));
+} else if (posts.length > 0) {
+	// 没配置就按最早一篇文章发布日算
+	const earliest = posts[posts.length - 1].data.published;
+	runningDays = Math.max(0, Math.floor((Date.now() - earliest.getTime()) / 86400000));
+}
+
+const stats = [
+	{ value: totalPosts, label: "文章" },
+	{ value: totalTags, label: "标签" },
+	{ value: totalCategories, label: "分类" },
+	{ value: runningDays, label: "运行天数" },
+];
+---
+
+<div class="widget-card site-stats">
+	<h3 class="widget-card__title">
+		<Icon name="material-symbols:analytics" class="widget-card__icon" />
+		站点统计
+	</h3>
+	<div class="site-stats__grid">
+		{stats.map((s) => (
+			<div class="site-stat">
+				<span class="site-stat__value">{s.value}</span>
+				<span class="site-stat__label">{s.label}</span>
+			</div>
+		))}
+	</div>
+</div>
+
+<style>
+/* 通用卡片外观 */
+.widget-card {
+	background: var(--float-panel-bg);
+	border: 1px solid var(--line-divider);
+	border-radius: 12px;
+	padding: 0.875rem;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+:root.dark .widget-card {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.widget-card__title {
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--deep-text);
+	margin: 0 0 0.65rem;
+}
+
+.widget-card__icon {
+	font-size: 1rem;
+	color: var(--primary);
+}
+
+/* 统计网格：2 列 2 行 */
+.site-stats__grid {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 0.5rem;
+}
+
+.site-stat {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.15rem;
+	padding: 0.4rem 0;
+	background: var(--btn-plain-bg-hover);
+	border-radius: 8px;
+}
+
+.site-stat__value {
+	font-size: 1.1rem;
+	font-weight: 700;
+	color: var(--deep-text);
+	line-height: 1;
+}
+
+.site-stat__label {
+	font-size: 0.65rem;
+	color: var(--content-meta);
+}
+</style>

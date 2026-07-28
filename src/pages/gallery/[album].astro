@@ -5,6 +5,8 @@ import { galleryConfig, siteConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import LeftSidebar from "@/components/layout/LeftSidebar.astro";
+import RightSidebar from "@/components/layout/RightSidebar.astro";
 import { getAlbumCover, scanAlbumPhotos } from "@/utils/gallery-utils";
 import { url } from "@/utils/url-utils";
 import "@/styles/pages/gallery.css";
@@ -33,6 +35,8 @@ const columnWidth = galleryConfig.columnWidth || 240;
 ---
 
 <MainGridLayout title={albumMeta.name} description={albumMeta.description || ""}>
+  <LeftSidebar slot="sidebar-left" />
+  <RightSidebar slot="sidebar-right" />
   <!-- 相册封面横幅 -->
   <div class="w-full rounded-(--radius-large) overflow-hidden relative">
     {cover ? (

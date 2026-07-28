@@ -1,0 +1,21 @@
+---
+/**
+ * ============================================================
+ * [关键词: left-sidebar] 其他内容页「左侧仪表盘」统一内容
+ * ============================================================
+ * 组成：ProfileCard（博主信息）+ IpInfoCard（访客信息）+ 天气 + 站点统计
+ * 用法：把 <LeftSidebar slot="sidebar-left" /> 放进 MainGridLayout 即可。
+ * 改这里 = 全站其它内容页左侧一起变。
+ * ============================================================
+ */
+
+import ProfileCard from "@components/layout/ProfileCard.astro";
+import IpInfoCard from "@components/layout/IpInfoCard.astro";
+import WeatherWidget from "@components/layout/WeatherWidget.astro";
+import SiteStats from "@components/layout/SiteStats.astro";
+---
+
+<ProfileCard />
+<IpInfoCard />
+<WeatherWidget />
+<SiteStats />

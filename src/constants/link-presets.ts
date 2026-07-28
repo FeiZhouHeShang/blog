@@ -82,7 +82,7 @@ export const LinkPresets: { [key in LinkPreset]: NavBarLink } = {
 	[LinkPreset.ContactMe]: {
 		name: i18n(I18nKey.contactMe),
 		url: "/contact/",
-		icon: "material-symbols:mail",
+		icon: "material-symbols:edit-note-rounded",
 	},
 	// [关键词: nav-qq-link] QQ联系方式 - 修改URL为你的QQ链接
 	// tencent://message/?uin=你的QQ号  为QQ私聊链接
@@ -101,7 +101,17 @@ export const LinkPresets: { [key in LinkPreset]: NavBarLink } = {
 	[LinkPreset.NavMy]: {
 		name: i18n(I18nKey.navMy),
 		url: "/my/",
-		icon: "material-symbols:person",
+		icon: "material-symbols:info-rounded",
+	},
+	[LinkPreset.Moments]: {
+		name: i18n(I18nKey.navMoments),
+		url: "/moments/",
+		icon: "material-symbols:bolt-rounded",
+	},
+	[LinkPreset.MoviesGames]: {
+		name: i18n(I18nKey.navMoviesGames),
+		url: "/movies-games/",
+		icon: "material-symbols:movie",
 	},
 	[LinkPreset.Music]: {
 		name: i18n(I18nKey.music),

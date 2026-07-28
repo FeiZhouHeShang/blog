@@ -1,0 +1,124 @@
+---
+/**
+ * ============================================================
+ * [关键词: recent-updates] 最近更新小卡片（左右仪表盘通用）
+ * ============================================================
+ * 显示最近发布的文章 Top8（标题 + 日期），点击跳转。
+ * 纯服务端渲染，不需要联网。
+ *
+ * 修改指南：
+ *   - 改显示条数：搜 recent-updates-count
+ * ============================================================
+ */
+
+import Icon from "@components/common/Icon.astro";
+import { getSortedPosts } from "@/utils/content-utils";
+import { getPostUrlBySlug } from "@/utils/url-utils";
+
+const posts = await getSortedPosts();
+
+/** [关键词: recent-updates-count] 最多显示 8 条 */
+const recentPosts = posts.slice(0, 8);
+---
+
+<div class="widget-card recent-updates">
+	<h3 class="widget-card__title">
+		<Icon name="material-symbols:history" class="widget-card__icon" />
+		最近更新
+	</h3>
+	<ul class="recent-updates__list">
+		{recentPosts.map((post) => (
+			<li class="recent-updates__item">
+				<a href={getPostUrlBySlug(post.id)} class="recent-updates__link">
+					<span class="recent-updates__title">{post.data.title}</span>
+				</a>
+				<time
+					class="recent-updates__date"
+					datetime={post.data.published.toISOString()}
+				>
+					{post.data.published.toLocaleDateString("zh-CN", {
+						month: "2-digit",
+						day: "2-digit",
+					})}
+				</time>
+			</li>
+		))}
+	</ul>
+</div>
+
+<style>
+/* 通用卡片外观 */
+.widget-card {
+	background: var(--float-panel-bg);
+	border: 1px solid var(--line-divider);
+	border-radius: 12px;
+	padding: 0.875rem;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+:root.dark .widget-card {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.widget-card__title {
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--deep-text);
+	margin: 0 0 0.65rem;
+}
+
+.widget-card__icon {
+	font-size: 1rem;
+	color: var(--primary);
+}
+
+/* 列表 */
+.recent-updates__list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.recent-updates__item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 0.4rem 0;
+	border-bottom: 1px dashed var(--line-divider);
+	gap: 0.3rem;
+}
+
+.recent-updates__item:last-child {
+	border-bottom: none;
+}
+
+.recent-updates__link {
+	text-decoration: none;
+	color: var(--deep-text);
+	flex: 1;
+	min-width: 0;
+}
+
+.recent-updates__title {
+	font-size: 0.75rem;
+	font-weight: 500;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	display: block;
+	transition: color 0.15s;
+}
+
+.recent-updates__link:hover .recent-updates__title {
+	color: var(--primary);
+}
+
+.recent-updates__date {
+	font-size: 0.65rem;
+	color: var(--content-meta);
+	flex-shrink: 0;
+}
+</style>

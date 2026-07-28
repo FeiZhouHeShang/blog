@@ -14,7 +14,7 @@ export const siteConfig: SiteConfig = {
 	subtitle: "非洲和尚",
 
 	// 站点 URL
-	site_url: "https://tblog.mmzhiku.xyz",
+	site_url: "https://55633000.ccwu.cc",
 
 	// 站点描述
 	description: "非洲和尚的个人博客，记录魔兽争霸、技术学习、生活感悟",

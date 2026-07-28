@@ -1,4 +1,3 @@
-import type { ArticleOutlineRailRuntime } from "@/utils/article-outline-controller";
 import type { TOCManager } from "@/utils/toc-utils";
 
 declare global {
@@ -29,7 +28,6 @@ declare global {
 			options?: Record<string, unknown>,
 		) => void;
 		floatingTOCListenersInitialized?: boolean;
-		__articleOutlineRailRuntime?: ArticleOutlineRailRuntime;
 		__floatingDockTOC?: TOCManager | null;
 		__aiSearchOpen?: boolean;
 		__searchLoadersReady?: boolean;

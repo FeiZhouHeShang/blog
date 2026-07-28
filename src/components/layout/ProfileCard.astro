@@ -1,36 +1,55 @@
 ---
+/**
+ * ============================================================
+ * [关键词: profile-card] 左侧个人信息卡片
+ * ============================================================
+ * 显示：头像 + 名字 + 文章/标签/分类统计 + 社交按钮
+ *
+ * 文件结构（自上而下）：
+ *   ① frontmatter  Astro 组件脚本
+ *   ② HTML 模板
+ *   ③ <style>      样式
+ *
+ * 修改指南（萌新看这里 ↓）：
+ *   - 改头像：        搜索 profile-avatar
+ *   - 改显示名/昵称： src/config/homeConfig.ts 里找 displayName
+ *   - 改社交按钮：    搜索 profile-social-links
+ *   - 改 QQ 号：      搜索 nav-qq-link（在 link-presets.ts）
+ *   - 改主题颜色：    直接改 CSS 变量，自动适配亮/暗主题
+ * ============================================================
+ */
+
 import Icon from "@components/common/Icon.astro";
 import { homeConfig } from "@/config";
 import { getSortedPosts } from "@/utils/content-utils";
 
-// [关键词: profile-card] 左侧个人信息卡片 - 显示头像、名字、统计数据、社交按钮
-//
-// 使用说明：
-// - 头像：搜索 profile-avatar
-// - 名字/显示名：修改 homeConfig.ts
-// - 统计数据：自动从文章列表计算
-// - 社交按钮：搜索 profile-social-links
-// - QQ链接：搜索 nav-qq-link（在 link-presets.ts）
-// - 主题同步：已使用 CSS 变量，自动适配亮/暗主题
+// 拿所有文章（用于自动计算统计数）
 const posts = await getSortedPosts();
 
-// [关键词: profile-stats] 统计数据
+/** [关键词: profile-stats] 统计数字
+ *  全部从文章列表自动算，不用手填 */
 const totalPosts = posts.length;
-const totalTags = posts.length > 0 ? new Set(posts.flatMap(p => p.data.tags || [])).size : 0;
-const totalCategories = posts.length > 0 ? new Set(posts.flatMap(p => p.data.category ? [p.data.category] : [])).size : 0;
+const totalTags = posts.length > 0
+	? new Set(posts.flatMap(p => p.data.tags || [])).size
+	: 0;
+const totalCategories = posts.length > 0
+	? new Set(posts.flatMap(p => p.data.category ? [p.data.category] : [])).size
+	: 0;
 
-// [关键词: profile-avatar] 头像路径
+/** [关键词: profile-avatar] 头像路径
+ *  想换头像？把图片放到 public/gallery/ 下，然后改这里 */
 const avatarSrc = "/gallery/mxdl-2026/QQ.png";
 
-// [关键词: profile-social-links] 社交按钮配置
-// icon: 图标名称（访问 https://icones.js.org/ 查找）
-// href: 链接地址
-// label: 鼠标悬停提示文字
+/** [关键词: profile-social-links] 社交按钮配置
+ *  icon:  在 https://icones.js.org/ 找图标，格式「库名:图标名」
+ *  href:  点击跳转的链接
+ *  label: 鼠标悬停的提示文字
+ *  想加按钮？在数组里再 push 一项就行 */
 const qqNumber = "5563000";
 const socialLinks = [
-	{ icon: "simple-icons:qq", href: `tencent://message/?uin=${qqNumber}`, label: "QQ" },
-	{ icon: "material-symbols:mail-outline", href: "mailto:5563000@qq.com", label: "邮箱" },
-	{ icon: "material-symbols:rss-feed", href: "/rss.xml", label: "RSS" },
+	{ icon: "simple-icons:qq",              href: `tencent://message/?uin=${qqNumber}`, label: "QQ" },
+	{ icon: "material-symbols:mail-outline", href: "mailto:5563000@qq.com",              label: "邮箱" },
+	{ icon: "material-symbols:rss-feed",     href: "/rss.xml",                            label: "RSS" },
 ];
 ---
 
@@ -80,14 +99,13 @@ const socialLinks = [
 	background: var(--float-panel-bg);
 	border: 1px solid var(--line-divider);
 	border-radius: 16px;
-	padding: 1.5rem 1.25rem;
+	padding: 1rem;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 0.85rem;
+	gap: 0.65rem;
 	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 	text-align: center;
-	/* [关键词: profile-card-sticky] 已移除 position: sticky，由父容器 .list-page-left 统一处理粘性定位 */
 }
 
 :root.dark .profile-card {
@@ -121,9 +139,9 @@ const socialLinks = [
 .profile-card__stats {
 	display: flex;
 	justify-content: center;
-	gap: 1.5rem;
+	gap: 0.75rem;
 	width: 100%;
-	padding: 0.75rem 0;
+	padding: 0.5rem 0;
 	border-top: 1px solid var(--line-divider);
 	border-bottom: 1px solid var(--line-divider);
 }

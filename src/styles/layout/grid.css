@@ -2,13 +2,106 @@
    主网格布局 — 来自 MainGridLayout.astro
    ============================================ */
 
-#main-grid {
-	--page-width: 64rem;
+/* #main-grid 的页面宽度由 Layout.astro 在根节点设置的
+   --page-width CSS 变量（默认 siteConfig.pageWidth = 100rem）继承，
+   此处不再硬覆盖，避免与全局配置冲突。 */
+
+/* ---------- 全局侧栏尺寸变量（统一调整在这里） ---------- */
+:root {
+	/* [关键词: sidebar-width] 左右侧栏宽度，匹配参考站 280px（max-w-70）。
+	   想加宽就改这里，PC 端 280~320 都合适 */
+	--sidebar-width: 280px;
+	/* [关键词: sidebar-gap] 三栏之间的间距 */
+	--sidebar-gap: 1rem;
 }
 
-/* Swup 容器最小高度保护，防止页面过渡时高度塌陷导致 Footer 跳动 */
+/* ---------- 主网格：CSS Grid 三栏布局 ---------- */
+/* [关键词: main-grid-layout] 主网格布局
+   通过 data-sidebar-position 控制侧栏显隐：
+   - both  → 左 + 中 + 右（三栏）
+   - left  → 左 + 中（隐藏右栏）
+   - right → 中 + 右（隐藏左栏）
+   - none  → 中（单栏，首页沉浸式）
+   侧栏内容通过 MainGridLayout 的命名插槽（sidebar-left / sidebar-right）传入 */
+#main-grid {
+	display: grid;
+	gap: var(--sidebar-gap);
+	align-items: start;
+}
+
+#main-grid[data-sidebar-position="both"] {
+	grid-template-columns: var(--sidebar-width) minmax(0, 1fr) var(--sidebar-width);
+}
+
+#main-grid[data-sidebar-position="left"] {
+	grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+}
+
+#main-grid[data-sidebar-position="right"] {
+	grid-template-columns: minmax(0, 1fr) var(--sidebar-width);
+}
+
+#main-grid[data-sidebar-position="none"] {
+	grid-template-columns: minmax(0, 1fr);
+}
+
+/* [关键词: sidebar-hide] 隐藏未启用的侧栏列
+   用 display:none 把该列从网格流中移除，剩余列自动填满 */
+#main-grid[data-sidebar-position="none"] #left-sidebar-dynamic,
+#main-grid[data-sidebar-position="none"] #right-sidebar-dynamic,
+#main-grid[data-sidebar-position="left"] #right-sidebar-dynamic,
+#main-grid[data-sidebar-position="right"] #left-sidebar-dynamic {
+	display: none;
+}
+
+/* [关键词: sidebar-sticky] 启用的侧栏吸顶跟随
+   仅当侧栏被启用（data-sidebar-position 匹配）时生效 */
+#main-grid[data-sidebar-position="both"] #left-sidebar-dynamic,
+#main-grid[data-sidebar-position="both"] #right-sidebar-dynamic,
+#main-grid[data-sidebar-position="left"] #left-sidebar-dynamic,
+#main-grid[data-sidebar-position="right"] #right-sidebar-dynamic {
+	position: sticky;
+	top: 80px;
+	max-height: calc(100vh - 100px);
+	overflow-y: auto;
+}
+
+/* [关键词: sidebar-inner] 侧栏内部容器（让卡片有统一间距）
+   侧栏插槽内容由外部传入，这里只负责垂直堆叠 + 间距 */
+#left-sidebar-dynamic,
+#right-sidebar-dynamic {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+/* [关键词: swup-min-width] 防止中间文章区被表格/代码块撑爆网格 */
 #swup-container {
-	min-height: 60vh;
+	min-width: 0;
+	min-height: 60vh; /* Swup 容器最小高度保护，防止页面过渡时高度塌陷导致 Footer 跳动 */
+}
+
+/* ---------- 响应式断点 ---------- */
+/* 1280px 以下：隐藏右栏（左右总宽 560px 仍有点挤） */
+@media (max-width: 1280px) {
+	#main-grid[data-sidebar-position="both"] {
+		grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+	}
+	#main-grid[data-sidebar-position="both"] #right-sidebar-dynamic {
+		display: none;
+	}
+}
+
+/* 1024px 以下：隐藏所有侧栏，只留中间 */
+@media (max-width: 1024px) {
+	#main-grid[data-sidebar-position="both"],
+	#main-grid[data-sidebar-position="left"] {
+		grid-template-columns: minmax(0, 1fr);
+	}
+	#main-grid[data-sidebar-position="both"] #left-sidebar-dynamic,
+	#main-grid[data-sidebar-position="left"] #left-sidebar-dynamic {
+		display: none;
+	}
 }
 
 /* .onload-animation 统一定义在 transition.css 中，避免 CSS 冲突 */

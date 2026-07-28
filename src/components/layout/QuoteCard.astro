@@ -1,27 +1,39 @@
 ---
-import Icon from "@components/common/Icon.astro";
-
 /**
- * [关键词: quote-card] 今日一言卡片 - 使用 Hitokoto API 获取随机名言
- * API 文档: https://hitokoto.cn
+ * ============================================================
+ * [关键词: quote-card] 每日一言卡片（Hitokoto 一言）
+ * ============================================================
+ * 调用 Hitokoto API（https://hitokoto.cn）获取随机名言，点击右上角刷新按钮可换一句。
  *
- * 接口地址: https://v1.hitokoto.cn
- * 支持分类参数:
- *   c=a  文学  c=b  诗词  c=c  名言  c=d  动漫  c=e  游戏
- *   c=f  历史  c=g  国学  c=h  哲学  c=i  心理学  c=j  生活
- *   c=k  娱乐  c=l  机械  c=m  计算机  c=n  经济  c=o  政治
- *   c=p  法律  c=q  军事  c=r  医学  c=s  自然  c=t  艺术
- *   c=u  建筑  c=v  人文  c=w  原创  c=x  网络  c=y  其他
- *   c=z  影视
+ * 文件结构：
+ *   ① frontmatter  Astro 组件脚本（配置 + 占位内容）
+ *   ② HTML 模板    标题 + 名言内容 + 刷新按钮
+ *   ③ <script>     浏览器端 JS，调用 API
+ *   ④ <style>      样式
  *
- * 修改分类：搜索 quote-api-category
- * 修改刷新按钮：搜索 quote-refresh
+ * 修改指南：
+ *   - 改显示的分类：  搜索 quote-api-category
+ *   - 改标题文字：    搜索 quote-card-title
+ *   - 改刷新按钮图标：搜索 quote-refresh
+ * ============================================================
  */
 
-// [关键词: quote-api-category] Hitokoto 分类参数 - 可修改为想要的分类
+import Icon from "@components/common/Icon.astro";
+
+/** [关键词: quote-api-category] Hitokoto 分类参数
+ *  想换口味？改下面这个字符串，分类之间用 & 连接
+ *
+ *  可选分类：
+ *   c=a 文学  c=b 诗词  c=c 名言  c=d 动漫  c=e 游戏
+ *   c=f 历史  c=g 国学  c=h 哲学  c=i 心理学  c=j 生活
+ *   c=k 娱乐  c=l 机械  c=m 计算机  c=n 经济  c=o 政治
+ *   c=p 法律  c=q 军事  c=r 医学  c=s 自然  c=t 艺术
+ *   c=u 建筑  c=v 人文  c=w 原创  c=x 网络  c=y 其他
+ *   c=z 影视
+ */
 const hitokotoCategories = "c=i&c=k&c=d&c=b"; // 心理学/娱乐/动漫/诗词
 
-// SSR 占位内容（API 尚未调用时显示）
+// SSR 占位（API 还没返回时显示这段）
 const fallbackQuote = {
 	text: "加载中...",
 	from: "正在获取名言",

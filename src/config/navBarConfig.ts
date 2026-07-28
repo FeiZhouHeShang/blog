@@ -46,13 +46,10 @@ const buildNavBarConfig = (): NavBarConfig => {
 				}
 			: null;
 
-	// [关键词: nav-my] 我的下拉菜单
+	// [关键词: nav-my] 我的下拉菜单（已更名为「关于」，相册已迁移至「动态」）
 	const myChildren: (NavBarLink | LinkPreset)[] = [];
 	if (siteConfig.pages.calendar) {
 		myChildren.push(LinkPreset.Calendar);
-	}
-	if (siteConfig.pages.gallery) {
-		myChildren.push(LinkPreset.Gallery);
 	}
 	if (siteConfig.pages.sponsor) {
 		myChildren.push(LinkPreset.Sponsor);
@@ -64,12 +61,24 @@ const buildNavBarConfig = (): NavBarConfig => {
 		children: myChildren,
 	};
 
-	// [关键词: nav-order] 导航顺序：主页 → 个人主站 → 工具导航 → 文章 → 交友互动 → 我的
+	// [关键词: nav-moments] 动态下拉菜单（原「我的」里的相册迁到这里）
+	const momentsChildren: (NavBarLink | LinkPreset)[] = [];
+	if (siteConfig.pages.gallery) {
+		momentsChildren.push(LinkPreset.Gallery);
+	}
+
+	const momentsNav: NavBarLink = {
+		...LinkPresets[LinkPreset.Moments],
+		children: momentsChildren,
+	};
+
+	// [关键词: nav-order] 导航顺序：主页 → 文章 → 工具导航 → 影视游戏 → 动态 → 记录 → 关于
 	const links: (NavBarLink | LinkPreset)[] = [
 		LinkPreset.Home,
-		LinkPreset.Feibichi,
-		...(siteConfig.pages.collections ? [LinkPreset.Collections] : []),
 		postsNav,
+		...(siteConfig.pages.collections ? [LinkPreset.Collections] : []),
+		LinkPreset.MoviesGames,
+		...(momentsChildren.length > 0 ? [momentsNav] : []),
 		...(contactNav ? [contactNav] : []),
 		myNav,
 	];

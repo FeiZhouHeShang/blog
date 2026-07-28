@@ -5,6 +5,8 @@ import AboutCanvas from "@components/about/AboutCanvas.svelte";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import LeftSidebar from "@/components/layout/LeftSidebar.astro";
+import RightSidebar from "@/components/layout/RightSidebar.astro";
 import "@/styles/components/about-canvas.css";
 
 const aboutPost = await getEntry("spec", "about");
@@ -17,6 +19,8 @@ const aboutText = aboutPost.body ?? "";
 ---
 
 <MainGridLayout title={i18n(I18nKey.about)} description={i18n(I18nKey.about)}>
+  <LeftSidebar slot="sidebar-left" />
+  <RightSidebar slot="sidebar-right" />
     <div class="about-canvas-container">
         <AboutCanvas text={aboutText} client:only="svelte" />
     </div>

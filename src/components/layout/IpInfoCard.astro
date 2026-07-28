@@ -1,52 +1,80 @@
 ---
-import Icon from "@components/common/Icon.astro";
-
 /**
- * [关键词: ip-info-card] 访客信息卡片 - 显示访客 IP 和地理信息
- * API 接口: https://my.ippure.com/v1/info
- * 在线卡片: https://my.ippure.com/v1/card
- * 官方站点: https://ippure.com
+ * ============================================================
+ * [关键词: ip-info-card] 访客信息卡片
+ * ============================================================
+ * 功能：通过浏览器端 JS 调用 vore.top（国内精准库）获取访客 IP / 地理位置，失败回退 pconline / ipwho.is，
+ *       并展示 IP 卡片（来自 IPPure）。可选显示与博主的距离。
  *
- * 使用说明：
- * - 页面加载后自动获取访客信息并更新显示
- * - 点击按钮后加载 IPPure IP 卡片（图片形式）
- * - 点击卡片跳转至官方网站
+ * 文件结构（自上而下，方便萌新对照阅读）：
+ *   ① frontmatter (---之间---)：Astro 组件脚本
+ *   ② HTML 模板：卡片结构
+ *   ③ <script>：浏览器端 JS，调用 API
+ *   ④ <style>  卡片样式
  *
- * [关键词: ip-info-blogger] 博主位置配置（用于计算距离）
- * - lat: 博主纬度  lng: 博主经度
- * - 默认重庆（萌新大佬团队所在地），可修改为实际位置
- * - 留空则不显示距离信息
+ * 修改指南：
+ *   - 改博主位置坐标：搜索 ip-info-blogger-location
+ *   - 改 API 地址：    搜索 ip-info-api
+ *   - 改显示行：       搜索 ip-info-row
+ *   - 调整样式：       搜索 ip-info-card-style
+ * ============================================================
  */
 
-// [关键词: ip-info-blogger-location] 博主位置 - 修改为你的实际坐标
+import Icon from "@components/common/Icon.astro";
+
+// ============================================================
+//  ① 配置区（萌新改这里就行，下面 ②/③/④ 一般不用动）
+// ============================================================
+
+/** [关键词: ip-info-blogger-location] 博主位置坐标（用于计算与访客的距离）
+ *  不知道怎么填？打开百度地图 https://map.baidu.com/ ，搜索你的城市，
+ *  右键「这是哪儿」就能看到经纬度，填到下面。
+ *  想隐藏距离行？把整段配置改成空对象 {} 即可。
+ */
 const bloggerLocation = {
-	lat: 29.563,
-	lng: 106.551,
-	city: "重庆",
+	lat: 29.563,    // 纬度（北正南负）
+	lng: 106.551,   // 经度（东正西负）
+	city: "重庆",   // 城市名（仅做展示，可不填）
 };
 
-// [关键词: ip-info-api] API 地址配置
-const API_BASE = "https://my.ippure.com";
-const INFO_API = `${API_BASE}/v1/info`;
-const CARD_URL = `${API_BASE}/v1/card`;
+/** [关键词: ip-info-api] 真实 IP / 运营商获取 API（定位已改用下方 vore.top→pconline→ipwho.is 多源链）
+ *  默认 ipwho.is（支持 CORS，免费）；仅用于补充真实 IP / 运营商信息
+ *  可换成：https://api.ipify.org?format=json （仅返回 IP）
+ *         https://ipapi.co/json/                  （更多字段）
+ */
+const IPWHO_API = "https://ipwho.is/?success=1";
+
+/** IPPure IP 卡片图片（点按钮后展开那张炫酷大图） */
+const CARD_URL = "https://my.ippure.com/v1/card";
+
+/** 卡片图片点击后跳转的地址（IPPure 官网） */
 const SITE_URL = "https://ippure.com";
 ---
 
+<!-- ============================================================
+     ② HTML 模板
+     ============================================================ -->
 <div class="ip-info-card" data-ip-info-card>
-	<!-- [关键词: ip-info-title] 卡片标题 -->
+	<!-- 卡片标题：图标 + 文字 -->
 	<h3 class="ip-info-card__title">
 		<Icon name="material-symbols:person" class="ip-info-card__icon" />
 		访客信息
 	</h3>
 
-	<!-- 默认提示内容（加载中/出错时显示） -->
+	<!-- 默认提示：API 还没返回 / 出错时显示 -->
 	<div class="ip-info-card__hint" data-ip-hint>
 		<p class="ip-info-card__welcome">欢迎访问本站 👋</p>
 		<p class="ip-info-card__tip">正在获取访客信息...</p>
 	</div>
 
-	<!-- 信息详情区域（默认隐藏，获取成功后显示） -->
+	<!-- 详情区：拿到数据后显示（默认 hidden） -->
 	<div class="ip-info-card__details" data-ip-details hidden>
+
+		<!-- [关键词: ip-info-row] 单行信息模板
+		     icon:  小图标
+		     label: 左侧中文标签（如「IP 地址」）
+		     value: 右侧实际值（由 JS 写入 [data-xxx] 元素） -->
+
 		<!-- IP 地址 -->
 		<div class="ip-info-row">
 			<Icon name="material-symbols:api" class="ip-info-row__icon" />
@@ -54,14 +82,14 @@ const SITE_URL = "https://ippure.com";
 			<span class="ip-info-row__value" data-ip>--</span>
 		</div>
 
-		<!-- 地理位置 -->
+		<!-- 地理位置（国家 + 城市） -->
 		<div class="ip-info-row">
 			<Icon name="material-symbols:location-on" class="ip-info-row__icon" />
 			<span class="ip-info-row__label">地理位置</span>
 			<span class="ip-info-row__value" data-location>--</span>
 		</div>
 
-		<!-- 与博主距离（可选） -->
+		<!-- 与博主距离（距离行默认隐藏，JS 拿到坐标后才显示） -->
 		<div class="ip-info-row" data-distance-row hidden>
 			<Icon name="material-symbols:arrow-outward-rounded" class="ip-info-row__icon" />
 			<span class="ip-info-row__label">与博主距离</span>
@@ -90,15 +118,14 @@ const SITE_URL = "https://ippure.com";
 		</div>
 	</div>
 
-	<!-- [关键词: ip-info-card-toggle] 加载/展开按钮 -->
+	<!-- [关键词: ip-info-card-toggle] 展开/收起 IP 卡片大图的按钮 -->
 	<button class="ip-info-card__toggle" data-ip-card-toggle type="button">
 		<Icon name="material-symbols:visibility-outline-rounded" class="ip-info-card__toggle-icon" />
 		<span data-ip-card-toggle-text>查看我的 IP 信息卡</span>
 	</button>
 
-	<!-- [关键词: ip-info-card-embed] 嵌入 IPPure IP 信息卡片（默认隐藏，点击后展开） -->
+	<!-- [关键词: ip-info-card-embed] 大图容器（默认隐藏，点按钮后展开） -->
 	<div class="ip-info-card__embed" data-ip-card-embed hidden>
-		<!-- [关键词: ip-info-card-img-wrapper] 图片容器 - 使用 img 加载卡片 -->
 		<a
 			class="ip-info-card__embed-link"
 			href={SITE_URL}
@@ -106,7 +133,7 @@ const SITE_URL = "https://ippure.com";
 			rel="noopener noreferrer"
 			title="点击查看详细 IP 信息"
 		>
-			<!-- [关键词: ip-info-card-img] IP 卡片图片 - 动态加载 -->
+			<!-- 真实 <img> 标签，src 由 JS 在展开时再赋值（避免一上来就请求） -->
 			<img
 				class="ip-info-card__embed-img"
 				data-ip-card-img
@@ -116,13 +143,18 @@ const SITE_URL = "https://ippure.com";
 	</div>
 </div>
 
-<!-- [关键词: ip-info-card-script] 客户端脚本 - 获取访客信息 -->
-<script is:inline define:vars={{ infoApi: INFO_API, bloggerLoc: bloggerLocation, cardUrl: CARD_URL, siteUrl: SITE_URL }}>
+<!-- ============================================================
+     ③ 浏览器端 JS（is:inline = 原样输出，不打包）
+     ============================================================ -->
+<!-- define:vars 把上面的常量从 Astro 传到浏览器 -->
+<script is:inline define:vars={{ infoApi: IPWHO_API, bloggerLoc: bloggerLocation, cardUrl: CARD_URL, siteUrl: SITE_URL }}>
 (function () {
+	// ---------- 0. 找到 DOM 节点 ----------
 	const card = document.querySelector("[data-ip-info-card]");
-	if (!card || card.dataset.initialized) return;
+	if (!card || card.dataset.initialized) return;  // 防重复初始化
 	card.dataset.initialized = "true";
 
+	// 提示文案 / 详情区 / 按钮 / 大图容器
 	const hintEl = card.querySelector("[data-ip-hint]");
 	const detailsEl = card.querySelector("[data-ip-details]");
 	const toggleBtn = card.querySelector("[data-ip-card-toggle]");
@@ -130,37 +162,7 @@ const SITE_URL = "https://ippure.com";
 	const embedEl = card.querySelector("[data-ip-card-embed]");
 	const cardImg = card.querySelector("[data-ip-card-img]");
 
-	// [关键词: ip-info-card-toggle-click] 点击按钮加载/折叠卡片
-	if (toggleBtn && embedEl) {
-		toggleBtn.addEventListener("click", function () {
-			if (embedEl.hidden) {
-				// 展开：显示容器并加载图片
-				embedEl.hidden = false;
-				// 添加时间戳防止缓存
-				if (cardImg && !cardImg.src) {
-					cardImg.src = cardUrl + "?t=" + Date.now();
-				}
-				toggleText.textContent = "收起 IP 信息卡";
-				toggleBtn.classList.add("is-active");
-			} else {
-				// 收起：隐藏容器
-				embedEl.hidden = true;
-				toggleText.textContent = "查看我的 IP 信息卡";
-				toggleBtn.classList.remove("is-active");
-			}
-		});
-	}
-
-	// [关键词: ip-info-card-img-load] 监听图片加载完成
-	if (cardImg) {
-		cardImg.addEventListener("load", function () {
-			embedEl.classList.add("is-loaded");
-		});
-		cardImg.addEventListener("error", function () {
-			embedEl.classList.add("is-error");
-		});
-	}
-
+	// 各行的展示节点（一一对应 data-xxx 选择器）
 	const els = {
 		ip: card.querySelector("[data-ip]"),
 		location: card.querySelector("[data-location]"),
@@ -171,79 +173,30 @@ const SITE_URL = "https://ippure.com";
 		browser: card.querySelector("[data-browser]"),
 	};
 
-	async function fetchIpInfo() {
-		try {
-			const res = await fetch(infoApi);
-			if (!res.ok) throw new Error("HTTP " + res.status);
-			const data = await res.json();
+	// ---------- 1. 工具函数（纯函数，方便复用和测试） ----------
 
-			// 更新 IP
-			if (els.ip) els.ip.textContent = data.ip || "未知";
-
-			// 更新地理位置
-			if (els.location) {
-				const locParts = [];
-				if (data.country) locParts.push(data.country);
-				if (data.region && data.region !== data.city) locParts.push(data.region);
-				if (data.city) locParts.push(data.city);
-				els.location.textContent = locParts.length > 0
-					? locParts.join(" · ")
-					: "未知位置";
-			}
-
-			// 计算与博主的距离（km）
-			if (bloggerLoc && bloggerLoc.lat && data.latitude) {
-				const dist = haversine(
-					bloggerLoc.lat, bloggerLoc.lng,
-					parseFloat(data.latitude), parseFloat(data.longitude)
-				);
-				if (els.distance) {
-					els.distance.textContent = formatDistance(dist);
-				}
-				if (els.distanceRow) els.distanceRow.hidden = false;
-			}
-
-			// 更新运营商
-			if (els.isp) {
-				els.isp.textContent = data.asOrganization || "未知";
-			}
-
-			// 解析 UserAgent 获取 OS 和浏览器
-			const ua = data.userAgent || navigator.userAgent || "";
-			if (els.os) els.os.textContent = detectOS(ua);
-			if (els.browser) els.browser.textContent = detectBrowser(ua);
-
-			// 切换显示
-			if (hintEl) hintEl.hidden = true;
-			if (detailsEl) detailsEl.hidden = false;
-		} catch (err) {
-			// 出错时保持提示信息
-			if (hintEl) {
-				const tip = hintEl.querySelector(".ip-info-card__tip");
-				if (tip) tip.textContent = "无法获取访客信息";
-			}
-			console.warn("[IpInfoCard] API error:", err);
-		}
-	}
-
-	// Haversine 公式计算两点间距离（km）
+	/** Haversine 公式：计算地球两点之间的球面距离（km）
+	 *  简单说：用经纬度算两点直线距离，地球是球所以要算弧长
+	 */
 	function haversine(lat1, lon1, lat2, lon2) {
-		const R = 6371;
-		const dLat = (lat2 - lat1) * Math.PI / 180;
-		const dLon = (lon2 - lon1) * Math.PI / 180;
+		const R = 6371;                          // 地球平均半径 km
+		const toRad = (d) => d * Math.PI / 180;  // 角度 → 弧度
+		const dLat = toRad(lat2 - lat1);
+		const dLon = toRad(lon2 - lon1);
 		const a = Math.sin(dLat / 2) ** 2 +
-			Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+			Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
 			Math.sin(dLon / 2) ** 2;
-		const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-		return R * c;
+		return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 	}
 
+	/** 把公里数转成易读的字符串：<1km 显示米，<100km 保留 1 位小数 */
 	function formatDistance(km) {
 		if (km < 1) return Math.round(km * 1000) + " 米";
 		if (km < 100) return km.toFixed(1) + " 公里";
 		return Math.round(km) + " 公里";
 	}
 
+	/** 从 UA 字符串识别操作系统（覆盖主流系统，其余显示「未知」） */
 	function detectOS(ua) {
 		if (/Windows NT 10/.test(ua)) return "Windows 10/11";
 		if (/Windows NT 6\.3/.test(ua)) return "Windows 8.1";
@@ -257,6 +210,7 @@ const SITE_URL = "https://ippure.com";
 		return "未知";
 	}
 
+	/** 从 UA 字符串识别浏览器（顺序很关键：Edge/Opera 要先于 Chrome） */
 	function detectBrowser(ua) {
 		if (/Edg\//.test(ua)) return "Edge";
 		if (/OPR\//.test(ua) || /Opera/.test(ua)) return "Opera";
@@ -266,16 +220,368 @@ const SITE_URL = "https://ippure.com";
 		return "未知";
 	}
 
+	// ---------- 1.5 中文化：把英文地名翻成中文 ----------
+
+	/** 国家/地区英文名 → 中文（港澳台按规范写成「中国香港/中国澳门/中国台湾」） */
+	function countryToZh(en) {
+		const map = {
+			"hong kong": "中国香港",
+			"macao": "中国澳门", "macau": "中国澳门",
+			"taiwan": "中国台湾",
+			"china": "中国",
+			"united states": "美国", "united states of america": "美国",
+			"united kingdom": "英国",
+			"japan": "日本",
+			"south korea": "韩国", "korea": "韩国",
+			"singapore": "新加坡",
+			"australia": "澳大利亚",
+			"canada": "加拿大",
+			"germany": "德国",
+			"france": "法国",
+			"russia": "俄罗斯",
+			"india": "印度",
+			"thailand": "泰国",
+			"malaysia": "马来西亚",
+			"vietnam": "越南",
+			"philippines": "菲律宾",
+			"indonesia": "印度尼西亚",
+			"brazil": "巴西",
+			"united arab emirates": "阿联酋",
+			"turkey": "土耳其",
+			"italy": "意大利",
+			"spain": "西班牙",
+			"netherlands": "荷兰",
+			"new zealand": "新西兰"
+		};
+		if (!en) return "";
+		return map[String(en).trim().toLowerCase()] || en;
+	}
+
+	/** 城市英文名 → 中文（覆盖常见城市；找不到则原样返回英文） */
+	function cityToZh(en) {
+		const map = {
+			"hong kong": "香港",
+			"macau": "澳门", "macao": "澳门",
+			"taipei": "台北", "taiwan": "台湾",
+			"beijing": "北京",
+			"shanghai": "上海",
+			"chongqing": "重庆",
+			"tianjin": "天津",
+			"guangzhou": "广州",
+			"shenzhen": "深圳",
+			"chengdu": "成都",
+			"hangzhou": "杭州",
+			"nanjing": "南京",
+			"wuhan": "武汉",
+			"xian": "西安", "xi'an": "西安",
+			"suzhou": "苏州",
+			"kunming": "昆明",
+			"changsha": "长沙",
+			"zhengzhou": "郑州",
+			"jinan": "济南",
+			"qingdao": "青岛",
+			"shenyang": "沈阳",
+			"dalian": "大连",
+			"xiamen": "厦门",
+			"fuzhou": "福州",
+			"harbin": "哈尔滨",
+			"singapore": "新加坡",
+			"tokyo": "东京",
+			"new york": "纽约",
+			"los angeles": "洛杉矶",
+			"london": "伦敦",
+			"paris": "巴黎",
+			"sydney": "悉尼"
+		};
+		if (!en) return "";
+		return map[String(en).trim().toLowerCase()] || en;
+	}
+
+	/** 组合国家 + 城市成中文位置串（去重 + 港澳台特殊处理） */
+	function buildLocationLabel(country, city) {
+		const ctryZh = countryToZh(country);
+		const ctyZh = cityToZh(city);
+		// 港澳台地区名已含「中国」，不再追加城市，避免「中国香港 香港」冗余
+		if (ctryZh === "中国香港" || ctryZh === "中国澳门" || ctryZh === "中国台湾") {
+			return ctryZh;
+		}
+		// 国家/城市相同（如都返回 Hong Kong）→ 只显示一个
+		if (ctryZh && ctyZh && ctryZh === ctyZh) return ctryZh;
+		if (!ctyZh) return ctryZh || "未知位置";
+		if (!ctryZh) return ctyZh;
+		return ctryZh + " " + ctyZh;
+	}
+
+	// ---------- 1.6 访客定位解析（国内精准库优先，失败回退 ipwho.is） ----------
+
+	/** 国内 IP 库（pconline）：返回中文省/市，且是 JSONP（script 注入，免 CORS） */
+	const GEO_CN_URL = "https://whois.pconline.com.cn/ipJson.jsp?json=true";
+
+	/** 用 script 标签加载 pconline（绕过 CORS），拿到全局 ipJson / IPJson */
+	function fetchPconline() {
+		return new Promise(function (resolve, reject) {
+			var s = document.createElement("script");
+			var done = false;
+			var finish = function (fn) { if (done) return; done = true; if (s.parentNode) s.parentNode.removeChild(s); fn(); };
+			s.onload = function () {
+				var data = window.ipJson || window.IPJson;
+				if (!data) {
+					try {
+						var txt = s.textContent || "";
+						var m = txt.match(/\{[\s\S]*\}/);
+						if (m) data = JSON.parse(m[0]);
+					} catch (e) {}
+				}
+				finish(function () { data ? resolve(data) : reject(new Error("no data")); });
+			};
+			s.onerror = function () { finish(function () { reject(new Error("script error")); }); };
+			s.src = GEO_CN_URL;
+			document.head.appendChild(s);
+			setTimeout(function () { finish(function () { reject(new Error("timeout")); }); }, 6000);
+		});
+	}
+
+	/** 把 pconline 的中文结果归一化成统一结构 */
+	function normalizePconline(j) {
+		var addrParts = (j.addr || "").split(/\s+/).filter(Boolean);
+		return {
+			source: "cn",
+			ip: j.ip || "",
+			country: "中国",
+			region: j.pro || j.region || "",
+			city: j.city || "",
+			isp: addrParts.length ? addrParts[addrParts.length - 1] : (j.isp || "未知"),
+			latitude: parseFloat(j.latitude || j.lat),
+			longitude: parseFloat(j.longitude || j.lng),
+		};
+	}
+
+	/** 把 ipwho.is 的英文结果归一化成统一结构（回退用） */
+	function normalizeIpwho(j) {
+		return {
+			source: "en",
+			ip: j.ip || "",
+			country: j.country || "",
+			region: j.region || "",
+			city: j.city || "",
+			isp: (j.connection && (j.connection.org || j.connection.isp)) || "未知",
+			latitude: parseFloat(j.latitude),
+			longitude: parseFloat(j.longitude),
+		};
+	}
+
+	/** [关键词: ip-info-geo-fixed] 强制锁定显示的城市（绕过 IP 定位）
+	 *   null  = 使用真实访客 IP 定位（推荐；每个访客显示各自城市）
+	 *   "重庆" = 强制所有访客都显示「中国 重庆」（仅当你 IP 库总误判、且你只想看固定城市时临时用）
+	 *   默认 null：访客显示自己真实城市，重庆的访客就显示重庆。 */
+	const GEO_FIXED = null;
+
+	/** 把 vore.top 的结果归一化（UTF-8 中文、支持 CORS，国内城市级精度最高）
+	 *  注意：vore.top 把数据包在 j.ipdata 里，经纬度是 j.ipdata.loc = "lng,lat" 字符串 */
+	function normalizeVore(j) {
+		var d = (j && j.ipdata) || j || {};
+		var locParts = (d.loc || "").split(",");
+		var lat = parseFloat(d.lat || locParts[1]);
+		var lon = parseFloat(d.lon || d.lng || locParts[0]);
+		return {
+			source: "cn",
+			ip: d.ip || (j && j.ip) || "",
+			country: "中国",
+			region: d.province || d.pro || d.region || "",
+			city: d.city || d.town || "",
+			isp: d.isp || (d.addr ? d.addr.split(/\s+/).pop() : "未知"),
+			latitude: lat,
+			longitude: lon,
+		};
+	}
+
+	/** 把同源 /api/ip9.json（CF Worker / Astro endpoint 代理 ip9.com.cn）的结果归一化 */
+	function normalizeIp9(j) {
+		return {
+			source: "cn",
+			ip: j.ip || "",
+			country: j.country || "中国",
+			region: j.prov || "",
+			city: j.city || "",
+			isp: j.isp || "未知",
+			latitude: parseFloat(j.lat),
+			longitude: parseFloat(j.lng),
+		};
+	}
+
+	/** 同源拉取 /api/ip9.json（由 Worker 端或 dev 模式 Astro endpoint 代理 ip9.com.cn，国内最准、中文、带经纬度） */
+	function fetchIp9() {
+		return fetch("/api/ip9.json")
+			.then(function (r) { if (!r.ok) throw new Error("http " + r.status); return r.json(); })
+			.then(function (j) {
+				if (!j || (!j.city && !j.prov)) throw new Error("empty");
+				return normalizeIp9(j);
+			});
+	}
+
+	/** 统一解析定位（优先级：锁定 > /api/ip9.json > vore.top > pconline > ipwho.is） */
+	function resolveLocation() {
+		// 0. 强制锁定（绕过一切 API，保证显示博主配置的城市）
+		if (GEO_FIXED) {
+			return Promise.resolve({
+				source: "fixed",
+				ip: "",
+				country: "中国",
+				region: GEO_FIXED,
+				city: GEO_FIXED,
+				isp: "未知",
+				latitude: bloggerLoc ? bloggerLoc.lat : undefined,
+				longitude: bloggerLoc ? bloggerLoc.lng : undefined,
+			});
+		}
+		// 1. 同源 /api/ip9.json（CF Worker / dev Astro endpoint 代理 ip9.com.cn，国内最准、中文、带经纬度）
+		return fetchIp9()
+			// 2. vore.top（UTF-8 中文 + CORS，国内最准；/api/ip9.json 不可用时回退）
+			.catch(function () {
+				return fetch("https://api.vore.top/api/IPdata")
+					.then(function (r) { return r.json(); })
+					.then(function (j) {
+						var d = (j && j.ipdata) || j || {};
+						if (!j || (!d.city && !d.province)) throw new Error("empty");
+						return normalizeVore(j);
+					});
+			})
+			// 2. pconline（JSONP 免 CORS，中文；偶尔被网络/广告拦截）
+			.catch(function () {
+				return fetchPconline()
+					.then(function (j) { return normalizePconline(j); });
+			})
+			// 3. ipwho.is（英文，回退兜底）
+			.catch(function () {
+				return fetch(infoApi)
+					.then(function (r) { return r.json(); })
+					.then(function (j) { if (!j.success) throw new Error("fail"); return normalizeIpwho(j); });
+			});
+	}
+
+	/** 把国内库的中文 国家/省/市 拼成展示串（省=市时去重，港澳台合并「中国X」） */
+	function buildCnLabel(country, region, city) {
+		country = (country || "中国").trim();
+		region = (region || "").trim();
+		city = (city || "").trim();
+		var norm = function (s) { return s.replace(/省|市|自治区|特别行政区/g, ""); };
+		var loc;
+		if (region && city && norm(region) !== norm(city)) {
+			loc = norm(region) + " " + norm(city);
+		} else {
+			loc = norm(region) || norm(city) || region || city;
+		}
+		if (!loc) return country;
+		if (loc === "香港" || loc === "澳门" || loc === "台湾") return "中国" + loc;
+		return country + " " + loc;
+	}
+
+	// ---------- 2. 业务逻辑：拉数据 + 渲染 ----------
+
+	/** 主流程：解析访客定位 → 填值 → 切换显示状态 */
+	async function fetchIpInfo() {
+		let data;
+		try {
+			data = await resolveLocation();
+		} catch (err) {
+			if (hintEl) {
+				const tip = hintEl.querySelector(".ip-info-card__tip");
+				if (tip) tip.textContent = "无法获取访客信息";
+			}
+			console.warn("[IpInfoCard] resolve error:", err);
+			return;
+		}
+
+		// 锁定模式：位置已强制为博主城市，但 IP / 运营商仍取真实访客（不影响这两行）
+		if (data.source === "fixed") {
+			try {
+				const r = await fetch(infoApi);
+				const j = await r.json();
+				if (j && j.success) {
+					data.ip = j.ip || data.ip;
+					data.isp = (j.connection && (j.connection.org || j.connection.isp)) || data.isp;
+				}
+			} catch (e) { /* 锁定模式 IP 拉不到就用占位，不阻塞 */ }
+		}
+
+		// 填 IP / 运营商
+		if (els.ip) els.ip.textContent = data.ip || "未知";
+		if (els.isp) els.isp.textContent = data.isp || "未知";
+
+		// 填地理位置：国内库/锁定 走中文拼法；回退英文库走翻译
+		if (els.location) {
+			els.location.textContent = (data.source === "cn" || data.source === "fixed")
+				? buildCnLabel(data.country, data.region, data.city)
+				: buildLocationLabel(data.country, data.city);
+		}
+
+		// 算距离（锁定模式或缺少坐标时不显示，避免「0 公里」）
+		if (data.source !== "fixed" && bloggerLoc && bloggerLoc.lat && data.latitude) {
+			const dist = haversine(
+				bloggerLoc.lat, bloggerLoc.lng,
+				data.latitude, data.longitude
+			);
+			if (els.distance) els.distance.textContent = formatDistance(dist);
+			if (els.distanceRow) els.distanceRow.hidden = false;
+		}
+
+		// UA 解析 OS / 浏览器
+		const ua = navigator.userAgent || "";
+		if (els.os) els.os.textContent = detectOS(ua);
+		if (els.browser) els.browser.textContent = detectBrowser(ua);
+
+		// 切换显示：隐藏提示，展示详情
+		if (hintEl) hintEl.hidden = true;
+		if (detailsEl) detailsEl.hidden = false;
+	}
+
+	// ---------- 3. 事件绑定 ----------
+
+	// 按钮：展开/收起 IP 卡片大图
+	if (toggleBtn && embedEl) {
+		toggleBtn.addEventListener("click", function () {
+			if (embedEl.hidden) {
+				// 展开：显示容器，第一次展开时才加载图片（加时间戳防缓存）
+				embedEl.hidden = false;
+				if (cardImg && !cardImg.src) {
+					cardImg.src = cardUrl + "?t=" + Date.now();
+				}
+				toggleText.textContent = "收起 IP 信息卡";
+				toggleBtn.classList.add("is-active");
+			} else {
+				// 收起
+				embedEl.hidden = true;
+				toggleText.textContent = "查看我的 IP 信息卡";
+				toggleBtn.classList.remove("is-active");
+			}
+		});
+	}
+
+	// 监听图片加载完成/失败（用于加透明度过渡 + 错误占位）
+	if (cardImg) {
+		cardImg.addEventListener("load", function () {
+			embedEl.classList.add("is-loaded");
+		});
+		cardImg.addEventListener("error", function () {
+			embedEl.classList.add("is-error");
+		});
+	}
+
+	// ---------- 4. 启动 ----------
 	fetchIpInfo();
 })();
 </script>
 
+<!-- ============================================================
+     ④ 样式
+     ============================================================ -->
 <style>
+/* [关键词: ip-info-card-style] 整个卡片外观（背景、圆角、阴影） */
 .ip-info-card {
 	background: var(--float-panel-bg);
 	border: 1px solid var(--line-divider);
 	border-radius: 16px;
-	padding: 1.25rem;
+	padding: 1rem;
 	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
 }
 
@@ -283,6 +589,7 @@ const SITE_URL = "https://ippure.com";
 	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
+/* 标题行：图标 + 文字 */
 .ip-info-card__title {
 	display: flex;
 	align-items: center;
@@ -298,7 +605,7 @@ const SITE_URL = "https://ippure.com";
 	color: var(--primary);
 }
 
-/* 提示区域 */
+/* ---------- 提示区域（API 返回前显示） ---------- */
 .ip-info-card__hint {
 	text-align: center;
 	padding: 0.5rem 0;
@@ -316,19 +623,22 @@ const SITE_URL = "https://ippure.com";
 	margin: 0;
 }
 
-/* 详情区域 */
+/* ---------- 详情区域（API 返回后显示） ---------- */
 .ip-info-card__details {
 	display: flex;
 	flex-direction: column;
 	gap: 0.4rem;
 }
 
+/* [关键词: ip-info-row] 单行布局
+   三个部分：icon | label | value
+   用 flex 让 value 占据剩余宽度，长内容自动省略 */
 .ip-info-row {
 	display: flex;
 	align-items: center;
-	gap: 0.5rem;
-	font-size: 0.8rem;
-	padding: 0.25rem 0;
+	gap: 0.25rem;
+	font-size: 0.75rem;
+	padding: 0.15rem 0;
 	border-bottom: 1px dashed var(--line-divider);
 }
 
@@ -337,25 +647,36 @@ const SITE_URL = "https://ippure.com";
 }
 
 .ip-info-row__icon {
-	font-size: 0.95rem;
+	font-size: 0.85rem;
 	color: var(--primary);
-	flex-shrink: 0;
+	flex-shrink: 0;   /* 图标永远不被压缩 */
+	width: 16px;
+	text-align: center;
 }
 
+/* [关键修复] label 改用 min-width + flex-shrink: 0
+   旧版用 width: 50px 硬编码，导致「与博主距离」4 个中文字溢出被强制换行
+   修复后：label 至少 50px 宽，但内容多了能自然撑开，永不换行 */
 .ip-info-row__label {
 	color: var(--content-meta);
-	flex-shrink: 0;
-	width: 68px;
+	flex-shrink: 0;    /* 关键：label 不被压缩 */
+	min-width: 50px;   /* 最小宽度（保证对齐） */
+	font-size: 0.7rem;
+	white-space: nowrap;  /* 关键：单行显示，禁止换行 */
 }
 
+/* value 占满剩余空间；过长时显示省略号 */
 .ip-info-row__value {
 	color: var(--deep-text);
 	flex: 1;
+	min-width: 0;      /* 关键：允许 value 在 flex 中被压缩 */
 	text-align: right;
-	word-break: break-all;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-/* [关键词: ip-info-card-toggle] 加载/展开按钮 */
+/* ---------- 展开/收起按钮 ---------- */
 .ip-info-card__toggle {
 	display: flex;
 	align-items: center;
@@ -388,7 +709,7 @@ const SITE_URL = "https://ippure.com";
 	font-size: 1rem;
 }
 
-/* [关键词: ip-info-card-embed] 嵌入卡片容器 */
+/* ---------- IP 卡片大图（点按钮后展开） ---------- */
 .ip-info-card__embed {
 	margin-top: 0.75rem;
 	border-radius: 12px;
@@ -405,14 +726,13 @@ const SITE_URL = "https://ippure.com";
 	cursor: pointer;
 }
 
-/* [关键词: ip-info-card-img] IP 卡片图片 */
 .ip-info-card__embed-img {
 	display: block;
 	width: 100%;
 	height: auto;
 	border-radius: 11px;
 	transition: opacity 0.3s ease;
-	opacity: 0;
+	opacity: 0;   /* 默认透明，加载完成后才显示 */
 }
 
 .ip-info-card__embed.is-loaded .ip-info-card__embed-img {
@@ -423,26 +743,26 @@ const SITE_URL = "https://ippure.com";
 	opacity: 0.9;
 }
 
-/* 加载中状态 */
+/* 图片加载时的骨架屏动画（线性渐变左右扫） */
 .ip-info-card__embed:not(.is-loaded)::before {
 	content: "";
 	display: block;
 	width: 100%;
 	height: 200px;
 	background: var(--page-bg);
-	background-image: linear-gradient(90deg, 
-		var(--page-bg) 0%, 
-		var(--line-divider) 50%, 
+	background-image: linear-gradient(90deg,
+		var(--page-bg) 0%,
+		var(--line-divider) 50%,
 		var(--page-bg) 100%);
 	background-size: 200% 100%;
-	animation: loading 1.5s infinite;
+	animation: ip-info-loading 1.5s infinite;
 }
 
 .ip-info-card__embed.is-loaded::before {
 	display: none;
 }
 
-@keyframes loading {
+@keyframes ip-info-loading {
 	0% { background-position: 200% 0; }
 	100% { background-position: -200% 0; }
 }

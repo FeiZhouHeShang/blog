@@ -5,6 +5,8 @@ import { siteConfig, sponsorConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import LeftSidebar from "@/components/layout/LeftSidebar.astro";
+import RightSidebar from "@/components/layout/RightSidebar.astro";
 import { url } from "@/utils/url-utils";
 import "@/styles/pages/sponsor.css";
 
@@ -22,6 +24,8 @@ const showSponsorsList = sponsorConfig.showSponsorsList !== false;
 ---
 
 <MainGridLayout title={title} description={description}>
+  <LeftSidebar slot="sidebar-left" />
+  <RightSidebar slot="sidebar-right" />
   <div class="flex w-full rounded-(--radius-large) overflow-hidden relative">
     <div class="card-base z-10 px-9 py-6 relative w-full">
       <!-- 页面标题和描述 -->

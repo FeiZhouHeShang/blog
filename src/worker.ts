@@ -1,6 +1,7 @@
 import { handleCloudflareAiSearch } from "./workers/cloudflare/ai-search/runtime";
 import { handleGithubContributions } from "./workers/cloudflare/github-contributions/handler";
 import { handlePosterImage } from "./workers/cloudflare/poster-image/handler";
+import { handleIp9 } from "./workers/cloudflare/ip9/handler";
 
 export { RateLimiter } from "./workers/cloudflare/ai-search/durable-rate-limiter";
 
@@ -85,6 +86,9 @@ export default {
 		}
 		if (url.pathname === "/api/poster-image") {
 			return handlePosterImage(request);
+		}
+		if (url.pathname === "/api/ip9.json") {
+			return handleIp9(request);
 		}
 
 		if (env.ASSETS) {

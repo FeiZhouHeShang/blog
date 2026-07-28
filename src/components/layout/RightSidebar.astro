@@ -1,0 +1,22 @@
+---
+/**
+ * ============================================================
+ * [关键词: right-sidebar] 其他内容页「右侧仪表盘」统一内容
+ * ============================================================
+ * 组成：每日一言 + 三源热榜（抖音/头条/百度）+ 最近更新
+ * 用法：把 <RightSidebar slot="sidebar-right" /> 放进 MainGridLayout 即可。
+ * 改这里 = 全站其它内容页右侧一起变。
+ *
+ * 2026-07-28 更新：移除了日历（CalendarCard）+ 最新文章（RightDashboard），
+ *   与 RecentUpdates.astro（最近更新）功能重复；现在只保留 3 个卡片，更精简。
+ * ============================================================
+ */
+
+import QuoteCard from "@components/layout/QuoteCard.astro";
+import DouyinHotSearch from "@components/layout/DouyinHotSearch.astro";
+import RecentUpdates from "@/components/layout/RecentUpdates.astro";
+---
+
+<QuoteCard />
+<DouyinHotSearch />
+<RecentUpdates />

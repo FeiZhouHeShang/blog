@@ -38,12 +38,21 @@ export class TOCManager {
 
 	/**
 	 * 查找文章内容容器
+	 * [关键词: toc-scope-fix-2026-07-28] 限定到中间主列（#main-grid > main）内查找，
+	 * 这样列表页（中间列没有 .custom-md）会得到空数组并显示空态文案，
+	 * 同时不会误抓全局 PrivacyModal / UserAgreementModal 弹窗里的 markdown 标题。
+	 * 注意 main 列的中间容器 id 固定为 swup-container。
 	 */
 	private getContentContainer(): Element | null {
+		const mainCol =
+			document.querySelector("#main-grid > main #swup-container") ||
+			document.querySelector("#main-grid > main") ||
+			document.querySelector("#main-grid > section");
+		const scope: ParentNode = mainCol || document.body;
 		return (
-			document.querySelector(".custom-md") ||
-			document.querySelector(".prose") ||
-			document.querySelector(".markdown-content")
+			scope.querySelector(".custom-md") ||
+			scope.querySelector(".prose") ||
+			scope.querySelector(".markdown-content")
 		);
 	}
 

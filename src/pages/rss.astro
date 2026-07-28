@@ -1,6 +1,8 @@
 ---
 import Icon from "@components/common/Icon.astro";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
+import LeftSidebar from "@/components/layout/LeftSidebar.astro";
+import RightSidebar from "@/components/layout/RightSidebar.astro";
 import { getSortedPosts } from "@utils/content-utils";
 import { formatDateToYYYYMMDD } from "@utils/date-utils";
 import PageTitle from "@/components/common/PageTitle.astro";
@@ -12,6 +14,8 @@ const recentPosts = posts.slice(0, 6);
 ---
 
 <MainGridLayout title={i18n(I18nKey.rss)} description={i18n(I18nKey.rssDescription)}>
+  <LeftSidebar slot="sidebar-left" />
+  <RightSidebar slot="sidebar-right" />
     <div class="onload-animation">
         <!-- RSS 标题和介绍 -->
         <div class="card-base rounded-(--radius-large) p-8 mb-6">

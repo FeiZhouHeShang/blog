@@ -7,6 +7,8 @@ import { galleryConfig, siteConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import LeftSidebar from "@/components/layout/LeftSidebar.astro";
+import RightSidebar from "@/components/layout/RightSidebar.astro";
 import { getAlbumCover, scanAlbumPhotos } from "@/utils/gallery-utils";
 import "@/styles/pages/gallery.css";
 
@@ -40,6 +42,8 @@ const tabs = [
 ---
 
 <MainGridLayout title={title} description={description}>
+  <LeftSidebar slot="sidebar-left" />
+  <RightSidebar slot="sidebar-right" />
   <div class="flex w-full rounded-(--radius-large) overflow-hidden relative min-h-32">
     <div class="card-base z-10 px-9 py-6 relative w-full">
       <div class="mb-4">

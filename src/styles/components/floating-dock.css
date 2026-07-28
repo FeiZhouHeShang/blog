@@ -1,6 +1,10 @@
 /* ============================================
    浮动工具栏 — 来自 FloatingDock.astro
    可展开按钮堆栈、抽屉面板、标签列表
+   ============================================
+   [抽屉定位说明] 抽屉容器的 position/right/bottom/width/max-height/z-index
+   在 main.css 的 .dock-drawer 主规则中定义（因为需要避开第三方音乐播放器）。
+   这里只补充 drawer 标题 / 图标 / 内容样式，不重复设置定位。
    ============================================ */
 
 .dock-stack {
@@ -31,6 +35,8 @@
 	display: none !important;
 }
 
+/* 抽屉 z-index 由 main.css 的 .dock-drawer 规则统一控制
+   此处保留旧定义作为后备（特异性可能不足，仅注释说明） */
 .dock-drawer { z-index: 70; }
 .dock-drawer-title {
 	display: flex;

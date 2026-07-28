@@ -1,0 +1,905 @@
+---
+/**
+ * ============================================================
+ * [关键词: hot-board] 三源热榜小卡片（右侧仪表盘通用）
+ * ============================================================
+ * 数据源：抖音热点 / 今日头条热榜 / 百度热搜。
+ * 默认显示 5 条；点击「更多」后高度扩到 10 条（约 10 行高），内部可滚动；
+ * 滚动到底部触发「无限加载更多」（每次再加载 10 条，最多 50 条）；
+ * 点击「收起」恢复 5 条 + 关闭滚动。
+ *
+ * 卡片结构（对照参考截图）：
+ *   ① 头部    ：左 = 标题图标 + 文字，右 = 整卡刷新按钮
+ *   ② Tab     ：抖音 / 头条 / 百度（切换热榜来源）
+ *   ③ 列表区  ：每行 = 左侧排名(红) + 标题 + 热度，右侧缩略图（如有）
+ *   ④ 底部    ：「刷新」+「更多/收起」两个按钮同行
+ *
+ * 修改指南：
+ *   - 改接口地址：搜索 hot-board-api
+ *   - 改默认条数：搜索 hot-board-default-count
+ *   - 改展开条数：搜索 hot-board-expanded-count
+ * ============================================================
+ */
+
+import Icon from "@components/common/Icon.astro";
+---
+
+<section class="widget-card hot-board" data-hot-board aria-label="实时热榜">
+	<div class="hot-board__heading">
+		<h3 class="widget-card__title">
+			<Icon name="material-symbols:local-fire-department" class="widget-card__icon" />
+			<span data-hot-title>抖音热搜</span>
+		</h3>
+		<span class="hot-board__updated" data-hot-updated aria-live="polite"></span>
+	</div>
+
+	<nav class="hot-board__tabs" role="tablist" aria-label="热榜来源">
+		<button
+			type="button"
+			class="hot-board__tab is-active"
+			role="tab"
+			aria-selected="true"
+			data-hot-source="douyin"
+		>
+			抖音
+		</button>
+		<button
+			type="button"
+			class="hot-board__tab"
+			role="tab"
+			aria-selected="false"
+			data-hot-source="toutiao"
+		>
+			头条
+		</button>
+		<button
+			type="button"
+			class="hot-board__tab"
+			role="tab"
+			aria-selected="false"
+			data-hot-source="baidu"
+		>
+			百度
+		</button>
+	</nav>
+
+	<div class="hot-board__body" data-hot-body aria-live="polite">
+		<div class="hot-board__loading" data-hot-loading>正在加载热榜…</div>
+	</div>
+
+	<div class="hot-board__footer" data-hot-footer hidden>
+		<button
+			type="button"
+			class="hot-board__action"
+			data-hot-refresh
+			aria-label="刷新当前热榜"
+		>
+			<Icon name="material-symbols:refresh-rounded" class="hot-board__action-icon" />
+			<span>刷新</span>
+		</button>
+		<button
+			type="button"
+			class="hot-board__action hot-board__action--primary"
+			data-hot-more
+			aria-expanded="false"
+		>
+			<span data-hot-more-text>更多</span>
+		</button>
+	</div>
+</section>
+
+<style is:global>
+/* 这些样式需要作用于 JS 动态创建的元素（不带 data-astro-cid 属性），
+   所以必须 is:global；类名 `hot-board__*` 已加前缀，不会污染其他组件。 */
+.hot-board {
+	--hot-board-fg: var(--deep-text);
+	--hot-board-muted: var(--content-meta);
+}
+
+/* ---------- 卡片外观 ---------- */
+.hot-board.widget-card {
+	background: var(--float-panel-bg);
+	border: 1px solid var(--line-divider);
+	border-radius: 12px;
+	padding: 0.875rem;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+:root.dark .hot-board.widget-card {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hot-board__heading {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+}
+
+.hot-board .widget-card__title {
+	display: flex;
+	align-items: center;
+	gap: 0.3rem;
+	min-width: 0;
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--deep-text);
+}
+
+.hot-board .widget-card__icon {
+	flex: 0 0 auto;
+	font-size: 1rem;
+	color: var(--primary);
+}
+
+.hot-board__updated {
+	flex: 0 0 auto;
+	max-width: 6rem;
+	overflow: hidden;
+	color: var(--content-meta);
+	font-size: 0.625rem;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/* ---------- 来源切换 Tab ---------- */
+.hot-board__tabs {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 0.25rem;
+	margin: 0.7rem 0 0.55rem;
+	padding: 0.2rem;
+	border: 1px solid var(--line-divider);
+	border-radius: 0.65rem;
+	background: color-mix(in oklab, var(--float-panel-bg) 84%, var(--line-divider));
+}
+
+.hot-board__tab {
+	min-width: 0;
+	padding: 0.32rem 0.2rem;
+	border: 0;
+	border-radius: 0.45rem;
+	background: transparent;
+	color: var(--content-meta);
+	font: inherit;
+	font-size: 0.7rem;
+	line-height: 1.2;
+	cursor: pointer;
+	transition: color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.hot-board__tab:hover {
+	color: var(--deep-text);
+	background: color-mix(in oklab, var(--line-divider) 45%, transparent);
+}
+
+.hot-board__tab:active {
+	transform: scale(0.96);
+}
+
+.hot-board__tab:focus-visible,
+.hot-board__action:focus-visible {
+	outline: 2px solid var(--primary);
+	outline-offset: 2px;
+}
+
+.hot-board__tab.is-active {
+	background: var(--btn-plain-bg-hover);
+	color: var(--deep-text);
+	font-weight: 600;
+}
+
+/* ---------- 列表容器 ---------- */
+.hot-board__body {
+	position: relative;
+	min-height: 2.2rem;
+	transition: max-height 240ms ease;
+}
+
+/* 收起：仅 5 条 */
+.hot-board__body.is-collapsed {
+	max-height: 22.4rem; /* 5 行 × ~4.4rem + 内边距 */
+	overflow: hidden;
+}
+
+/* 展开：高度扩到能显示 10 条 */
+.hot-board__body.is-expanded {
+	max-height: 44rem; /* 10 行 × ~4.4rem + 内边距 */
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding-right: 0.15rem;
+	scroll-behavior: smooth;
+}
+
+/* 完全展开：内部自适应高度（无限加载完毕或数据 < 10） */
+.hot-board__body.is-full {
+	max-height: none;
+	overflow: visible;
+}
+
+/* 自定义滚动条 */
+.hot-board__body.is-expanded::-webkit-scrollbar {
+	width: 4px;
+}
+
+.hot-board__body.is-expanded::-webkit-scrollbar-thumb {
+	background: color-mix(in oklab, var(--content-meta) 50%, transparent);
+	border-radius: 4px;
+}
+
+.hot-board__body.is-expanded::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+/* ---------- 加载 / 错误 / 空状态 ---------- */
+.hot-board__loading,
+.hot-board__error,
+.hot-board__empty {
+	padding: 0.85rem 0.2rem;
+	color: var(--content-meta);
+	font-size: 0.72rem;
+	line-height: 1.5;
+	text-align: center;
+}
+
+.hot-board__skeleton-list {
+	display: grid;
+	gap: 0.5rem;
+	padding: 0.2rem 0;
+}
+
+.hot-board__skeleton {
+	display: block;
+	height: 1rem;
+	border-radius: 999px;
+	background: color-mix(in oklab, var(--line-divider) 70%, transparent);
+	animation: hot-board-pulse 1.2s ease-in-out infinite alternate;
+}
+
+.hot-board__skeleton:nth-child(2) { width: 88%; }
+.hot-board__skeleton:nth-child(3) { width: 94%; }
+.hot-board__skeleton:nth-child(4) { width: 76%; }
+.hot-board__skeleton:nth-child(5) { width: 84%; }
+
+@keyframes hot-board-pulse {
+	from { opacity: 0.45; }
+	to { opacity: 0.9; }
+}
+
+.hot-board__error {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.4rem;
+}
+
+/* ---------- 列表项（参考截图样式：rank + 文字 + 缩略图） ---------- */
+.hot-board__list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.hot-board__item {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	min-width: 0;
+	padding: 0.45rem 0;
+	border-bottom: 1px dashed var(--line-divider);
+}
+
+.hot-board__item:last-child {
+	border-bottom: 0;
+}
+
+.hot-board__rank {
+	flex: 0 0 auto;
+	width: 1.1rem;
+	text-align: center;
+	font-size: 0.85rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+	color: var(--content-meta);
+	line-height: 1.2;
+}
+
+.hot-board__item:nth-child(1) .hot-board__rank { color: #ff4d4f; }   /* 红 */
+.hot-board__item:nth-child(2) .hot-board__rank { color: #ff7a45; }   /* 橙 */
+.hot-board__item:nth-child(3) .hot-board__rank { color: #ffa940; }   /* 橙黄 */
+
+.hot-board__main {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.1rem;
+}
+
+.hot-board__item-link {
+	color: var(--deep-text);
+	font-size: 0.78rem;
+	font-weight: 500;
+	line-height: 1.35;
+	text-decoration: none;
+	transition: color 150ms ease;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	word-break: break-all;
+}
+
+.hot-board__item-link:hover {
+	color: var(--primary);
+}
+
+.hot-board__heat {
+	color: var(--content-meta);
+	font-size: 0.65rem;
+	font-variant-numeric: tabular-nums;
+	line-height: 1.2;
+}
+
+.hot-board__thumb {
+	flex: 0 0 auto;
+	width: 3rem;
+	height: 3rem;
+	border-radius: 0.4rem;
+	overflow: hidden;
+	background: color-mix(in oklab, var(--line-divider) 60%, transparent);
+	display: block;
+}
+
+.hot-board__thumb img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	display: block;
+}
+
+/* 列表底部的「加载更多…」按钮（点击再显示 10 条） */
+.hot-board__loadmore-btn {
+	display: block;
+	width: 100%;
+	margin: 0.5rem 0 0.2rem;
+	padding: 0.4rem 0;
+	border: 0;
+	border-top: 1px dashed var(--line-divider);
+	background: transparent;
+	color: var(--primary);
+	font: inherit;
+	font-size: 0.7rem;
+	text-align: center;
+	cursor: pointer;
+	transition: color 150ms ease, background-color 150ms ease;
+}
+
+.hot-board__loadmore-btn:hover {
+	background: color-mix(in oklab, var(--line-divider) 35%, transparent);
+}
+
+.hot-board__loadmore-btn:active {
+	transform: scale(0.98);
+}
+
+.hot-board__nomore {
+	padding: 0.4rem 0 0.2rem;
+	text-align: center;
+	color: var(--content-meta);
+	font-size: 0.62rem;
+	opacity: 0.7;
+}
+
+/* ---------- 底部「刷新 / 更多」按钮组 ---------- */
+.hot-board__footer {
+	display: flex;
+	gap: 0.45rem;
+	margin-top: 0.5rem;
+	padding-top: 0.5rem;
+	border-top: 1px solid var(--line-divider);
+}
+
+.hot-board__action {
+	flex: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+	padding: 0.32rem 0.5rem;
+	border: 1px solid var(--line-divider);
+	border-radius: 0.5rem;
+	background: transparent;
+	color: var(--content-meta);
+	font: inherit;
+	font-size: 0.72rem;
+	cursor: pointer;
+	transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.hot-board__action-icon {
+	font-size: 0.85rem;
+}
+
+.hot-board__action:hover {
+	border-color: var(--primary);
+	background: var(--btn-plain-bg-hover);
+	color: var(--deep-text);
+}
+
+.hot-board__action:active {
+	transform: scale(0.97);
+}
+
+.hot-board__action--primary {
+	background: var(--btn-plain-bg-hover);
+	color: var(--deep-text);
+	font-weight: 600;
+}
+
+.hot-board__action.is-spinning .hot-board__action-icon {
+	animation: hot-board-spin 0.9s linear infinite;
+}
+
+@keyframes hot-board-spin {
+	to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.hot-board__skeleton,
+	.hot-board__tab,
+	.hot-board__item-link,
+	.hot-board__action,
+	.hot-board__body {
+		animation: none;
+		transition-duration: 1ms;
+	}
+}
+</style>
+
+<!-- 客户端拉取三源热榜；支持普通刷新、Astro View Transitions、滚动无限加载 -->
+<script is:inline>
+	(function () {
+		// [关键词: hot-board-api] 三个热榜接口
+		var SOURCES = {
+			douyin: {
+				label: "抖音",
+				title: "抖音热搜",
+				url: "https://dabenshi.cn/other/api/hot.php?type=douyinhot",
+			},
+			toutiao: {
+				label: "头条",
+				title: "今日头条",
+				url: "https://dabenshi.cn/other/api/hot.php?type=toutiaoHot",
+			},
+			baidu: {
+				label: "百度",
+				title: "百度热搜",
+				url: "https://dabenshi.cn/other/api/hot.php?type=baidu",
+			},
+		};
+
+		// [关键词: hot-board-count] 默认 5 条、展开 10 条、每次点击再加载 10 条、最多 50 条
+		var DEFAULT_COUNT = 5;
+		var EXPANDED_COUNT = 10;
+		var PAGE_STEP = 10;
+		var MAX_ITEMS = 50;
+		var REQUEST_TIMEOUT = 10000;
+
+		function textValue(value) {
+			if (value === null || value === undefined) return "";
+			if (typeof value === "object") return "";
+			return String(value).trim();
+		}
+
+		function getList(payload) {
+			if (Array.isArray(payload)) return payload;
+			if (!payload || typeof payload !== "object") return [];
+			var candidates = [
+				payload.data,
+				payload.list,
+				payload.items,
+				payload.result,
+				payload.data && payload.data.list,
+				payload.data && payload.data.items,
+				payload.result && payload.result.data,
+			];
+			for (var i = 0; i < candidates.length; i += 1) {
+				if (Array.isArray(candidates[i])) return candidates[i];
+			}
+			return [];
+		}
+
+		// 从 image_url（可能为字符串或字符串数组）中取第一张图
+		function pickImage(item) {
+			var raw = item.image_url !== undefined ? item.image_url : item.pic;
+			if (!raw) return "";
+			if (Array.isArray(raw)) {
+				for (var i = 0; i < raw.length; i += 1) {
+					var v = textValue(raw[i]);
+					if (v) return v;
+				}
+				return "";
+			}
+			return textValue(raw);
+		}
+
+		function safeHref(value) {
+			if (!value) return "";
+			try {
+				var parsed = new URL(value, window.location.href);
+				return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.href : "";
+			} catch (_) {
+				return "";
+			}
+		}
+
+		function safeImage(value) {
+			if (!value) return "";
+			try {
+				var parsed = new URL(value, window.location.href);
+				return parsed.protocol === "http:" || parsed.protocol === "https:" ? parsed.href : "";
+			} catch (_) {
+				return "";
+			}
+		}
+
+		function normalizeItem(item, index) {
+			if (!item || typeof item !== "object") return null;
+			var title = textValue(item.title || item.word || item.name || item.keyword || item.text);
+			if (!title) return null;
+
+			var rank = Number(item.index ?? item.rank ?? item.position);
+			if (!Number.isFinite(rank) || rank <= 0) rank = index + 1;
+
+			var heat = textValue(
+				item.hot !== undefined ? item.hot
+					: item.hot_value !== undefined ? item.hot_value
+					: item.hotValue !== undefined ? item.hotValue
+					: item.heat !== undefined ? item.heat
+					: item.num !== undefined ? item.num
+					: item.value !== undefined ? item.value
+					: ""
+			);
+
+			var href = textValue(item.url || item.mobilUrl || item.link || item.href);
+
+			return {
+				title: title,
+				rank: rank,
+				heat: heat,
+				href: safeHref(href),
+				image: safeImage(pickImage(item)),
+			};
+		}
+
+		function createElement(tag, className, content) {
+			var el = document.createElement(tag);
+			if (className) el.className = className;
+			if (content !== undefined) el.textContent = content;
+			return el;
+		}
+
+		function initHotBoard(root) {
+			if (!root || root.dataset.hotBoardReady === "true") return;
+			root.dataset.hotBoardReady = "true";
+
+			var body = root.querySelector("[data-hot-body]");
+			var footer = root.querySelector("[data-hot-footer]");
+			var moreButton = root.querySelector("[data-hot-more]");
+			var moreText = root.querySelector("[data-hot-more-text]");
+			var refreshButton = root.querySelector("[data-hot-refresh]");
+			var updatedLabel = root.querySelector("[data-hot-updated]");
+			var titleLabel = root.querySelector("[data-hot-title]");
+			var tabs = Array.prototype.slice.call(root.querySelectorAll("[data-hot-source]"));
+			if (!body || !footer || !moreButton) return;
+
+			var state = {
+				source: "douyin",
+				expanded: false,
+				showCount: DEFAULT_COUNT,
+				allItems: [],
+				updated: "",
+				hasError: false,
+				isLoading: false,
+				controller: null,
+				requestId: 0,
+			};
+
+			/* ---------- 工具 ---------- */
+			function setBodyMode(mode) {
+				// mode: "loading" | "collapsed" | "expanded" | "full" | "error" | "empty"
+				body.classList.remove("is-collapsed", "is-expanded", "is-full");
+				if (mode === "expanded") body.classList.add("is-expanded");
+				else if (mode === "full") body.classList.add("is-full");
+				else if (mode === "collapsed") body.classList.add("is-collapsed");
+			}
+
+			function updateTabs() {
+				tabs.forEach(function (tab) {
+					var active = tab.getAttribute("data-hot-source") === state.source;
+					tab.classList.toggle("is-active", active);
+					tab.setAttribute("aria-selected", active ? "true" : "false");
+				});
+			}
+
+			function updateTitle() {
+				if (!titleLabel) return;
+				var cfg = SOURCES[state.source];
+				if (cfg) titleLabel.textContent = cfg.title;
+			}
+
+			function setFooter(show) {
+				footer.hidden = !show;
+			}
+
+			function updateMoreButton() {
+				if (!moreText) return;
+				moreText.textContent = state.expanded ? "收起" : "更多";
+				moreButton.setAttribute("aria-expanded", state.expanded ? "true" : "false");
+			}
+
+			function hasMoreToLoad() {
+				return state.allItems.length > state.showCount && state.showCount < MAX_ITEMS;
+			}
+
+			/* ---------- 状态渲染 ---------- */
+			function renderLoading() {
+				setBodyMode("loading");
+				body.replaceChildren();
+				var list = createElement("div", "hot-board__skeleton-list");
+				for (var i = 0; i < DEFAULT_COUNT; i += 1) {
+					list.appendChild(createElement("span", "hot-board__skeleton"));
+				}
+				body.appendChild(list);
+				setFooter(false);
+				if (updatedLabel) updatedLabel.textContent = "";
+			}
+
+			function renderError() {
+				setBodyMode("error");
+				body.replaceChildren();
+				var error = createElement("div", "hot-board__error");
+				error.appendChild(createElement("div", "", "热榜暂时获取失败"));
+				var retry = createElement("button", "hot-board__action");
+				retry.type = "button";
+				retry.textContent = "重新加载";
+				retry.setAttribute("data-hot-retry", "true");
+				error.appendChild(retry);
+				body.appendChild(error);
+				setFooter(false);
+				if (updatedLabel) updatedLabel.textContent = "";
+			}
+
+			function renderEmpty() {
+				setBodyMode("empty");
+				body.replaceChildren(createElement("div", "hot-board__empty", "暂无热榜数据"));
+				setFooter(false);
+			}
+
+			function appendListItem(parent, item) {
+				var row = createElement("li", "hot-board__item");
+				row.appendChild(createElement("span", "hot-board__rank", String(item.rank)));
+
+				var main = createElement("div", "hot-board__main");
+				if (item.href) {
+					var link = createElement("a", "hot-board__item-link", item.title);
+					link.href = item.href;
+					link.target = "_blank";
+					link.rel = "noopener noreferrer";
+					link.title = item.title;
+					main.appendChild(link);
+				} else {
+					main.appendChild(createElement("span", "hot-board__item-link", item.title));
+				}
+				if (item.heat) {
+					main.appendChild(createElement("span", "hot-board__heat", item.heat));
+				}
+				row.appendChild(main);
+
+				if (item.image) {
+					var thumb = createElement("a", "hot-board__thumb");
+					thumb.href = item.href || "#";
+					if (item.href) {
+						thumb.target = "_blank";
+						thumb.rel = "noopener noreferrer";
+					}
+					var img = document.createElement("img");
+					img.loading = "lazy";
+					img.referrerPolicy = "no-referrer";
+					img.src = item.image;
+					img.alt = item.title;
+					img.onerror = function () {
+						if (thumb.parentNode) thumb.parentNode.removeChild(thumb);
+					};
+					thumb.appendChild(img);
+					row.appendChild(thumb);
+				}
+
+				parent.appendChild(row);
+			}
+
+			function renderList() {
+				var items = state.allItems.slice(0, state.showCount);
+				if (!items.length) {
+					renderEmpty();
+					return;
+				}
+
+				// 决定列表区模式
+				if (!state.expanded) {
+					setBodyMode("collapsed");
+				} else if (state.showCount >= state.allItems.length) {
+					setBodyMode("full");
+				} else {
+					setBodyMode("expanded");
+				}
+
+				body.replaceChildren();
+				var list = createElement("ol", "hot-board__list");
+				items.forEach(function (item) {
+					appendListItem(list, item);
+				});
+				body.appendChild(list);
+
+				// 已展开 + 还能继续加载 → 显示可点击的「加载更多…」按钮
+				if (state.expanded && hasMoreToLoad()) {
+					var loadMoreBtn = createElement("button", "hot-board__loadmore-btn");
+					loadMoreBtn.type = "button";
+					loadMoreBtn.setAttribute("data-hot-loadmore", "true");
+					loadMoreBtn.textContent = "加载更多…";
+					body.appendChild(loadMoreBtn);
+				} else if (state.expanded && state.allItems.length >= MAX_ITEMS) {
+					var end = createElement("div", "hot-board__nomore");
+					end.textContent = "— 已显示前 " + MAX_ITEMS + " 条 —";
+					body.appendChild(end);
+				}
+
+				setFooter(true);
+				updateMoreButton();
+				if (updatedLabel) updatedLabel.textContent = state.updated || "";
+			}
+
+			/* ---------- 网络加载 ---------- */
+			function load(source, force) {
+				var sourceConfig = SOURCES[source];
+				if (!sourceConfig) return;
+
+				state.source = source;
+				state.showCount = DEFAULT_COUNT;
+				state.allItems = [];
+				state.hasError = false;
+				state.isLoading = true;
+				updateTabs();
+				updateTitle();
+				renderLoading();
+
+				if (state.controller) state.controller.abort();
+				var controller = new AbortController();
+				state.controller = controller;
+				var requestId = state.requestId + 1;
+				state.requestId = requestId;
+
+				var timeoutId = window.setTimeout(function () {
+					try { controller.abort(); } catch (_) {}
+				}, REQUEST_TIMEOUT);
+
+				fetch(sourceConfig.url, {
+					method: "GET",
+					mode: "cors",
+					cache: "no-store",
+					signal: controller.signal,
+				})
+					.then(function (response) {
+						if (!response.ok) throw new Error("HTTP " + response.status);
+						return response.json();
+					})
+					.then(function (payload) {
+						if (requestId !== state.requestId || !root.isConnected) return;
+						var items = getList(payload).map(normalizeItem).filter(Boolean);
+						state.allItems = items.slice(0, MAX_ITEMS);
+						state.updated = getUpdatedText(payload);
+						state.hasError = false;
+						state.isLoading = false;
+						renderList();
+					})
+					.catch(function (error) {
+						if (error && error.name === "AbortError") return;
+						if (requestId !== state.requestId || !root.isConnected) return;
+						state.hasError = true;
+						state.isLoading = false;
+						renderError();
+					})
+					.finally(function () {
+						window.clearTimeout(timeoutId);
+					});
+			}
+
+			function getUpdatedText(payload) {
+				if (!payload || typeof payload !== "object") return "";
+				var updated = textValue(payload.update_time || payload.updateTime || payload.updated_at || payload.time);
+				return updated ? "更新 " + updated : "";
+			}
+
+			function setRefreshSpinning(on) {
+				if (!refreshButton) return;
+				refreshButton.classList.toggle("is-spinning", !!on);
+				refreshButton.disabled = !!on;
+			}
+
+			/* ---------- 事件绑定 ---------- */
+			tabs.forEach(function (tab) {
+				tab.addEventListener("click", function () {
+					var source = tab.getAttribute("data-hot-source");
+					if (!source || source === state.source) return;
+					state.expanded = false;
+					body.scrollTop = 0;
+					load(source, false);
+				});
+			});
+
+			moreButton.addEventListener("click", function () {
+				state.expanded = !state.expanded;
+				if (!state.expanded) {
+					body.scrollTop = 0;
+					state.showCount = DEFAULT_COUNT;
+				} else {
+					// 展开时若还能加载，立即加载到 10 条
+					if (state.showCount < EXPANDED_COUNT) {
+						state.showCount = Math.min(EXPANDED_COUNT, state.allItems.length, MAX_ITEMS);
+					}
+				}
+				renderList();
+			});
+
+			refreshButton.addEventListener("click", function () {
+				if (state.isLoading) return;
+				setRefreshSpinning(true);
+				var requestId = state.requestId;
+				// 强制重拉：清除 isLoading 由 load() 重新接管
+				load(state.source, true);
+				// 简单视觉反馈：800ms 后停转（不论请求是否完成）
+				window.setTimeout(function () {
+					if (requestId === state.requestId) setRefreshSpinning(false);
+				}, 800);
+			});
+
+			body.addEventListener("click", function (event) {
+				var target = event.target;
+				if (!target || !target.closest) return;
+				// 错误态的「重新加载」
+				if (target.closest("[data-hot-retry]")) {
+					load(state.source, true);
+					return;
+				}
+				// 列表底部的「加载更多…」按钮（点击再显示 10 条）
+				if (target.closest("[data-hot-loadmore]")) {
+					if (state.isLoading) return;
+					state.showCount = Math.min(state.showCount + PAGE_STEP, MAX_ITEMS);
+					renderList();
+				}
+			});
+
+			// 初始化
+			updateTabs();
+			updateTitle();
+			load(state.source, false);
+		}
+
+		function initAllHotBoards() {
+			document.querySelectorAll("[data-hot-board]").forEach(initHotBoard);
+		}
+
+		if (!window.__fireflyHotBoardListenersInitialized) {
+			window.__fireflyHotBoardListenersInitialized = true;
+			document.addEventListener("astro:page-load", initAllHotBoards);
+			if (document.readyState === "loading") {
+				document.addEventListener("DOMContentLoaded", initAllHotBoards);
+			}
+		}
+
+		initAllHotBoards();
+	})();
+</script>

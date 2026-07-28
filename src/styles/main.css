@@ -341,15 +341,24 @@ html {
         --dock-drawer-radius: 1rem;
         position: fixed;
         right: 5rem;
-        bottom: 1.25rem;
+        /* [已修复] 避开第三方明月浩空音乐播放器（#myhkplayer）覆盖区域
+         * 播放器位置：right:0, bottom:0, w:300px, h:~200px, z-index:2147483647
+         * 抽屉 bottom 改为 15rem (240px) 让抽屉底部停在播放器顶部之上
+         * max-height 改为基于 bottom + 顶部安全距离动态计算
+         */
+        bottom: 15rem;
         width: 22rem;
-        max-height: 70vh;
+        max-height: calc(100vh - 6rem - 15rem);
         overflow: auto;
         background: var(--page-bg);
         border: 2px solid #000;
         border-radius: var(--dock-drawer-radius);
         padding: 1.25rem;
-        z-index: 60;
+        /* [已修复] z-index 提高到 2147483646（仍小于播放器 2147483647，不影响第三方）
+         * 原本 60/70 在站内元素够用，但相对第三方播放器无能为力
+         * 把 z-index 拉到接近最大值，确保抽屉盖住站内其他浮动组件
+         */
+        z-index: 2147483646;
         transition: opacity 0.15s ease, transform 0.15s ease;
     }
     :root.dark .dock-drawer {

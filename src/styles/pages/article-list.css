@@ -2,9 +2,11 @@
    文章列表页面
    ========================================================================== */
 
-/* #main-grid 位于 Swup 容器外，使用容器内容决定页面宽度，避免导航后宽度状态残留。 */
+/* #main-grid 位于 Swup 容器外，使用容器内容决定页面宽度，避免导航后宽度状态残留。
+   宽度跟随全局 --page-width（siteConfig.pageWidth = 100rem），与主页保持一致，
+   避免列表页被硬锁在 72rem 而比主页窄。 */
 #main-grid:has(#swup-container .article-list-page) {
-	max-width: 72rem;
+	max-width: var(--page-width);
 }
 
 .article-list-page {

@@ -51,26 +51,19 @@
 	border-color: transparent;
 }
 
-/* ── 一级导航触发器图标：默认不渲染，选中时显示 ──
-   不用占位；选中后由 JS 重新计算 hover slider 实现完全覆盖 */
+/* ── 一级导航触发器图标：默认显示（对齐参考站，所有菜单前都带图标） ──
+   hover slider 由 JS 按 getBoundingClientRect 动态计算，宽度变化会自动适配 */
 .navbar-trigger-icon {
-	display: none;
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	margin-right: 0;
+	margin-right: 0.375rem;
+	opacity: 0.85;
 	transition: opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.navbar-trigger-icon svg {
-	width: 0.9rem;
-	height: 0.9rem;
-}
-
-/* 选中时图标显示 */
 .dropdown-container.nav-item-active > a .navbar-trigger-icon,
 .dropdown-container.nav-item-active > button .navbar-trigger-icon {
-	display: inline-flex;
-	margin-right: 0.375rem;
 	opacity: 1;
 }
 

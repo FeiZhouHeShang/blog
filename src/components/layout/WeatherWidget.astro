@@ -1,0 +1,323 @@
+---
+/**
+ * ============================================================
+ * [关键词: weather-widget] 天气小卡片（左右仪表盘通用）
+ * ============================================================
+ * 本组件为「参考实现原样移植」：JS 逻辑 / 缓存机制 / 轮播 / 预警配色 /
+ * 异常提示均按提供的 weather 模块代码照搬，不增删功能。
+ *   - 数据源：uapis 公共天气接口（https://uapis.cn/api/v1/misc/weather，
+ *             由接口服务端按访客 IP 自动定位城市，前端无需传城市参数）
+ *   - 缓存：localStorage，key=__weatherCache_v2，30 分钟
+ *   - 轮播：3 秒切换（is-active 切换），条目：高低温 → AQI → 预警标题短句
+ *   - 预警：仅展示 title 短句；按 level 含「红/橙/黄/蓝」分配颜色 class
+ *   - 异常：断网 / 接口报错 / 空数据 → 隐藏 #weather-main，显示 #weather-error
+ * 框架适配：本站使用 Astro 客户端路由（软导航），已在 astro:page-load
+ *          重新初始化；核心逻辑完全照搬参考实现，未做改动。
+ * 修改指南：
+ *   - 接口地址 / 参数：搜索 WEATHER_API
+ *   - 缓存 key / 时长：搜索 CACHE_KEY / WEATHER_TTL
+ *   - 轮播间隔：搜索 setInterval(..., 3000)
+ * ============================================================
+ */
+---
+
+<!-- 【天气组件替换区域开始】 -->
+<div class="widget-card weather-widget" data-weather-widget>
+	<!-- ① 正常展示容器（由 JS 注入渲染内容） -->
+	<div id="weather-main">
+		<div class="weather-loading">正在获取天气…</div>
+	</div>
+	<!-- ② 错误提示容器（默认隐藏；断网 / 报错 / 空数据时显示） -->
+	<div id="weather-error" class="weather-error" style="display:none">
+		<span id="weather-error-text">天气加载失败</span>
+	</div>
+</div>
+<!-- 【天气组件替换区域结束】 -->
+
+<style is:global>
+/* 通用卡片外观（和其它仪表盘卡片统一；用 [data-weather-widget] 限定作用域） */
+[data-weather-widget] {
+	background: var(--float-panel-bg);
+	border: 1px solid var(--line-divider);
+	border-radius: 12px;
+	padding: 0.875rem;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+:root.dark [data-weather-widget] {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* 【天气组件替换区域开始】 天气卡片专属样式
+   注意：#weather-main 的子元素由 JS innerHTML 动态注入，无 Astro scope 属性。
+   所以整个 <style> 用 is:global，且选择器全部用 [data-weather-widget] 限定在组件内
+   ——这样无论子元素是静态写还是动态生成，都能命中样式。 */
+[data-weather-widget] .weather-loading,
+[data-weather-widget] .weather-error {
+	font-size: 0.75rem;
+	color: var(--content-meta);
+	padding: 0.4rem 0;
+	text-align: center;
+}
+
+/* —— 头部：图标 + 标题（标题即原参考的「天气预报」） —— */
+[data-weather-widget] .weather-header {
+	display: flex;
+	align-items: center;
+	gap: 0.35rem;
+	margin-bottom: 0.6rem;
+}
+[data-weather-widget] .weather-header-icon {
+	width: 18px;
+	height: 18px;
+	object-fit: contain;
+	flex: 0 0 auto;
+}
+[data-weather-widget] .weather-header-title {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--deep-text);
+}
+
+/* —— 主体：左侧温度 + 右侧轮播 —— */
+[data-weather-widget] .weather-body {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+}
+[data-weather-widget] .weather-left {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.1;
+}
+[data-weather-widget] .weather-temp {
+	font-size: 1.9rem;
+	font-weight: 700;
+	color: var(--deep-text);
+	font-variant-numeric: tabular-nums;
+}
+[data-weather-widget] .weather-location {
+	font-size: 0.72rem;
+	color: var(--content-meta);
+	margin-top: 0.2rem;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 9rem;
+}
+
+/* —— 右侧轮播：仅 .is-active 的 slide 可见 —— */
+[data-weather-widget] .weather-right {
+	position: relative;
+	flex: 1 1 auto;
+	min-width: 0;
+	text-align: right;
+	height: 2.6rem;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	overflow: hidden;
+}
+[data-weather-widget] .weather-slide {
+	display: none;
+	font-size: 0.72rem;
+	line-height: 1.35;
+	color: var(--content-meta);
+}
+[data-weather-widget] .weather-slide.is-active {
+	display: block;
+	animation: weatherFade 0.5s ease;
+}
+/* AQI 绿色文字 */
+[data-weather-widget] .weather-slide--aqi {
+	color: #16a34a;
+	font-weight: 600;
+}
+/* 预警：多等级配色 红 / 橙 / 黄 / 蓝 */
+[data-weather-widget] .weather-slide--alert {
+	font-weight: 600;
+}
+[data-weather-widget] .weather-slide--red {
+	color: #dc2626;
+}
+[data-weather-widget] .weather-slide--orange {
+	color: #ea580c;
+}
+[data-weather-widget] .weather-slide--yellow {
+	color: #ca8a04;
+}
+[data-weather-widget] .weather-slide--blue {
+	color: #2563eb;
+}
+
+@keyframes weatherFade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+/* 【天气组件替换区域结束】 */
+</style>
+
+<!-- 客户端拉取天气；核心逻辑照搬参考实现，仅接入 Astro 软导航触发 -->
+<script is:inline>
+	// ============ 以下为参考实现的原样移植（未改动逻辑） ============
+	(function () {
+		var WEATHER_API = "https://uapis.cn/api/v1/misc/weather";
+		var CACHE_KEY = "__weatherCache_v2";
+		var WEATHER_TTL = 30 * 60 * 1000;
+
+		function getCached(key, ttl) {
+			try {
+				var raw = localStorage.getItem(key);
+				if (!raw) return null;
+				var data = JSON.parse(raw);
+				if (data.time > Date.now() - ttl) return data.value;
+			} catch (e) {}
+			return null;
+		}
+
+		function setCache(key, value) {
+			try {
+				localStorage.setItem(key, JSON.stringify({ value: value, time: Date.now() }));
+			} catch (e) {}
+		}
+
+		function showError(msg) {
+			var main = document.getElementById("weather-main");
+			var err = document.getElementById("weather-error");
+			var errText = document.getElementById("weather-error-text");
+			if (main) main.style.display = "none";
+			if (err) err.style.display = "";
+			if (errText) errText.textContent = msg || "天气加载失败";
+		}
+
+		function esc(t) {
+			var d = document.createElement("div");
+			d.textContent = t;
+			return d.innerHTML;
+		}
+
+		function renderWeather(data) {
+			var main = document.getElementById("weather-main");
+			if (!main || !data) return;
+
+			var temp = data.temperature != null ? Math.round(data.temperature) : "--";
+			var desc = data.weather || "未知";
+			var city = data.city || data.district || "未知";
+			var tempMax = data.temp_max != null ? Math.round(data.temp_max) : "--";
+			var tempMin = data.temp_min != null ? Math.round(data.temp_min) : "--";
+			var aqi = data.aqi;
+			var aqiCategory = data.aqi_category || "";
+
+			// 构建右上角信息
+			var rightTop = "高 " + tempMax + "° 低 " + tempMin + "°";
+			var rightBottom = "";
+			if (aqi != null && aqiCategory) {
+				rightBottom = "AQI: " + aqi + " (" + aqiCategory + ")";
+			}
+
+			// 构建右下角轮播内容
+			var slides = [];
+			slides.push({ text: rightTop, cls: "" });
+			if (rightBottom) slides.push({ text: rightBottom, cls: " weather-slide--aqi" });
+			if (data.alerts && data.alerts.length > 0) {
+				for (var i = 0; i < data.alerts.length; i++) {
+					var alert = data.alerts[i];
+					var level = alert.level || "";
+					var title = "⚠️ " + (alert.title || alert.type || "气象预警");
+					var alertCls = " weather-slide--alert";
+					if (level.indexOf("红") !== -1) alertCls += " weather-slide--red";
+					else if (level.indexOf("橙") !== -1) alertCls += " weather-slide--orange";
+					else if (level.indexOf("黄") !== -1) alertCls += " weather-slide--yellow";
+					else if (level.indexOf("蓝") !== -1) alertCls += " weather-slide--blue";
+					slides.push({ text: title, cls: alertCls });
+				}
+			}
+
+			var html = "";
+			// 左上：图标 + 标题
+			html += '<div class="weather-header">';
+			// 注：头部图标为参考站静态资源；本仓库无此 gif，加载失败时隐藏避免破图
+			html +=
+				'  <img class="weather-header-icon" src="/assets/images/em/13428669372241106.gif" alt="" onerror="this.style.display=\'none\'" />';
+			html += '  <span class="weather-header-title">天气预报</span>';
+			html += "</div>";
+
+			// 主体：左侧温度 + 右侧轮播
+			html += '<div class="weather-body">';
+			html += '  <div class="weather-left">';
+			html += '    <span class="weather-temp">' + temp + "°</span>";
+			html += '    <span class="weather-location">' + esc(city) + "，" + esc(desc) + "</span>";
+			html += "  </div>";
+			html += '  <div class="weather-right" id="weather-slides">';
+			for (var s = 0; s < slides.length; s++) {
+				html +=
+					'    <span class="weather-slide' +
+					slides[s].cls +
+					(s === 0 ? " is-active" : "") +
+					'">' +
+					esc(slides[s].text) +
+					"</span>";
+			}
+			html += "  </div>";
+			html += "</div>";
+
+			main.innerHTML = html;
+
+			// 启动轮播
+			if (slides.length > 1) {
+				var idx = 0;
+				var slideEls = main.querySelectorAll(".weather-slide");
+				if (window.__weatherSlideInterval) clearInterval(window.__weatherSlideInterval);
+				window.__weatherSlideInterval = setInterval(function () {
+					slideEls[idx].classList.remove("is-active");
+					idx = (idx + 1) % slides.length;
+					slideEls[idx].classList.add("is-active");
+				}, 3000);
+			}
+		}
+
+		function fetchWeather() {
+			var cached = getCached(CACHE_KEY, WEATHER_TTL);
+			if (cached) {
+				renderWeather(cached);
+				return;
+			}
+
+			fetch(
+				WEATHER_API +
+					"?extended=true&forecast=true&hourly=false&minutely=false&indices=false&lang=zh"
+			)
+				.then(function (r) {
+					return r.json();
+				})
+				.then(function (res) {
+					if (res && res.weather) {
+						renderWeather(res);
+						setCache(CACHE_KEY, res);
+					} else if (res && res.message) {
+						showError(res.message);
+					} else {
+						showError("天气数据获取失败");
+					}
+				})
+				.catch(function () {
+					showError("网络请求失败");
+				});
+		}
+
+		// ============ 框架适配：本站使用 Astro 客户端路由（软导航） ============
+		// 核心逻辑（fetchWeather / renderWeather 等）完全照搬参考实现，仅触发方式适配：
+		// 每次 page-load 重新初始化；非 Astro 环境回落到 DOMContentLoaded / 直接执行。
+		if (window.Astro && typeof window.Astro.on === "function") {
+			window.Astro.on("page-load", fetchWeather);
+		} else if (document.readyState === "loading") {
+			document.addEventListener("DOMContentLoaded", fetchWeather);
+		} else {
+			fetchWeather();
+		}
+	})();
+</script>

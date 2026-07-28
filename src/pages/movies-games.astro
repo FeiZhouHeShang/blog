@@ -1,0 +1,442 @@
+---
+import MainGridLayout from "@/layouts/MainGridLayout.astro";
+import LeftSidebar from "@/components/layout/LeftSidebar.astro";
+import RightSidebar from "@/components/layout/RightSidebar.astro";
+import { moviesGames, type MediaItem, type MediaSection, type MediaStatus } from "@/data/movies-games";
+
+// 影视与游戏页（Bangumi 风格收藏墙）
+// 数据来源：src/data/movies-games.ts
+// 编辑方式：页面底部「在 GitHub 编辑」按钮 → 直达该文件的 GitHub 网页编辑器（零后端）
+const title = "影视与游戏";
+const description = "我的影视与游戏收藏记录";
+
+// —— 类型 Tab ——
+const sections: { key: MediaSection | "all"; label: string }[] = [
+	{ key: "all", label: "全部" },
+	{ key: "movie", label: "电影" },
+	{ key: "tv", label: "电视剧" },
+	{ key: "anime", label: "动漫" },
+	{ key: "documentary", label: "纪录片" },
+	{ key: "game", label: "游戏" },
+];
+// —— 状态筛选 ——
+const statuses: { key: MediaStatus | "all"; label: string }[] = [
+	{ key: "all", label: "全部" },
+	{ key: "collect", label: "看过" },
+	{ key: "doing", label: "在看" },
+	{ key: "wish", label: "想看" },
+	{ key: "on_hold", label: "搁置" },
+	{ key: "dropped", label: "抛弃" },
+];
+
+const sectionCount = (k: MediaSection | "all") =>
+	k === "all" ? moviesGames.length : moviesGames.filter((m) => m.section === k).length;
+const statusCount = (k: MediaStatus | "all") =>
+	k === "all" ? moviesGames.length : moviesGames.filter((m) => m.status === k).length;
+
+// 状态 → 中文标签（游戏「在看」写作「在玩」）
+const STATUS_LABEL: Record<MediaStatus, string> = {
+	collect: "看过",
+	doing: "在看",
+	wish: "想看",
+	on_hold: "搁置",
+	dropped: "抛弃",
+};
+// 状态 → 配色（Tailwind 工具类，字面量出现于本文件，Tailwind 会扫描生成）
+const STATUS_COLOR: Record<MediaStatus, string> = {
+	collect: "bg-emerald-500/80",
+	doing: "bg-amber-500/80",
+	wish: "bg-sky-500/80",
+	on_hold: "bg-violet-500/80",
+	dropped: "bg-rose-400/80",
+};
+function statusLabel(item: MediaItem): string {
+	if (item.section === "game" && item.status === "doing") return "在玩";
+	return STATUS_LABEL[item.status];
+}
+
+// GitHub 编辑回链（与 git remote 对齐：FeiZhouHeShang/blog @ main）
+const EDIT_URL =
+	"https://github.com/FeiZhouHeShang/blog/edit/main/src/data/movies-games.ts";
+
+const STAR_PATH =
+	"M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z";
+---
+
+<MainGridLayout title={title} description={description}>
+	<LeftSidebar slot="sidebar-left" />
+	<RightSidebar slot="sidebar-right" />
+
+	<div class="mg-page-wrapper w-full rounded-(--radius-large) overflow-hidden relative min-h-32" id="mg-root">
+		<!-- 头部：标题 + 在 GitHub 编辑回链 -->
+		<div class="mg-header relative w-full mb-8 flex flex-wrap items-end justify-between gap-4">
+			<div>
+				<h1 class="text-2xl font-bold tracking-tight text-[var(--deep-text)]">影视与游戏</h1>
+				<p class="mt-1 text-sm text-[var(--content-meta)]">
+					共 {moviesGames.length} 部 · 看完的、在追的、想看的，都在这
+				</p>
+			</div>
+			<a
+				href={EDIT_URL}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="btn-card inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--btn-card-bg-hover)] transition-all duration-150"
+				title="在 GitHub 网页编辑器修改数据后提交，自动部署"
+			>
+				<svg width="1.1em" height="1.1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+					<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
+				</svg>
+				在 GitHub 编辑
+			</a>
+		</div>
+
+		<!-- 类型 Tab -->
+		<div class="mg-tabs-wrapper mb-6">
+			<div class="tools-tab-pill" data-mg-type-pill="">
+				<span class="tools-tab-indicator" data-mg-indicator=""></span>
+				{
+					sections.map((s, i) => (
+						<button
+							type="button"
+							class:list={["tools-tab-btn", i === 0 ? "tools-tab-btn-active" : "tools-tab-btn-inactive"]}
+							data-tab={s.key}
+						>
+							<span>{s.label}</span>
+							<span class="tools-tab-badge">{sectionCount(s.key)}</span>
+						</button>
+					))
+				}
+			</div>
+		</div>
+
+		<!-- 状态筛选 -->
+		<div class="mg-filter-wrapper tools-tab-pill mb-5" data-mg-filter-pill="">
+			<span class="tools-tab-indicator" data-mg-indicator=""></span>
+			{
+				statuses.map((s, i) => (
+					<button
+						type="button"
+						class:list={["tools-tab-btn", "mg-filter-btn", i === 0 ? "tools-tab-btn-active" : "tools-tab-btn-inactive"]}
+						data-filter={s.key}
+					>
+						<span>{s.label}</span>
+						<span class="tools-tab-badge">{statusCount(s.key)}</span>
+					</button>
+				))
+			}
+		</div>
+
+		<!-- 卡片网格 -->
+		<div class="mg-grid grid grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-5" data-mg-grid="">
+			{
+				moviesGames.map((item) => (
+					<div class="mg-item" data-section={item.section} data-status={item.status}>
+						<a
+							href={item.bangumiUrl || "#"}
+							class="mg-card group"
+							data-ext-bangumi={item.bangumiUrl ? "1" : "0"}
+							target={item.bangumiUrl ? "_blank" : undefined}
+							rel={item.bangumiUrl ? "noopener noreferrer" : undefined}
+						>
+							<div class="mg-cover">
+								{item.cover ? (
+									<img
+										src={item.cover}
+										alt={item.title}
+										class="mg-img"
+										loading="lazy"
+										onerror="this.style.display='none'"
+									/>
+								) : (
+									<div class="mg-img mg-img-placeholder">{item.title.charAt(0)}</div>
+								)}
+								<div class="mg-gradient"></div>
+								<span class:list={["mg-status", STATUS_COLOR[item.status]]}>{statusLabel(item)}</span>
+								{item.score != null && (
+									<span class="mg-score">
+										<svg class="mg-star" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+											<path d={STAR_PATH} />
+										</svg>
+										{item.score}
+									</span>
+								)}
+							</div>
+							<div class="mg-info">
+								<h3 class="mg-title">{item.title}</h3>
+								{item.tags && item.tags.length > 0 && (
+									<div class="mg-tags">
+										{item.tags.map((t) => (
+											<span class="mg-tag">{t}</span>
+										))}
+									</div>
+								)}
+							</div>
+							{item.comment && (
+								<div class="mg-overlay">
+									<p class="mg-comment">{item.comment}</p>
+								</div>
+							)}
+						</a>
+					</div>
+				))
+			}
+		</div>
+
+		<!-- 空状态 -->
+		<div class="mg-empty py-16 text-center text-[var(--content-meta)]" data-mg-empty="" style="display:none;">
+			这个分类下还没有记录～
+		</div>
+
+		<!-- 分页 -->
+		<div
+			class="bangumi-pagination responsive-pagination flex flex-wrap justify-center items-center gap-2 mt-8"
+			data-mg-pagination=""
+		>
+		</div>
+	</div>
+</MainGridLayout>
+
+<style>
+	/* mg-* 自定义样式（卡片为 SSR 渲染，scoped 生效） */
+	.mg-card {
+		position: relative;
+		display: block;
+		border-radius: 0.75rem;
+		overflow: hidden;
+		background: var(--float-panel-bg);
+		border: 1px solid var(--line-divider);
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+		transition:
+			transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+			box-shadow 0.25s ease;
+	}
+	.mg-card:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+	}
+	.mg-cover {
+		position: relative;
+		aspect-ratio: 2 / 3;
+		overflow: hidden;
+		background: linear-gradient(135deg, var(--primary) 0%, var(--deep-text) 100%);
+	}
+	.mg-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.4s ease;
+	}
+	.mg-card:hover .mg-img {
+		transform: scale(1.06);
+	}
+	.mg-img-placeholder {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 2.5rem;
+		font-weight: 700;
+		color: rgba(255, 255, 255, 0.85);
+	}
+	.mg-gradient {
+		position: absolute;
+		inset: 0;
+		background: linear-gradient(to top, rgba(0, 0, 0, 0.75) 0%, rgba(0, 0, 0, 0) 45%);
+		pointer-events: none;
+	}
+	.mg-status {
+		position: absolute;
+		top: 0.4rem;
+		left: 0.4rem;
+		padding: 0.1rem 0.45rem;
+		font-size: 0.7rem;
+		font-weight: 600;
+		color: #fff;
+		border-radius: 0.4rem;
+		backdrop-filter: blur(2px);
+	}
+	.mg-score {
+		position: absolute;
+		bottom: 0.4rem;
+		right: 0.45rem;
+		display: flex;
+		align-items: center;
+		gap: 0.15rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: #fde047;
+		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+	}
+	.mg-star {
+		width: 0.85rem;
+		height: 0.85rem;
+	}
+	.mg-info {
+		padding: 0.5rem 0.6rem 0.6rem;
+	}
+	.mg-title {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--deep-text);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	.mg-tags {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		margin-top: 0.3rem;
+	}
+	.mg-tag {
+		font-size: 0.65rem;
+		padding: 0.05rem 0.35rem;
+		border-radius: 0.3rem;
+		color: var(--content-meta);
+		background: var(--btn-card-bg-hover);
+	}
+	/* 悬停评语浮层 */
+	.mg-overlay {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: flex-end;
+		padding: 0.75rem;
+		background: rgba(0, 0, 0, 0.72);
+		opacity: 0;
+		transition: opacity 0.25s ease;
+		pointer-events: none;
+	}
+	.mg-card:hover .mg-overlay {
+		opacity: 1;
+	}
+	.mg-comment {
+		font-size: 0.75rem;
+		line-height: 1.4;
+		color: #fff;
+	}
+
+	/* 自带 indicator（独立于 collections.css 的，避免冲突） */
+	[data-mg-indicator] {
+		opacity: 1 !important;
+	}
+</style>
+
+<script is:inline>
+	(function () {
+		var root = document.getElementById("mg-root");
+		if (!root) return;
+		var typePill = root.querySelector("[data-mg-type-pill]");
+		var filterPill = root.querySelector("[data-mg-filter-pill]");
+		var grid = root.querySelector("[data-mg-grid]");
+		var pagWrap = root.querySelector("[data-mg-pagination]");
+		var emptyEl = root.querySelector("[data-mg-empty]");
+		if (!grid) return;
+		var items = Array.prototype.slice.call(grid.querySelectorAll(".mg-item"));
+		var PAGE_SIZE = 12;
+		var curTab = "all";
+		var curFilter = "all";
+		var curPage = 1;
+
+		function moveIndicator(pill) {
+			if (!pill) return;
+			var ind = pill.querySelector("[data-mg-indicator]");
+			var active = pill.querySelector(".tools-tab-btn-active");
+			if (!ind || !active) return;
+			ind.style.left = active.offsetLeft + "px";
+			ind.style.width = active.offsetWidth + "px";
+			ind.style.opacity = "1";
+		}
+
+		function visibleItems() {
+			return items.filter(function (it) {
+				var s = it.getAttribute("data-section");
+				var st = it.getAttribute("data-status");
+				var okTab = curTab === "all" || s === curTab;
+				var okFilter = curFilter === "all" || st === curFilter;
+				return okTab && okFilter;
+			});
+		}
+
+		function renderPagination(pages) {
+			if (!pagWrap) return;
+			pagWrap.innerHTML = "";
+			if (pages <= 1) {
+				pagWrap.style.display = "none";
+				return;
+			}
+			pagWrap.style.display = "";
+			function mk(label, page, opts) {
+				opts = opts || {};
+				var b = document.createElement("button");
+				b.type = "button";
+				b.className =
+					"btn-card flex items-center justify-center min-w-10 h-10 px-3 rounded-xl text-[var(--primary)] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[var(--btn-card-bg-hover)] transition-all duration-150";
+				if (opts.active) {
+					b.classList.add("!bg-[var(--primary)]", "!text-white");
+				}
+				b.textContent = label;
+				if (opts.disabled) b.disabled = true;
+				b.addEventListener("click", function () {
+					if (b.disabled) return;
+					curPage = page;
+					render();
+					window.scrollTo({ top: grid.offsetTop - 80, behavior: "smooth" });
+				});
+				return b;
+			}
+			pagWrap.appendChild(mk("‹", curPage - 1, { disabled: curPage === 1 }));
+			for (var p = 1; p <= pages; p++) {
+				pagWrap.appendChild(mk(String(p), p, { active: p === curPage }));
+			}
+			pagWrap.appendChild(mk("›", curPage + 1, { disabled: curPage === pages }));
+		}
+
+		function render() {
+			var vis = visibleItems();
+			var total = vis.length;
+			var pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+			if (curPage > pages) curPage = pages;
+			items.forEach(function (it) {
+				it.style.display = "none";
+			});
+			vis.forEach(function (it, i) {
+				it.style.display = i >= (curPage - 1) * PAGE_SIZE && i < curPage * PAGE_SIZE ? "" : "none";
+			});
+			renderPagination(pages);
+			if (emptyEl) emptyEl.style.display = total === 0 ? "" : "none";
+		}
+
+		function initPill(pill, onPick) {
+			if (!pill) return;
+			pill.querySelectorAll(".tools-tab-btn").forEach(function (btn) {
+				btn.addEventListener("click", function () {
+					pill.querySelectorAll(".tools-tab-btn").forEach(function (b) {
+						b.classList.remove("tools-tab-btn-active");
+						b.classList.add("tools-tab-btn-inactive");
+					});
+					btn.classList.remove("tools-tab-btn-inactive");
+					btn.classList.add("tools-tab-btn-active");
+					moveIndicator(pill);
+					onPick(btn);
+				});
+			});
+			moveIndicator(pill);
+		}
+
+		initPill(typePill, function (btn) {
+			curTab = btn.getAttribute("data-tab") || "all";
+			curPage = 1;
+			render();
+		});
+		initPill(filterPill, function (btn) {
+			curFilter = btn.getAttribute("data-filter") || "all";
+			curPage = 1;
+			render();
+		});
+		window.addEventListener("resize", function () {
+			moveIndicator(typePill);
+			moveIndicator(filterPill);
+		});
+		render();
+	})();
+</script>

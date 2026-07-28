@@ -1,7 +1,6 @@
 ---
 import Live2DWidget from "@components/features/Live2DWidget.astro";
 import SpineModel from "@components/features/SpineModel.astro";
-import ArticleOutlineRail from "@components/layout/ArticleOutlineRail.astro";
 import Footer from "@components/layout/Footer.astro";
 import Navbar from "@components/layout/Navbar.astro";
 import NavMenuPanel from "@components/layout/NavMenuPanel.astro";
@@ -49,9 +48,20 @@ const {
 	bannerPostMeta: _bannerPostMeta,
 } = Astro.props;
 
-const isPostPage = !!postSlug;
 const shouldRenderCategoryBar = !!siteConfig.categoryBar;
 const navbarWidthFull = siteConfig.navbar.widthFull ?? false;
+
+// [关键词: sidebar-position] 根据命名插槽自动检测侧栏位置
+//  - 页面通过 <slot name="sidebar-left" /> / <slot name="sidebar-right" /> 传入侧栏内容
+//  - Astro.slots.has() 在构建时检测插槽是否有内容
+//  - 自动设置 data-sidebar-position，CSS 据此切换三栏/两栏/单栏布局
+const hasLeftSidebar = Astro.slots.has("sidebar-left");
+const hasRightSidebar = Astro.slots.has("sidebar-right");
+let sidebarPosition: "both" | "left" | "right" | "none";
+if (hasLeftSidebar && hasRightSidebar) sidebarPosition = "both";
+else if (hasLeftSidebar) sidebarPosition = "left";
+else if (hasRightSidebar) sidebarPosition = "right";
+else sidebarPosition = "none";
 
 const navLinks = navBarConfig.links.map((item) => {
 	if (typeof item === "number") return LinkPresets[item];
@@ -78,12 +88,15 @@ const navLinks = navBarConfig.links.map((item) => {
 	<NavMenuPanel links={navLinks} />
 
 	<div class="relative w-full" id="main-grid-wrapper">
-		<div class="mx-auto max-w-5xl px-4 md:px-6" data-sidebar-position="none" id="main-grid">
-			<div id="left-sidebar-dynamic" class="hidden"></div>
-			<div id="right-sidebar-dynamic" class="hidden"></div>
+		<div class="mx-auto max-w-(--page-width) px-4 md:px-6" data-sidebar-position={sidebarPosition} id="main-grid">
+			{/* [关键词: left-sidebar-dynamic] 左侧全局侧栏（命名插槽传入）
+			   留空时由 CSS（grid.css 的 sidebar-hide 规则）自动隐藏 */}
+			<div id="left-sidebar-dynamic">
+				<slot name="sidebar-left" />
+			</div>
 
+			{/* [关键词: swup-container] 中间主内容区（默认插槽） */}
 			<main id="swup-container" class="transition-swup-main" data-current-post-category={postCategory || ""}>
-				{isPostPage && <ArticleOutlineRail />}
 				{shouldRenderCategoryBar && <div id="category-bar-wrapper"><CategoryBar title={title} postSlug={postSlug} postCategory={postCategory} /></div>}
 				<h1 class="sr-only">{title}</h1>
 
@@ -95,8 +108,14 @@ const navLinks = navBarConfig.links.map((item) => {
 				</div>
 			</main>
 
-			{spineModelConfig.enable && <SpineModel />}
-			{live2dModelConfig.enable && <Live2DWidget config={live2dModelConfig} />}
+			{/* [关键词: right-sidebar-dynamic] 右侧全局侧栏（命名插槽传入） */}
+			<div id="right-sidebar-dynamic">
+				<slot name="sidebar-right" />
+			</div>
 		</div>
+
+		{/* Spine / Live2D 是 position: fixed 装饰组件，放在 grid 容器外避免参与 grid auto-placement */}
+		{spineModelConfig.enable && <SpineModel />}
+		{live2dModelConfig.enable && <Live2DWidget config={live2dModelConfig} />}
 	</div>
 </Layout>

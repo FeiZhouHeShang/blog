@@ -237,17 +237,18 @@ export default defineConfig({
 		}),
 	},
 	vite: {
+		// [关键词: dev-api] 开发模式本地 API 接管（dev 下 wrangler dev 不一定在跑）：
+		//   ① /api/ip9.json → 由 src/pages/api/ip9.json.ts（Astro SSR endpoint）直接 fetch ip9.com.cn
+		//   ② /api/holidays.json / /api/allPostMeta.json → Astro 内部 SSR endpoint
+		//   ③ 其他 /api (ai-search/github-contributions/poster-image) → dev 下若 wrangler dev
+		//      没在跑会 404，生产 CF Worker 部署时由 handleXxx 处理
+		//   不再走 vite proxy /api → 8787（避免 dev 下 8787 死时 /api 全 504）
 		plugins: [tailwindcss()],
 		server: {
 			watch: {
 				ignored: ["**/package/**", "**/Firefly-docs/**"],
 			},
-			proxy: {
-				"/api": {
-					target: "http://localhost:8787",
-					changeOrigin: true,
-				},
-			},
+			// 不再走 vite proxy /api → 8787（dev 下 wrangler 不一定在跑，会让 /api 全 504）
 		},
 		resolve: {
 			alias: {

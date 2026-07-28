@@ -28,15 +28,22 @@ const now = new Date();
 const years = [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1];
 
 // SSR 拉取节日数据 & 文章数据
-const [holidaysRes, postsRes] = await Promise.all([
-	fetch(new URL("/api/holidays.json", Astro.url)),
-	fetch(new URL("/api/allPostMeta.json", Astro.url)),
+// [关键词: calendar-ssr-fetch] 失败兜底：
+//   dev 下若 wrangler dev (8787) 没跑，Astro 内置 fetch /api/holidays.json 会 ETIMEDOUT，
+//   把整页搞红。包一层超时 + try/catch 兜底空数组，生产 build 仍正常。
+async function safeJson(url: URL, timeoutMs = 4000): Promise<any[]> {
+	try {
+		const res = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
+		return res.ok ? await res.json() : [];
+	} catch (e) {
+		console.warn(`[calendar] fetch ${url.pathname} failed:`, e);
+		return [];
+	}
+}
+const [holidays, posts] = await Promise.all([
+	safeJson(new URL("/api/holidays.json", Astro.url)),
+	safeJson(new URL("/api/allPostMeta.json", Astro.url)),
 ]);
-
-const holidays = (
-	holidaysRes.ok ? await holidaysRes.json() : []
-) as HolidayEntry[];
-const posts = (postsRes.ok ? await postsRes.json() : []) as PostMeta[];
 
 const overviewProps = {
 	holidays,
