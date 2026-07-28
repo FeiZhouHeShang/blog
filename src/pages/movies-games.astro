@@ -264,14 +264,15 @@ const STAR_PATH =
 						<span>TMDB API Key <span style="font-weight:400;color:var(--content-meta);font-size:0.7rem;">(用于智能匹配，可选)</span></span>
 						<span class="mg-editor-label-tip">
 							仅存浏览器 localStorage
-							· <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" class="mg-editor-link">注册 TMDB v3 key</a>
+							· 支持 v3 key 或 v4 读令牌
+							· <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener noreferrer" class="mg-editor-link">TMDB API 设置</a>
 						</span>
 					</label>
 					<div class="mg-editor-token-row">
 						<input
 							type="password"
 							id="mg-editor-tmdb-key"
-							placeholder="TMDB v3 API key（32 位 hex）"
+							placeholder="TMDB v3 key（32 位 hex）或 v4 读令牌（eyJ...）"
 							autocomplete="off"
 							spellcheck="false"
 							class="mg-editor-input"
@@ -1087,14 +1088,22 @@ const STAR_PATH =
 			return { movie: "movie", tv: "tv", anime: "anime", documentary: "doc", game: "game" }[sec] || "movie";
 		}
 		// 调 TMDB search/multi
+		// 兼容两种凭证：
+		//  - v3 API key（32 位 hex）：走 ?api_key= 查询参数
+		//  - v4 读访问令牌（JWT，eyJ 开头、三段）：走 Authorization: Bearer 头
+		function isV4Token(key) {
+			return /^eyJ[\w-]+\.[\w-]+\.[\w-]+$/.test((key || "").trim());
+		}
 		async function searchTmdb(query) {
-			var key = getTmdbKey();
-			if (!key) throw new Error("请先填写 TMDB API Key");
+			var key = (getTmdbKey() || "").trim();
+			if (!key) throw new Error("请先填写 TMDB API Key 或读访问令牌");
+			var isV4 = isV4Token(key);
 			var url =
-				TMDB_API_BASE + "/search/multi?api_key=" + encodeURIComponent(key) +
-				"&query=" + encodeURIComponent(query) +
+				TMDB_API_BASE + "/search/multi?query=" + encodeURIComponent(query) +
 				"&language=zh-CN&include_adult=false&page=1";
-			var r = await fetch(url);
+			if (!isV4) url += "&api_key=" + encodeURIComponent(key);
+			var headers = isV4 ? { Authorization: "Bearer " + key } : {};
+			var r = await fetch(url, { headers: headers });
 			if (!r.ok) {
 				var err = await r.json().catch(function () { return {}; });
 				throw new Error("TMDB 搜索失败 " + r.status + "：" + (err.status_message || r.statusText));
