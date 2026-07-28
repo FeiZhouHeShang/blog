@@ -25,7 +25,7 @@ export const siteConfig: SiteConfig = {
 		"魔兽争霸",
 		"萌新大佬",
 		"AI",
-		"JAVA",
+		"QQ",
 		"博客",
 		"技术博客",
 	],
