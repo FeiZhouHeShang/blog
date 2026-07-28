@@ -15,7 +15,7 @@ export const collectionsApiConfig: CollectionsApiConfig = {
 			category: "工具箱",
 			items: [
 				{
-					name: "网络工具 | 中科大测速",
+					name: "网络工具 | 中科大测速测试",
 					url: "https://test.ustc.edu.cn/",
 					description:
 						"中科大提供的网络测速工具，用于快速测试本地带宽与网络延迟。",
