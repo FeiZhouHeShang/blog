@@ -545,7 +545,7 @@ src/
   2. `PUBLIC_IMGBED_UPLOAD_CODE`：**可选兜底**——仅当令牌缺 upload 权限时用的 authCode；当前令牌已含 upload，可删
 - 已创建根目录 `.env`（已被 `.gitignore` 忽略，不提交），并同步更新 `.env.example` 与 `src/env.d.ts` 类型声明
 - `moments.astro` 的图床 url/token/folder 改为构建时从 `import.meta.env` 读取；上传鉴权**优先 Bearer 单令牌**（fqzlr 方案），无令牌时降级 authCode
-- ⚠️ 部署提醒：本博客部署在 **Cloudflare Pages**，需在 Cloudflare Pages 控制台「Settings → Environment variables」也配置同名变量（Vercel 的变量对本站构建无效）
+- ⚠️ 部署提醒：本博客静态站部署在 **Vercel**（vercel.json 驱动 `pnpm build` → `dist/`）。`PUBLIC_` 前缀变量在 Vercel 构建时注入客户端 JS，所以**你已在 Vercel 控制台配的 `PUBLIC_IMG_UPLOAD_TOKEN` 正是生效的那份**，无需动 Cloudflare（图床 tc.d15.cc.cd 与本地 wrangler dev 的 CF Worker 才是 Cloudflare 相关）。
 
 ### 2026-07-28 影视游戏可视化编辑 · 「日常吐槽」模块 · 图床直传去重
 
