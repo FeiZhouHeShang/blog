@@ -50,6 +50,6 @@ export const editorSecrets: EditorSecrets = {
 	imageBedUrl: "https://tc.d15.cc.cd",
 	imageBedAuthCode:
 		"imgbed_a52f54222feea59a225e2a64cde089bca845ddb4f9f3f4e1aa5c413d3463c88e",
-	// 上传目录：留空 = 根目录。可改成 "daily-grumble" 之类分类存放。
-	imageBedFolder: "",
+	// 上传目录：吐槽图片统一归到「日常吐槽」文件夹（图床里按此目录分类存放）
+	imageBedFolder: "日常吐槽",
 };

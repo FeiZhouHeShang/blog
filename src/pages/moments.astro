@@ -470,6 +470,18 @@ const DATA_VAR = "dailyGrumbles";
 		};
 		// 每行编辑态的图片 URL（独立于表单字段，上传后回填）
 		var rowImages = {}; // rowId -> string[]
+		// 本次会话已上传文件的 SHA-256 -> URL，用于去重（同一文件不重复上传，图床不产生副本）
+		var uploadedHashes = {};
+		// 计算文件 SHA-256（hex），用于前端去重
+		async function hashFile(file) {
+			try {
+				var buf = await file.arrayBuffer();
+				var digest = await crypto.subtle.digest("SHA-256", buf);
+				return Array.prototype.map
+					.call(new Uint8Array(digest), function (b) { return ("0" + b.toString(16)).slice(-2); })
+					.join("");
+			} catch (_e) { return null; }
+		}
 
 		// ===== 工具 =====
 		function $(id) { return document.getElementById(id); }
@@ -703,17 +715,35 @@ const DATA_VAR = "dailyGrumbles";
 			var tip = rowEl.querySelector("[data-img-tip]");
 			var btn = rowEl.querySelector('[data-act="upload-img"]');
 			if (btn) btn.disabled = true;
-			var done = 0;
+			var done = 0, skipped = 0;
 			if (tip) { tip.classList.remove("is-error"); tip.textContent = "上传中 0/" + files.length; }
 			try {
 				for (var i = 0; i < files.length; i++) {
-					var url = await uploadToImgbed(files[i]);
-					rowImages[rowId].push(url);
+					var file = files[i];
+					var h = await hashFile(file);
+					// 去重 1：本次会话内同一文件（同哈希）已上传过 → 直接复用 URL，不再上传（图床不产生副本）
+					if (h && uploadedHashes[h]) {
+						if (rowImages[rowId].indexOf(uploadedHashes[h]) === -1) {
+							rowImages[rowId].push(uploadedHashes[h]);
+						}
+						skipped++;
+						if (tip) tip.textContent = "已跳过重复 " + skipped + " · 上传 " + done + "/" + files.length;
+						renderImagePreview(rowEl);
+						continue;
+					}
+					var url = await uploadToImgbed(file);
+					if (h) uploadedHashes[h] = url;
+					// 去重 2：同 URL 不重复进数组（防御图床返回重复链接）
+					if (rowImages[rowId].indexOf(url) === -1) {
+						rowImages[rowId].push(url);
+					} else {
+						skipped++;
+					}
 					done++;
-					if (tip) tip.textContent = "上传中 " + done + "/" + files.length;
+					if (tip) tip.textContent = "上传 " + done + "/" + files.length + (skipped ? " · 跳过重复 " + skipped : "");
 					renderImagePreview(rowEl);
 				}
-				if (tip) tip.textContent = "已上传 " + done + " 张";
+				if (tip) tip.textContent = "已上传 " + done + " 张" + (skipped ? " · 跳过重复 " + skipped + " 张" : "");
 			} catch (e) {
 				if (tip) { tip.classList.add("is-error"); tip.textContent = "❌ " + e.message; }
 			} finally {
@@ -764,7 +794,8 @@ const DATA_VAR = "dailyGrumbles";
 				if (state.editingId === it.id) {
 					var rowEl = list.querySelector('.dg-row[data-row-id="' + cssEscape(it.id) + '"]');
 					if (rowEl) {
-						rowImages[it.id] = (it.images || []).slice();
+						// 进入编辑态时合并已存的重复 URL（Array.from(new Set) 去重）
+						rowImages[it.id] = Array.from(new Set(it.images || []));
 						renderImagePreview(rowEl);
 					}
 				}

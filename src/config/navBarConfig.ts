@@ -39,6 +39,10 @@ const buildNavBarConfig = (): NavBarConfig => {
 	contactChildren.push(LinkPreset.QQGroup);
 	// [关键词: nav-movies-games] 影视游戏收藏墙（从顶部独立项移入「记录」子菜单）
 	contactChildren.push(LinkPreset.MoviesGames);
+	// [关键词: nav-gallery] 相册：用户要求从「动态」移至「记录」下
+	if (siteConfig.pages.gallery) {
+		contactChildren.push(LinkPreset.Gallery);
+	}
 
 	const contactNav: NavBarLink | null =
 		contactChildren.length > 0
@@ -63,13 +67,10 @@ const buildNavBarConfig = (): NavBarConfig => {
 		children: myChildren,
 	};
 
-	// [关键词: nav-moments] 动态下拉菜单（相册 + 日常吐槽均作为子项）
+	// [关键词: nav-moments] 动态下拉菜单（仅含「日常吐槽」子项）
 	// 日常吐槽 = 复刻自「团子和蛋糕」说说模块的 /moments/ 吐槽页，作为「动态」的子项存在。
-	// 相册（Gallery）位置保持不变，仍挂在「动态」下。
+	// 相册（Gallery）已按要求移至「记录」下（见下方 contactChildren）。
 	const momentsChildren: (NavBarLink | LinkPreset)[] = [];
-	if (siteConfig.pages.gallery) {
-		momentsChildren.push(LinkPreset.Gallery);
-	}
 	// 日常吐槽：内联子项，指向 /moments/ 吐槽页（说说内容都在该列表下）
 	momentsChildren.push({
 		name: "日常吐槽",
