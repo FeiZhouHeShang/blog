@@ -10,6 +10,7 @@ import KatexManager from "@components/features/KatexManager.astro";
 import SharePoster from "@components/misc/SharePoster.svelte";
 import Categories from "@/components/widget/Categories.astro";
 import SidebarTOC from "@/components/widget/SidebarTOC.astro";
+import PostEditorCard from "@/components/widget/PostEditorCard.astro";
 import I18nKey from "@i18n/i18nKey";
 import { i18n } from "@i18n/translation";
 import MainGridLayout from "@layouts/MainGridLayout.astro";
@@ -175,8 +176,9 @@ const serializedJsonLd = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
      右栏：SidebarTOC（自动从文章 h2/h3 抽取目录，滚动时高亮当前位置）
      中间（默认插槽）：文章正文 */}
 
-  <Categories slot="sidebar-left" />
-  <SidebarTOC slot="sidebar-right" />
+<Categories slot="sidebar-left" />
+	<PostEditorCard slot="sidebar-left" currentSlug={entry.id} />
+	<SidebarTOC slot="sidebar-right" />
   <!-- Layer 1: Title + meta -->
   <div class="post-hero rounded-(--radius-large) mb-2 onload-animation">
     <div class="post-hero__content">

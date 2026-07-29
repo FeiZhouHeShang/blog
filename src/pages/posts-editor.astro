@@ -102,7 +102,7 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 
 				<aside class="pe-editor-side">
 					<!-- 密钥提示（无密钥时显示橙色框） -->
-					<div id="pe-key-notice" class="pe-key-notice">🔑 请点击工具栏「导入密钥」按钮导入 GitHub PAT，才能推到仓库。</div>
+					<div id="pe-key-notice" class="pe-key-notice">🔑 请点击工具栏「导入密钥」按钮，选择存有密钥的 <code>.txt</code> / <code>.pem</code> 文件一键导入（无需手动粘贴）。<a href="#" id="pe-pat-manual-link" class="pe-link">或手动粘贴</a></div>
 
 					<label class="pe-field">
 						<span>📝 文章 Slug</span>
@@ -198,6 +198,8 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 			</section>
 
 			<input type="file" id="pe-md-import" accept=".md,.markdown,text/markdown" hidden />
+			<!-- 密钥文件选择器（点击「导入密钥」触发，对应 fqzlr 的文件导入方式，免手动粘贴） -->
+			<input type="file" id="pe-pat-file" accept=".txt,.pem,.key,application/x-pem-file,text/plain" hidden />
 		</div>
 	</div>
 </MainGridLayout>
@@ -229,6 +231,8 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 	.pe-btn-publish { background: var(--primary); color: var(--page-bg); border-color: var(--primary); font-weight: 600; }
 	.pe-btn-publish:hover { filter: brightness(1.15); }
 	:root.dark .pe-btn-publish:hover { filter: brightness(0.9); }
+	.pe-btn-publish.is-disabled, .pe-btn-publish:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.35); }
+	.pe-btn-publish.is-disabled:hover, .pe-btn-publish:disabled:hover { filter: grayscale(0.35); }
 	.pe-btn-danger { color: #e11d48; border-color: rgba(225,29,72,0.25); background: transparent; }
 	.pe-btn-danger:hover { background: rgba(225,29,72,0.08); }
 

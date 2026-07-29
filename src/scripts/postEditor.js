@@ -134,14 +134,17 @@ function renderSessionState() {
 	var chip = $("pe-session-chip");
 	var keyBtn = $("pe-toolbar-key");
 	var notice = $("pe-key-notice");
+	var pub = $("pe-toolbar-publish");
 	if (getPat()) {
 		if (chip) { chip.textContent = "🔓 本次浏览已验证"; chip.className = "pe-session-chip is-ok"; }
 		if (keyBtn) { keyBtn.textContent = "🔑 密钥已导入"; keyBtn.classList.add("has-key"); }
 		if (notice) notice.classList.add("is-hidden");
+		if (pub) { pub.disabled = false; pub.classList.remove("is-disabled"); pub.innerHTML = "🚀 发表呀"; pub.title = "保存到本地草稿 + 打开上传中心统一推送"; }
 	} else {
 		if (chip) { chip.textContent = "🔒 未验证"; chip.className = "pe-session-chip is-lock"; }
 		if (keyBtn) { keyBtn.textContent = "🔑 导入密钥"; keyBtn.classList.remove("has-key"); }
 		if (notice) notice.classList.remove("is-hidden");
+		if (pub) { pub.disabled = true; pub.classList.add("is-disabled"); pub.innerHTML = "🔒 需密钥"; pub.title = "请先导入密钥"; }
 	}
 }
 
@@ -653,9 +656,41 @@ function bind() {
 	$("pe-toolbar-back")?.addEventListener("click", showListView);
 	$("pe-new-post")?.addEventListener("click", function () { newPost(); try { history.replaceState(null, "", location.pathname); } catch(_e) {} });
 	$("pe-toolbar-key")?.addEventListener("click", function () {
+		// fqzlr 式：点击直接弹出文件选择器，选择密钥文件（.txt/.pem）一键导入，免手动粘贴
+		var fi = $("pe-pat-file");
+		if (fi) { fi.value = ""; fi.click(); }
+	});
+	// 密钥文件选择 → 读取文本 → 校验 → 写入会话
+	$("pe-pat-file")?.addEventListener("change", async function (e) {
+		var f = e.target.files && e.target.files[0];
+		if (!f) return;
+		var status = $("pe-editor-status");
+		setStatus(status, "正在读取密钥文件…", "");
+		try {
+			var text = (await f.text()).trim();
+			if (!text) { setStatus(status, "❌ 文件内容为空", "is-error"); return; }
+			setStatus(status, "正在验证密钥…", "");
+			await validatePat(text);
+			setPat(text);
+			renderSessionState();
+			var p = $("pe-pat-panel"); if (p) p.hidden = true;
+			var inp = $("pe-editor-pat"); if (inp) inp.value = "";
+			setStatus(status, "✅ 密钥已导入并验证", "is-ok");
+			if (state && state.pendingEditSlug) { await loadRemote(); }
+		} catch (err) {
+			setPat("");
+			renderSessionState();
+			setStatus(status, "❌ " + (err && err.message ? err.message : "导入失败"), "is-error");
+		} finally {
+			e.target.value = "";
+		}
+	});
+	// 「或手动粘贴」链接：打开/收起手动粘贴面板（兜底）
+	$("pe-pat-manual-link")?.addEventListener("click", function (e) {
+		e.preventDefault();
 		var p = $("pe-pat-panel"); if (!p) return;
-		if (p.hidden) { p.hidden = false; var inp = $("pe-editor-pat"); if (inp) inp.focus(); }
-		else { p.hidden = true; }
+		p.hidden = !p.hidden;
+		if (!p.hidden) { var inp = $("pe-editor-pat"); if (inp) inp.focus(); }
 	});
 	$("pe-toolbar-save")?.addEventListener("click", function () { saveDraftLocal(); });
 	$("pe-toolbar-publish")?.addEventListener("click", function () { publish(); });

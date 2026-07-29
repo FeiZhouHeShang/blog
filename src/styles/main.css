@@ -810,3 +810,10 @@ html {
   color: #000 !important;
 }
 
+/* 自定义 callout 类型：info —— 与 rehype-callouts github 主题同步。
+   仅定义颜色变量，外观由主题基础 .callout 规则统一处理（前后端共用管线）。 */
+[data-callout='info'] {
+  --rc-color-light: var(--callout-info-color-light, #0969da);
+  --rc-color-dark: var(--callout-info-color-dark, #4493f8);
+}
+

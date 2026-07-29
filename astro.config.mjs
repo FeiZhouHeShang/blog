@@ -8,36 +8,16 @@ import swup from "@swup/astro";
 import { defineConfig } from "astro/config";
 import expressiveCode from "astro-expressive-code";
 import icon from "astro-icon";
-import rehypeAutolinkHeadings from "rehype-autolink-headings";
-import rehypeComponents from "rehype-components"; /* Render the custom directive content */
-import rehypeKatex from "rehype-katex";
-import katex from "katex";
-import "katex/dist/contrib/mhchem.mjs"; // 加载 mhchem 扩展
-import rehypeSlug from "rehype-slug";
-import remarkDirective from "remark-directive"; /* Handle directives */
-import remarkMath from "remark-math";
-import rehypeCallouts from "rehype-callouts";
-import remarkSectionize from "remark-sectionize";
-import { expressiveCodeConfig, siteConfig } from "./src/config";
-import { i18n } from "./src/i18n/translation";
-import I18nKey from "./src/i18n/i18nKey";
+import mdx from "@astrojs/mdx";
 import { pluginLanguageBadge } from "expressive-code-language-badge"; /* Language Badge */
 import { pluginCollapsible } from "expressive-code-collapsible"; /* Collapsible */
-import { GithubCardComponent } from "./src/plugins/rehype-component-github-card.mjs";
-import { rehypeMermaid } from "./src/plugins/rehype-mermaid.mjs";
-import { rehypePlantuml } from "./src/plugins/rehype-plantuml.mjs";
-import { parseDirectiveNode } from "./src/plugins/remark-directive-rehype.js";
-import { remarkExcerpt } from "./src/plugins/remark-excerpt.js";
-import { remarkMermaid } from "./src/plugins/remark-mermaid.js";
-import { remarkPlantuml } from "./src/plugins/remark-plantuml.js";
-import { remarkReadingTime } from "./src/plugins/remark-reading-time.mjs";
-import mdx from "@astrojs/mdx";
-import rehypeEmailProtection from "./src/plugins/rehype-email-protection.mjs";
-import rehypeExternalLinks from "./src/plugins/rehype-external-links.mjs";
-import rehypeFigure from "./src/plugins/rehype-figure.mjs";
-import { remarkImageGrid } from "./src/plugins/remark-image-grid.js";
-import { unified } from "@astrojs/markdown-remark";
-import { plantumlConfig } from "./src/config";
+import { i18n } from "./src/i18n/translation";
+import I18nKey from "./src/i18n/i18nKey";
+import { expressiveCodeConfig, siteConfig } from "./src/config";
+// [关键词: shared-markdown-pipeline] 共享 Markdown 渲染管线
+// 唯一真理：编辑器预览 / dev API / 构建脚本 / Astro content 全从这里 import。
+// 加新插件、改顺序、删插件，只改这一个文件即可。
+import { markdownProcessor } from "./src/utils/markdown-render.mjs";
 
 if (process.env.NODE_ENV === "development") {
 	setMaxListeners(20);
@@ -181,60 +161,7 @@ export default defineConfig({
 		mdx(),
 	],
 	markdown: {
-		processor: unified({
-			remarkPlugins: [
-				remarkMath,
-				remarkReadingTime,
-				remarkImageGrid,
-				remarkExcerpt,
-				remarkDirective,
-				remarkSectionize,
-				parseDirectiveNode,
-				remarkMermaid,
-				[remarkPlantuml, plantumlConfig],
-			],
-			rehypePlugins: [
-				[rehypeKatex, { katex }],
-				[rehypeCallouts, { theme: siteConfig.rehypeCallouts.theme }],
-				rehypeSlug,
-				rehypeMermaid,
-				rehypePlantuml,
-				rehypeFigure,
-				[rehypeExternalLinks, { siteUrl: siteConfig.site_url }],
-				[rehypeEmailProtection, { method: "base64" }], // 邮箱保护插件，支持 'base64' 或 'rot13'
-				[
-					rehypeComponents,
-					{
-						components: {
-							github: GithubCardComponent,
-						},
-					},
-				],
-				[
-					rehypeAutolinkHeadings,
-					{
-						behavior: "append",
-						properties: {
-							className: ["anchor"],
-						},
-						content: {
-							type: "element",
-							tagName: "span",
-							properties: {
-								className: ["anchor-icon"],
-								"data-pagefind-ignore": true,
-							},
-							children: [
-								{
-									type: "text",
-									value: "#",
-								},
-							],
-						},
-					},
-				],
-			],
-		}),
+		processor: markdownProcessor,
 	},
 	vite: {
 		// [关键词: dev-api] 开发模式本地 API 接管（dev 下 wrangler dev 不一定在跑）：
