@@ -650,11 +650,13 @@ async function restoreNewPostDraft() {
 function openEditor(path) {
 			var dlg = $("pe-editor");
 			if (!dlg) return;
+			showEditorView();
 			if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
 			renderSessionState();
 			if (path) { editPost(path).then(function () { return restorePostDraft(path); }).catch(function(){}); } else { newPost(); restoreNewPostDraft(); }
 		}
 		function newPost() {
+			showEditorView();
 			state.isNew = true; state.editingPath = null; state.editingSha = null; state.originalTitle = "";
 			state._originalRaw = null; state._originalPath = null;
 			$("pe-editor-title").textContent = "写新文章";
@@ -904,9 +906,9 @@ async function saveDraftLocal(forceDraft) {
 var _peBound = new WeakSet();
 		function bind() {
 			var root = $("pe-editor"); if (root && _peBound.has(root)) return;
-			$("pe-editor-close")?.addEventListener("click", function () { location.href = "/list/"; });
-			// 顶栏新按钮（仿 fqzlr 全屏编辑器）
-			$("pe-editor-back")?.addEventListener("click", function () { location.href = "/list/"; });
+			$("pe-editor-close")?.addEventListener("click", showListView);
+			// 顶栏「返回列表」
+			$("pe-editor-back")?.addEventListener("click", showListView);
 			$("pe-pat-open")?.addEventListener("click", function () {
 				var p = $("pe-pat-panel"); if (!p) return;
 				if (p.hidden) { p.hidden = false; var inp = $("pe-editor-pat"); if (inp) inp.focus(); } else { p.hidden = true; }
@@ -952,6 +954,7 @@ var _peBound = new WeakSet();
 			$("pe-editor-load")?.addEventListener("click", loadRemote);
 			$("pe-editor-save")?.addEventListener("click", function () { saveDraftLocal(); });
 			$("pe-editor-restore")?.addEventListener("click", function () { restoreOriginal(); });
+			$("pe-new-post")?.addEventListener("click", function () { newPost(); });
 			$("pe-f-title")?.addEventListener("input", onTitleInput);
 			$("pe-f-body")?.addEventListener("input", function () { updateCharCount(); schedulePreview(); onEdit(); });
 			$("pe-editor")?.addEventListener("input", function (e) { var id = e.target && e.target.id; if (id && (id.indexOf("pe-f-") === 0 || id === "pe-tag-input")) { onEdit(); } });
@@ -999,10 +1002,19 @@ var _peBound = new WeakSet();
 			bindTags();
 			if (root) _peBound.add(root);
 		}
-		function closeEditor() {
+		function showListView() {
+	var list = $("pe-list-view"); if (list) list.hidden = false;
+	var ed = $("pe-editor"); if (ed) ed.hidden = true;
+	renderList();
+}
+function showEditorView() {
+	var list = $("pe-list-view"); if (list) list.hidden = true;
+	var ed = $("pe-editor"); if (ed) ed.hidden = false;
+}
+function closeEditor() {
 			var dlg = $("pe-editor");
 			if (!dlg) return;
-			if (typeof dlg.close === "function") dlg.close(); else dlg.removeAttribute("open");
+			showListView();
 		}
 
 		// 初始化：用服务端种子填充列表
@@ -1044,9 +1056,10 @@ var _peBound = new WeakSet();
 					setStatus($("pe-editor-status"), "正在定位「" + state.pendingEditSlug + "」…", "");
 					loadRemote();
 				}
-			} else if (!getPat()) {
+			} else {
+				showListView();
 				var pp2 = $("pe-pat-panel"); if (pp2) pp2.hidden = false;
-				setStatus($("pe-editor-status"), "请先验证 GitHub PAT 再保存", "is-error");
+				setStatus($("pe-editor-status"), "从下方文章列表选择，或点「写新文章」", "");
 			}
 			updateCharCount();
 	}

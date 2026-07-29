@@ -26,8 +26,17 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 	<RightSidebar slot="sidebar-right" />
 
 	<div class="pe-page-wrapper w-full rounded-(--radius-large) overflow-hidden relative min-h-32" id="pe-root">
-		<!-- ========== 编辑器（页面本身就是编辑器，无中间列表） ========== -->
-		<!-- ========== 编辑器模态框 ========== -->
+		<!-- ========== 文章列表视图（fqzlr 风格：在此挑选文章编辑，或新建） ========== -->
+		<div id="pe-list-view" class="pe-list-view" hidden>
+			<div class="pe-list-head">
+				<h2 class="pe-list-title">文章列表</h2>
+				<button type="button" id="pe-new-post" class="pe-topbar-btn pe-topbar-btn-publish">＋ 写新文章</button>
+			</div>
+			<div data-pe-list class="pe-list-grid"></div>
+			<p data-pe-empty class="pe-list-empty" hidden>暂无文章，点右上角「写新文章」开始。</p>
+		</div>
+
+		<!-- ========== 编辑器（?edit=<slug> 深链或列表点选打开；无则显示列表） ========== -->
 		<div
 			id="pe-editor"
 			data-pe-editor=""
@@ -317,6 +326,13 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 	.pe-editor-foot-status { font-size: 0.74rem; color: var(--content-meta, #6b7280); margin: 0; flex: 1; }
 	.pe-editor-foot-actions { display: flex; gap: 0.5rem; align-items: center; }
 
+	/* ===== 文章列表视图（fqzlr 风格） ===== */
+	.pe-list-view { padding: 1.4rem; max-width: 1100px; margin: 0 auto; }
+	.pe-list-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1.1rem; }
+	.pe-list-title { font-size: 1.25rem; font-weight: 700; color: var(--deep-text, #111); margin: 0; }
+	.pe-list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.8rem; }
+	.pe-list-empty { text-align: center; color: var(--content-meta, #6b7280); padding: 2rem 0; }
+
 	/* ===== fqzlr 风格全屏编辑器 ===== */
 	/* 顶栏 */
 	.pe-editor-topbar {
@@ -556,6 +572,26 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 		transition: background 0.15s, transform 0.15s;
 	}
 	.pe-tags3-remove-btn:hover { background: #dc2626; transform: scale(1.1); }
+
+	/* 文章列表项（innerHTML 动态创建，scoped 不生效，统一放 is:global） */
+	.pe-list-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 0.8rem; }
+	.pe-item { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.85rem 1.1rem; border: 1px solid var(--line-divider, #e5e7eb); border-radius: var(--radius-large, 12px); background: var(--card-bg, #fff); transition: box-shadow 0.2s ease, transform 0.2s ease; }
+	.pe-item:hover { box-shadow: 0 6px 18px rgba(0,0,0,0.06); transform: translateY(-1px); }
+	.pe-item-main { min-width: 0; }
+	.pe-item-title { font-weight: 600; color: var(--deep-text, #111); font-size: 1rem; }
+	.pe-item-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem; flex-wrap: wrap; }
+	.pe-badge { font-size: 0.7rem; padding: 0.1rem 0.45rem; border-radius: 999px; background: var(--btn-card-bg-active, #ececf1); color: var(--content-meta, #6b7280); }
+	.pe-badge-pin { background: rgba(245,158,11,0.15); color: #b45309; }
+	.pe-badge-draft { background: rgba(107,114,128,0.15); color: #4b5563; }
+	.pe-item-date { font-size: 0.72rem; color: var(--content-meta, #6b7280); }
+	.pe-item-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+	.pe-btn { font-size: 0.78rem; padding: 0.4rem 0.75rem; border-radius: 8px; cursor: pointer; border: 1px solid var(--line-divider, #e5e7eb); background: var(--btn-card-bg-hover, #f5f5f7); color: var(--deep-text, #111); transition: all 0.15s ease; min-height: 44px; }
+	.pe-btn:hover { background: var(--btn-card-bg-active, #ececf1); }
+	.pe-btn-edit { background: var(--primary); color: var(--page-bg); border-color: var(--primary); }
+	.pe-btn-edit:hover { filter: brightness(1.15); }
+	.pe-btn-del { background: #fff; color: #e11d48; border-color: rgba(225,29,72,0.3); }
+	.pe-btn-del:hover { background: rgba(225,29,72,0.08); }
+	.pe-btn-ghost { color: #6b7280; text-decoration: none; display: inline-flex; align-items: center; }
 </style>
 
 
