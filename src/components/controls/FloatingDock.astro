@@ -28,6 +28,12 @@ const tags = await getTagList();
 
 	<div class="dock-stack" id="dock-stack" data-expanded="false">
 		<div class="dock-buttons">
+			<button class="dock-btn" id="uc-dock-trigger" aria-label="上传中心" type="button" data-tooltip="上传中心">
+				<span class="dock-btn-icon"><Icon name="material-symbols:cloud-upload" class="text-3xl" /></span>
+				<span class="dock-btn-label">上传</span>
+				<span class="dock-badge" id="uc-dock-badge" hidden>0</span>
+			</button>
+
 			{announcementConfig.items.length > 0 && (
 				<button class="dock-btn" id="dock-announcement-btn" aria-label="Announcement" type="button" data-tooltip="公告">
 					<span class="dock-btn-icon"><Icon name="material-symbols:notifications-outline-rounded" class="text-3xl" /></span>
@@ -73,6 +79,7 @@ const tags = await getTagList();
 				<Icon name="material-symbols:more-horiz" class="text-3xl dock-icon-collapsed" />
 				<Icon name="material-symbols:close" class="text-3xl dock-icon-expanded hidden" />
 			</span>
+			<span class="dock-toggle-badge" id="uc-dock-toggle-badge" hidden></span>
 			<span class="dock-btn-label dock-toggle-label-collapsed">展开</span>
 			<span class="dock-btn-label dock-toggle-label-expanded hidden">收起</span>
 		</button>

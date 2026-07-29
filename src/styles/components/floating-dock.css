@@ -35,6 +35,47 @@
 	display: none !important;
 }
 
+/* 上传中心按钮：融入 dock，主题色同步；角标显示待上传草稿数 */
+.dock-btn {
+	position: relative;
+}
+.dock-badge {
+	position: absolute;
+	top: -4px;
+	right: -4px;
+	min-width: 18px;
+	height: 18px;
+	padding: 0 5px;
+	border-radius: 999px;
+	background: var(--primary);
+	color: var(--page-bg, #fff);
+	font-size: 11px;
+	font-weight: 700;
+	display: none;
+	align-items: center;
+	justify-content: center;
+	border: 2px solid var(--card-bg, #fff);
+	box-sizing: border-box;
+}
+.dock-badge:not([hidden]) {
+	display: flex;
+}
+.dock-toggle-badge {
+	position: absolute;
+	top: 1px;
+	right: 1px;
+	width: 10px;
+	height: 10px;
+	border-radius: 999px;
+	background: #ef4444;
+	border: 2px solid var(--card-bg, #fff);
+	box-sizing: border-box;
+	display: none;
+}
+.dock-toggle-badge:not([hidden]) {
+	display: block;
+}
+
 /* 抽屉 z-index 由 main.css 的 .dock-drawer 规则统一控制
    此处保留旧定义作为后备（特异性可能不足，仅注释说明） */
 .dock-drawer { z-index: 70; }

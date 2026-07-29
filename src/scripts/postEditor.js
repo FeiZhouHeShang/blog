@@ -26,6 +26,9 @@ let IMGBED_API_TOKEN = "";
 			saving: false,
 			pendingEditSlug: null,
 			originalSnapshot: null, // URL ?edit=<slug>：文章详情页「编辑当前文章」跳转携带的目标 slug
+			// 一键恢复：冻结载入时的「原始内容」与原始路径，供恢复到修改前
+			_originalRaw: null,
+			_originalPath: null,
 		};
 		// 图片去重：本次会话已上传哈希 -> URL
 		var uploadedHashes = {};
@@ -653,8 +656,10 @@ function openEditor(path) {
 		}
 		function newPost() {
 			state.isNew = true; state.editingPath = null; state.editingSha = null; state.originalTitle = "";
+			state._originalRaw = null; state._originalPath = null;
 			$("pe-editor-title").textContent = "写新文章";
 			clearForm();
+			toggleRestoreBtn(false);
 			hideTitleWarn();
 			setStatus($("pe-editor-foot-status"), "填写信息后保存即创建新文章", "");
 		}
@@ -669,15 +674,19 @@ function openEditor(path) {
 				if (sr.ok) {
 					var sraw = await sr.text();
 					if (sraw && sraw.trim()) {
-						state.editingSha = null; // 静态副本无 sha，保存时再向 GitHub 取最新 sha
-						var ssp = splitFrontmatter(sraw);
-						var sfm = parseFm(ssp.fm);
-						fillForm(sfm, ssp.body, path);
-						state.originalTitle = sfm.title || "";
-						var delBtn0 = $("pe-toolbar-delete"); if (delBtn0) delBtn0.hidden = false;
-						hideTitleWarn();
-						setStatus($("pe-editor-foot-status"), "✅ 已载入（静态副本，无需令牌）", "is-ok");
-						return;
+					state.editingSha = null; // 静态副本无 sha，保存时再向 GitHub 取最新 sha
+					var ssp = splitFrontmatter(sraw);
+					var sfm = parseFm(ssp.fm);
+					fillForm(sfm, ssp.body, path);
+					// 冻结原始内容快照（供「一键恢复」还原到修改前）
+					state._originalRaw = buildMarkdown(sfm, ssp.body);
+					state._originalPath = path;
+					state.originalTitle = sfm.title || "";
+					var delBtn0 = $("pe-toolbar-delete"); if (delBtn0) delBtn0.hidden = false;
+					hideTitleWarn();
+					toggleRestoreBtn(true);
+					setStatus($("pe-editor-foot-status"), "✅ 已载入（静态副本，无需令牌）", "is-ok");
+					return;
 					}
 				}
 			} catch (_es) { /* 落到 GitHub 兜底 */ }
@@ -689,14 +698,18 @@ function openEditor(path) {
 				if (!r.ok) { var e = await r.json().catch(function(){return{};}); throw new Error("拉取失败 " + r.status + "：" + (e.message || r.statusText)); }
 				var file = await r.json();
 				state.editingSha = file.sha;
-				var raw = base64ToUtf8(file.content || "");
-				var sp = splitFrontmatter(raw);
-				var fm = parseFm(sp.fm);
-				fillForm(fm, sp.body, path);
-				state.originalTitle = fm.title || "";
-				var delBtn = $("pe-toolbar-delete"); if (delBtn) delBtn.hidden = false;
-				hideTitleWarn();
-				setStatus($("pe-editor-foot-status"), "✅ 已载入，可编辑后保存", "is-ok");
+			var raw = base64ToUtf8(file.content || "");
+			var sp = splitFrontmatter(raw);
+			var fm = parseFm(sp.fm);
+			fillForm(fm, sp.body, path);
+			// 冻结原始内容快照（供「一键恢复」还原到修改前）
+			state._originalRaw = buildMarkdown(fm, sp.body);
+			state._originalPath = path;
+			state.originalTitle = fm.title || "";
+			var delBtn = $("pe-toolbar-delete"); if (delBtn) delBtn.hidden = false;
+			hideTitleWarn();
+			toggleRestoreBtn(true);
+			setStatus($("pe-editor-foot-status"), "✅ 已载入，可编辑后保存", "is-ok");
 			} catch (e) {
 				setStatus($("pe-editor-foot-status"), "❌ " + e.message, "is-error");
 			}
@@ -736,7 +749,7 @@ function openEditor(path) {
 			$("pe-f-draft").checked = false;
 			autoSizeTitle();
 			updateCharCount();
-			captureSnapshot(); toggleSaveBtn(false);
+			captureSnapshot(); toggleSaveBtn(false); toggleRestoreBtn(false);
 		}
 
 		// ===== 标题变更提示 + 自动增高 =====
@@ -812,10 +825,19 @@ function openEditor(path) {
 			b.hidden = !show;
 			b.style.display = show ? "" : "none";
 		}
+		function toggleRestoreBtn(show) {
+			var b = $("pe-editor-restore");
+			if (!b) return;
+			// 仅在编辑已有文章时提供「恢复原始」（新文章无原始可恢复）
+			var allow = show && !state.isNew && !!state._originalRaw;
+			b.hidden = !allow;
+			b.style.display = allow ? "" : "none";
+		}
 		function markDirty() {
 			if (!state._originalSnapshot) { captureSnapshot(); return; }
 			state._dirty = serializeCurrent() !== state._originalSnapshot;
 			toggleSaveBtn(state._dirty);
+			toggleRestoreBtn(state._dirty);
 		}
 		var _dirtyTimer = null;
 		function onEdit() {
@@ -839,6 +861,7 @@ async function saveDraftLocal(forceDraft) {
 				await putDraft({ feature: "posts", id: c.path, label: c.fm.title + (c.fm.draft ? "（草稿）" : ""), files: files });
 				state.editingPath = c.path; state.isNew = false; state.originalTitle = c.fm.title;
 			captureSnapshot(); toggleSaveBtn(false); state._dirty = false;
+				toggleRestoreBtn(true); // 已保存的草稿仍可一键恢复
 				hideTitleWarn();
 				var _t = new Date();
 				var _hh = String(_t.getHours()).padStart(2, "0");
@@ -852,6 +875,28 @@ async function saveDraftLocal(forceDraft) {
 				state.saving = false;
 				if (saveBtn) saveBtn.disabled = false;
 			}
+		}
+
+		// ===== 一键恢复：丢弃本地草稿，把表单还原到「修改前」的原始内容 =====
+		async function restoreOriginal() {
+			if (state.isNew || !state._originalRaw) return;
+			if (!confirm("确定恢复到修改前的原始内容吗？\n当前未上传的本地草稿将被丢弃（不影响已发布的线上内容）。")) return;
+			try {
+				// 丢弃当前编辑路径与原始路径上的本地草稿（slug 改名时两者可能不同）
+				await deleteDraft("posts", state._originalPath);
+				if (state.editingPath && state.editingPath !== state._originalPath) {
+					await deleteDraft("posts", state.editingPath);
+				}
+			} catch (_e) { /* 草稿可能不存在，忽略 */ }
+			var sp = splitFrontmatter(state._originalRaw);
+			var fm = parseFm(sp.fm);
+			fillForm(fm, sp.body, state._originalPath);
+			state.editingPath = state._originalPath;
+			state.isNew = false;
+			state._dirty = false;
+			toggleSaveBtn(false);
+			toggleRestoreBtn(false);
+			setStatus($("pe-editor-foot-status"), "↩ 已恢复到编辑前的原始内容（本地草稿已清空，可重新编辑）", "is-ok");
 		}
 
 
@@ -906,6 +951,7 @@ var _peBound = new WeakSet();
 			});
 			$("pe-editor-load")?.addEventListener("click", loadRemote);
 			$("pe-editor-save")?.addEventListener("click", function () { saveDraftLocal(); });
+			$("pe-editor-restore")?.addEventListener("click", function () { restoreOriginal(); });
 			$("pe-f-title")?.addEventListener("input", onTitleInput);
 			$("pe-f-body")?.addEventListener("input", function () { updateCharCount(); schedulePreview(); onEdit(); });
 			$("pe-editor")?.addEventListener("input", function (e) { var id = e.target && e.target.id; if (id && (id.indexOf("pe-f-") === 0 || id === "pe-tag-input")) { onEdit(); } });

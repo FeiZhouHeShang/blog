@@ -1,6 +1,6 @@
-// 全局上传中心（悬浮按钮 + 抽屉）
-// 任何页面（本地或已部署）都会注入：右下角悬浮按钮带待上传数量红点，
-// 点开抽屉按功能列出所有本地草稿，可一键「全部上传」（合并为 1 次提交）。
+// 全局上传中心（抽屉 + 计数角标）
+// 不再有独立悬浮按钮：改为复用右下角 FloatingDock 里的「上传」按钮（#uc-dock-trigger），
+// 颜色与主题同步，融入原有功能列表；待上传数量同时显示在 dock 开关上（#uc-dock-toggle-badge）。
 // 由 Layout 的持久化引导脚本调用 bootUploadCenter() 启动。
 
 import { getAllDrafts, deleteDraft, countDrafts, subscribe } from "@/scripts/draftStore";
@@ -19,26 +19,12 @@ export function bootUploadCenter() {
   refresh();
   subscribe(refresh);
   // 便于调试
-  window.__uploadCenter = { open, close, refresh, upload: doUpload };
+  window.__uploadCenter = { open, close, refresh, upload: doUpload, toggle };
 }
 
 function injectStyles() {
   if (document.getElementById("uc-style")) return;
   const css = `
-  #uc-fab {
-    position: fixed; right: 22px; bottom: 22px; z-index: 99990;
-    width: 54px; height: 54px; border-radius: 16px; border: none; cursor: pointer;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
-    color: #fff; font-size: 22px; line-height: 1; box-shadow: 0 10px 30px rgba(99,102,241,0.45);
-    display: flex; align-items: center; justify-content: center; transition: transform .15s ease;
-  }
-  #uc-fab:hover { transform: translateY(-2px); }
-  #uc-fab:focus-visible { outline: 3px solid #c7d2fe; outline-offset: 2px; }
-  #uc-fab-badge {
-    position: absolute; top: -6px; right: -6px; min-width: 22px; height: 22px; padding: 0 6px;
-    border-radius: 999px; background: #ef4444; color: #fff; font-size: 12px; font-weight: 700;
-    display: flex; align-items: center; justify-content: center; border: 2px solid #fff;
-  }
   #uc-backdrop {
     position: fixed; inset: 0; background: rgba(15,15,25,0.45); z-index: 99991;
     backdrop-filter: blur(2px);
@@ -73,13 +59,13 @@ function injectStyles() {
   .uc-status.is-error { color: #ef4444; }
   .uc-pat-row { display: flex; gap: 6px; }
   .uc-pat-row input { flex: 1; min-width: 0; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--line-divider,#e5e7eb); background: var(--btn-card-bg-hover,#fafafa); color: var(--deep-text,#111); font-size: 12.5px; }
-  .uc-pat-row input:focus { outline: 2px solid #c7d2fe; border-color: #6366f1; }
+  .uc-pat-row input:focus { outline: 2px solid var(--primary, #6366f1); border-color: var(--primary, #6366f1); }
   .uc-pat-save { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line-divider,#e5e7eb); background: var(--btn-card-bg-hover,#f1f1f4); color: var(--deep-text,#111); cursor: pointer; font-size: 12.5px; }
   .uc-upload-btn { width: 100%; padding: 11px; border-radius: 10px; border: none; cursor: pointer;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; font-size: 14px; font-weight: 600; }
+    background: var(--primary, #6366f1); color: var(--page-bg, #fff); font-size: 14px; font-weight: 600; }
   .uc-upload-btn:hover { filter: brightness(1.05); }
   .uc-upload-btn:disabled { opacity: 0.6; cursor: default; }
-  @media (prefers-reduced-motion: reduce) { #uc-fab { transition: none; } }
+  @media (prefers-reduced-motion: reduce) { #uc-drawer { transition: none; } }
   `;
   const style = document.createElement("style");
   style.id = "uc-style";
@@ -88,12 +74,6 @@ function injectStyles() {
 }
 
 function buildDom() {
-  const fab = document.createElement("button");
-  fab.id = "uc-fab";
-  fab.type = "button";
-  fab.setAttribute("aria-label", "打开上传中心（待上传草稿）");
-  fab.innerHTML = '<span aria-hidden="true">⬆</span><span id="uc-fab-badge" class="uc-fab-badge" hidden>0</span>';
-
   const backdrop = document.createElement("div");
   backdrop.id = "uc-backdrop";
   backdrop.hidden = true;
@@ -120,12 +100,9 @@ function buildDom() {
     </div>`;
 
   document.body.appendChild(backdrop);
-  document.body.appendChild(fab);
   document.body.appendChild(drawer);
 
   _els = {
-    fab,
-    badge: fab.querySelector("#uc-fab-badge"),
     backdrop,
     drawer,
     list: drawer.querySelector("#uc-list"),
@@ -134,19 +111,29 @@ function buildDom() {
     patSave: drawer.querySelector("#uc-pat-save"),
     upload: drawer.querySelector("#uc-upload"),
     close: drawer.querySelector("#uc-close"),
+    // 复用 FloatingDock 中的触发按钮与角标（不存在时安全跳过）
+    trigger: document.getElementById("uc-dock-trigger"),
+    badge: document.getElementById("uc-dock-badge"),
+    toggleBadge: document.getElementById("uc-dock-toggle-badge"),
   };
 }
 
 function bindEvents() {
-  _els.fab.addEventListener("click", open);
-  _els.backdrop.addEventListener("click", close);
   _els.close.addEventListener("click", close);
+  _els.backdrop.addEventListener("click", close);
   _els.patSave.addEventListener("click", () => {
     const v = _els.pat.value.trim();
     setSessionPat(v);
     setStatus(v ? "✓ 已记住令牌（本次浏览有效）" : "已清除令牌", v ? "is-ok" : "");
   });
   _els.upload.addEventListener("click", () => doUpload());
+  // 复用 dock 里的「上传」按钮：点击切换抽屉
+  if (_els.trigger) {
+    _els.trigger.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggle();
+    });
+  }
   // 抽屉内的丢弃按钮（事件委托）
   _els.list.addEventListener("click", (e) => {
     const btn = e.target.closest && e.target.closest(".uc-item-discard");
@@ -171,6 +158,10 @@ function close() {
   _els.drawer.hidden = true;
   _els.backdrop.hidden = true;
 }
+function toggle() {
+  if (_els.drawer.hidden) open();
+  else close();
+}
 
 function fmtTime(ts) {
   try {
@@ -188,6 +179,10 @@ async function refresh() {
   if (_els.badge) {
     _els.badge.textContent = n > 99 ? "99+" : String(n);
     _els.badge.hidden = n === 0;
+  }
+  if (_els.toggleBadge) {
+    // 仅作红点提示，无数字
+    _els.toggleBadge.hidden = n === 0;
   }
   if (_els.upload) _els.upload.textContent = "全部上传 (" + n + ")";
   if (_els.list) {

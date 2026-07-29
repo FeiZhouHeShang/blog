@@ -1,0 +1,129 @@
+---
+import Icon from "@components/common/Icon.astro";
+import WidgetLayout from "@/components/common/WidgetLayout.astro";
+
+interface Props {
+	// 当前文章 slug（仅文章详情页传入），用于「编辑当前文章」按钮跳转到该文章的编辑器
+	currentSlug?: string;
+	class?: string;
+	style?: string;
+}
+const { currentSlug, class: className, style } = Astro.props;
+const editHref = currentSlug
+	? `/posts-editor/?edit=${encodeURIComponent(currentSlug)}`
+	: null;
+---
+
+<WidgetLayout name="编辑" id="post-editor-card" class={className} style={style}>
+	<a
+		href="/posts-editor/"
+		class="pec-row"
+		aria-label="写新文章"
+		data-pec-act="new"
+	>
+		<span class="pec-row-inner">
+			<span class="pec-row-text">
+				<Icon name="material-symbols:add-rounded" class="pec-row-icon" />
+				<span>写新文章</span>
+			</span>
+			<span class="pec-badge">New</span>
+		</span>
+	</a>
+	{
+		editHref && (
+		<a
+			href={editHref}
+			class="pec-row"
+		aria-label="编辑当前文章"
+		data-pec-act="edit-current"
+	>
+				<span class="pec-row-inner">
+					<span class="pec-row-text">
+						<Icon
+							name="material-symbols:edit-document"
+							class="pec-row-icon"
+						/>
+						<span>编辑当前文章</span>
+					</span>
+					<Icon
+						name="material-symbols:chevron-right-rounded"
+						class="pec-row-arrow"
+					/>
+				</span>
+			</a>
+		)
+	}
+</WidgetLayout>
+
+<style>
+	.pec-row {
+		display: block;
+		width: 100%;
+	}
+	.pec-row-inner {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		height: 2.5rem;
+		border-radius: 0.5rem;
+		padding: 0 0.5rem;
+		color: rgb(64 64 64);
+		transition:
+			background 0.2s,
+			padding-left 0.2s,
+			color 0.2s;
+	}
+	:global(.dark) .pec-row-inner {
+		color: rgb(212 212 212);
+	}
+	.pec-row:hover .pec-row-inner {
+		background: var(--btn-plain-bg-hover);
+		padding-left: 0.75rem;
+		color: var(--primary);
+	}
+	.pec-row:active .pec-row-inner {
+		background: var(--btn-plain-bg-active);
+		transform: scale(0.98);
+	}
+	.pec-row-text {
+		display: flex;
+		align-items: center;
+		gap: 0.25rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+	.pec-row-icon {
+		font-size: 1rem;
+		flex-shrink: 0;
+	}
+	.pec-row-arrow {
+		font-size: 1.35rem;
+		opacity: 0.55;
+		flex-shrink: 0;
+		transition: transform 0.2s;
+	}
+	.pec-row:hover .pec-row-arrow {
+		transform: translateX(2px);
+	}
+	.pec-badge {
+		padding: 0 0.5rem;
+		height: 1.75rem;
+		min-width: 2rem;
+		margin-left: 1rem;
+		border-radius: 0.5rem;
+		font-size: 0.8rem;
+		font-weight: 700;
+		background: oklch(0.95 0.025 var(--hue));
+		color: var(--btn-content);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+	:global(.dark) .pec-badge {
+		background: var(--primary);
+		color: var(--deep-text);
+	}
+</style>

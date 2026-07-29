@@ -8,6 +8,7 @@ import AnimatedTabs from "@/components/controls/AnimatedTabs.svelte";
 import ArticleVirtualList from "@/components/pages/ArticleVirtualList.svelte";
 import SidebarTOC from "@/components/widget/SidebarTOC.astro";
 import Categories from "@/components/widget/Categories.astro";
+import PostEditorCard from "@/components/widget/PostEditorCard.astro";
 import { siteConfig } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
@@ -209,6 +210,7 @@ const umamiPageviews = {
 	   中（默认插槽）：文章卡片列表 */}
 
 	<Categories slot="sidebar-left" />
+	<PostEditorCard slot="sidebar-left" />
 	<SidebarTOC slot="sidebar-right" />
 
 	{/* 中间文章列表（默认插槽 → 全局 grid 中间列） */}

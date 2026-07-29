@@ -44,6 +44,7 @@ const hasChildren = processedLink.children && processedLink.children.length > 0;
 			aria-expanded="false"
 			aria-haspopup="true"
 			data-dropdown-trigger
+			data-parent-url={processedLink.url ? url(processedLink.url) : undefined}
 		>
 			<div class="flex items-center gap-1.5">
 				{processedLink.icon && (
@@ -207,6 +208,36 @@ const hasChildren = processedLink.children && processedLink.children.length > 0;
 			}
 
 			if (!target.closest("[data-dropdown]")) closeAllDropdowns();
+		});
+
+		// 父级导航项（带 children 且配置了 url）：点击标签直接跳转，点击 caret 展开子菜单
+		// [关键词: nav-parent-jump] 点击「文章」等父项标签直达其 url（如 /list/），hover 仍可展开子菜单
+		document.addEventListener("click", (e: MouseEvent) => {
+			const trigger = (e.target as HTMLElement)?.closest?.("[data-dropdown-trigger]");
+			if (!trigger) return;
+			const dropdown = trigger.closest("[data-dropdown]");
+			if (!dropdown) return;
+
+			const caret = (e.target as HTMLElement)?.closest?.(".dropdown-arrow");
+			if (caret) {
+				// 点击箭头：切换子菜单展开（桌面端 hover 已展开，这里兼容点击/触屏）
+				e.preventDefault();
+				const { trigger: ddTrigger, menu } = getDropdownParts(dropdown);
+				if (ddTrigger && menu) toggleDropdown(dropdown, ddTrigger, menu);
+				return;
+			}
+
+			const parentUrl = trigger.getAttribute("data-parent-url");
+			if (parentUrl) {
+				e.preventDefault();
+				closeAllDropdowns();
+				// 优先用 Swup 的 SPA 跳转，保持软导航
+				if (typeof (window as any).navigateToPage === "function") {
+					(window as any).navigateToPage(parentUrl);
+				} else {
+					window.location.href = parentUrl;
+				}
+			}
 		});
 
 		document.addEventListener("astro:page-load", () => closeAllDropdowns({ blurActive: true }));
