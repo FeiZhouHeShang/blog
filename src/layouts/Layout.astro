@@ -381,27 +381,66 @@ const siteLang = lang.replace("_", "-");
     });
   }
 
-  const setup = async () => {
-    window.swup.hooks.on("content:replace", () => {
-      scheduleContentOverflowEnhancements();
-    });
+  // [关键词: sidebar-position-sync] Swup 软导航同步 #main-grid 的 data-sidebar-position
+  // 为什么需要：#main-grid 在 Swup 容器（#swup-container）之外（见 astro.config.mjs 的 swup.containers），
+  //   所以 SPA 跳转时「侧栏内容」会被换入 #left-sidebar-dynamic / #right-sidebar-dynamic，
+  //   但 #main-grid 自身的 data-sidebar-position 属性不更新 → grid.css 用 display:none 隐藏侧栏。
+  // 现象：「文章显示、左右仪表盘不显示」，刷新整页（重渲染 #main-grid）才正常。
+  // 修复：astro:page-load 在每次导航（含首屏）可靠派发，此时侧栏子节点已换入，
+  //   直接根据左右侧栏「是否真的有子节点」推导 position 并写回 #main-grid，
+  //   与服务端 Astro.slots.has("sidebar-left"/"sidebar-right") 的逻辑一致。
+  // 想改三栏显隐逻辑 → src/styles/layout/grid.css（[关键词: main-grid-layout]）；
+  //   想给某页加/去侧栏 → 对应页面 .astro 里加/删 <LeftSidebar slot="sidebar-left" />（见 MainGridLayout.astro）。
+  function syncSidebarPosition() {
+    const grid = document.getElementById("main-grid");
+    if (!grid) return;
+    const left = document.getElementById("left-sidebar-dynamic");
+    const right = document.getElementById("right-sidebar-dynamic");
+    const hasLeft = !!left && left.children.length > 0;
+    const hasRight = !!right && right.children.length > 0;
+    const pos = hasLeft && hasRight ? "both" : hasLeft ? "left" : hasRight ? "right" : "none";
+    grid.setAttribute("data-sidebar-position", pos);
+  }
 
-    // 侧边栏组件在 Swup 容器之外，页面切换后需要手动更新显隐状态
-    function updateSidebarWidgetVisibility() {
-      const isPost = window.location.pathname.includes("/posts/");
-      document.querySelectorAll(".widget-hide-on-post").forEach((el) => {
-        el.classList.toggle("hidden", isPost);
-      });
-      document.querySelectorAll(".widget-hide-on-non-post").forEach((el) => {
-        el.classList.toggle("hidden", !isPost);
-      });
+  // 页面级状态同步：每次导航（含首屏）astro:page-load 可靠派发后执行。
+  // 原实现把这些都挂在 swup 的 content:replace / page:view 钩子里，
+  // 但 swup:enable 注册存在竞态（@swup/astro 初始化可能早于本脚本，钩子永不注册 →
+  //   表现为 SPA 跳转后仪表盘不显示、主题/评论不刷新等），故改为挂 astro:page-load
+  //   （@swup/astro 保证每次导航都派发）。
+  // 职责：①三栏位置同步（修复仪表盘不显示）②文章页/非文章页 widget 显隐
+  //   ③Expressive Code 主题对齐 ④触发评论系统加载事件。
+  function syncPageDependentState() {
+    syncSidebarPosition();
+
+    // ② widget 显隐：文章页隐藏「非文章页 widget」，非文章页反之
+    const isPost = window.location.pathname.includes("/posts/");
+    document.querySelectorAll(".widget-hide-on-post").forEach((el) => el.classList.toggle("hidden", isPost));
+    document.querySelectorAll(".widget-hide-on-non-post").forEach((el) => el.classList.toggle("hidden", !isPost));
+
+    // ③ Expressive Code 主题对齐（避免 SPA 导航后代码块主题错乱）
+    const storedTheme = localStorage.getItem("theme") || siteConfig.themeColor.defaultMode || "light";
+    const isDark = storedTheme === "dark";
+    const expectedTheme = isDark ? expressiveCodeConfig.darkTheme : expressiveCodeConfig.lightTheme;
+    const currentTheme = document.documentElement.getAttribute("data-theme");
+    if (currentTheme !== expectedTheme) {
+      document.documentElement.setAttribute("data-theme", expectedTheme);
     }
 
-    // content:replace 时 URL 已更新，立即同步侧边栏显隐
-    window.swup.hooks.on("content:replace", () => {
-      updateSidebarWidgetVisibility();
-    });
+    // ④ 评论系统：延迟 300ms 确保评论容器已注入，再派发「页面已加载」事件
+    commentTimeout = setTimeout(() => {
+      if (document.getElementById("tcomment")) {
+        document.dispatchEvent(new CustomEvent("firefly:page:loaded", {
+          detail: { path: window.location.pathname, timestamp: Date.now() },
+        }));
+      }
+    }, 300);
+  }
 
+  // 进度条等依赖 swup 生命周期的钩子——仅作「锦上添花」保留。
+  // 若 swup 已就绪则立即注册，否则等 swup:enable；即便未注册也不影响核心功能
+  // （滚动到顶由 swup 原生处理，进度条不显示只是视觉降级）。
+  const setup = () => {
+    if (!window.swup?.hooks) return;
     window.swup.hooks.on("visit:start", () => {
       clearAllTransitionTimeouts();
       const progressBar = document.getElementById("progress-bar");
@@ -410,26 +449,6 @@ const siteLang = lang.replace("_", "-");
         void progressBar.offsetWidth;
         progressBar.classList.add("loading");
       }
-      const shouldUseSmoothScroll = window.innerWidth >= 768;
-      if (shouldUseSmoothScroll) window.scrollTo({ top: 0, behavior: "auto" });
-    });
-
-    window.swup.hooks.on("page:view", () => {
-      const storedTheme = localStorage.getItem("theme") || siteConfig.themeColor.defaultMode || "light";
-      const isDark = storedTheme === "dark";
-      const expectedTheme = isDark ? expressiveCodeConfig.darkTheme : expressiveCodeConfig.lightTheme;
-      const currentTheme = document.documentElement.getAttribute("data-theme");
-      if (currentTheme !== expectedTheme) {
-        document.documentElement.setAttribute("data-theme", expectedTheme);
-      }
-      updateSidebarWidgetVisibility();
-      commentTimeout = setTimeout(() => {
-        if (document.getElementById("tcomment")) {
-          document.dispatchEvent(new CustomEvent("firefly:page:loaded", {
-            detail: { path: window.location.pathname, timestamp: Date.now() },
-          }));
-        }
-      }, 300);
     });
 
     window.swup.hooks.on("visit:end", () => {
@@ -454,6 +473,9 @@ const siteLang = lang.replace("_", "-");
   if (window?.swup?.hooks) setup();
   else document.addEventListener("swup:enable", setup);
 
+  // 关键：页面级状态同步，astro:page-load 在每次导航（含首屏）必触发。
+  // 修复「SPA 跳转后左右仪表盘不显示」等因 swup 钩子未注册而失效的问题。
+  document.addEventListener("astro:page-load", syncPageDependentState);
   document.addEventListener("astro:page-load", scheduleContentOverflowEnhancements);
   document.addEventListener("password:decrypted", () => {
     setTimeout(scheduleContentOverflowEnhancements, 200);

@@ -46,7 +46,10 @@
 }
 
 /* [关键词: sidebar-hide] 隐藏未启用的侧栏列
-   用 display:none 把该列从网格流中移除，剩余列自动填满 */
+   用 display:none 把该列从网格流中移除，剩余列自动填满
+   注意：display:none 由 data-sidebar-position 决定，而该属性在 Swup 软导航时
+   不会随内容自动更新（#main-grid 在容器外）——若跳转后侧栏不显示，先查
+   src/layouts/Layout.astro 的 [关键词: sidebar-position-sync] 是否生效。 */
 #main-grid[data-sidebar-position="none"] #left-sidebar-dynamic,
 #main-grid[data-sidebar-position="none"] #right-sidebar-dynamic,
 #main-grid[data-sidebar-position="left"] #right-sidebar-dynamic,

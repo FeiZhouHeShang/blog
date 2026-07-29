@@ -55,6 +55,11 @@ const navbarWidthFull = siteConfig.navbar.widthFull ?? false;
 //  - 页面通过 <slot name="sidebar-left" /> / <slot name="sidebar-right" /> 传入侧栏内容
 //  - Astro.slots.has() 在构建时检测插槽是否有内容
 //  - 自动设置 data-sidebar-position，CSS 据此切换三栏/两栏/单栏布局
+// 想「给某个页面加/去掉侧栏」：在对应页面 .astro 里加/删 <LeftSidebar slot="sidebar-left" />
+//   （见 src/pages/about.astro、list.astro 等）；位置（both/left/right/none）会自动算好。
+// 想「改侧栏宽度/间距」：见 src/styles/layout/grid.css 的 --sidebar-width / --sidebar-gap。
+// 注意：#main-grid 在 Swup 软导航容器之外，跳转时 data-sidebar-position 不会自动更新，
+//   同步逻辑在 src/layouts/Layout.astro（[关键词: sidebar-position-sync]）。
 const hasLeftSidebar = Astro.slots.has("sidebar-left");
 const hasRightSidebar = Astro.slots.has("sidebar-right");
 let sidebarPosition: "both" | "left" | "right" | "none";
