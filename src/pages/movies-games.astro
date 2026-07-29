@@ -237,7 +237,7 @@ const STAR_PATH =
 				<header class="mg-editor-head">
 					<div>
 						<h2 class="mg-editor-title">编辑影视/游戏列表</h2>
-						<p class="mg-editor-sub">输入 GitHub PAT 即可保存改动到 GitHub（自动部署）</p>
+						<p class="mg-editor-sub">编辑实时存入本地草稿；最后在右下角「上传中心」统一推送（所有改动合并为 1 次提交）</p>
 					</div>
 					<button type="button" id="mg-editor-close" class="mg-editor-close" aria-label="关闭">×</button>
 				</header>
@@ -283,7 +283,7 @@ const STAR_PATH =
 					<div class="mg-editor-foot-actions">
 						<a id="mg-editor-commits" href={COMMIT_URL_BASE} target="_blank" rel="noopener noreferrer" class="mg-editor-link" style="display:none;">查看提交历史</a>
 						<button type="button" id="mg-editor-cancel" class="mg-editor-btn">关闭</button>
-						<button type="button" id="mg-editor-save" class="mg-editor-btn mg-editor-btn-primary">💾 保存到 GitHub</button>
+						<button type="button" id="mg-editor-save" class="mg-editor-btn mg-editor-btn-primary">💾 存本地</button>
 					</div>
 				</footer>
 			</div>
@@ -981,6 +981,11 @@ const STAR_PATH =
 		var PAT_HELP_URL =
 			"https://github.com/settings/personal-access-tokens/new?description=movies-games-editor&contents=write";
 		var PAT_STORAGE_KEY = "__mg_pat__";
+		var SRC_PATH = "src/data/movies-games.ts";
+		// 经由 Layout boot 的 window.__draftStore（生产构建可打包，非裸文件）访问本地草稿库
+		function getDs() {
+			return (typeof window !== "undefined" && window.__draftStore) || null;
+		}
 
 		// 烘焙默认值（来自 src/config/editorSecrets.ts，经 data-* 属性传入）。
 		// 这些值已打包进客户端 JS（公开可见），仅用于免去 owner 每次手填。
@@ -1106,25 +1111,64 @@ const STAR_PATH =
 		function isV4Token(key) {
 			return /^eyJ[\w-]+\.[\w-]+\.[\w-]+$/.test((key || "").trim());
 		}
+		// 方案 B：直接粘贴 TMDB 链接（https://www.themoviedb.org/movie/123 或 /tv/123）
+		// 绕过搜索，按 ID 直接取详情——当搜索匹配不到、但你知道作品确切存在时最稳。
+		async function tryTmdbUrl(raw, key, isV4) {
+			var m = (raw || "").match(/themoviedb\.org\/(movie|tv)\/(\d+)/);
+			if (!m) return null;
+			var type = m[1], id = m[2];
+			var url = TMDB_API_BASE + "/" + type + "/" + id + "?language=zh-CN";
+			if (!isV4) url += "&api_key=" + encodeURIComponent(key);
+			var headers = isV4 ? { Authorization: "Bearer " + key } : {};
+			try {
+				var r = await fetch(url, { headers: headers });
+				if (!r.ok) return null;
+				var d = await r.json();
+				d.media_type = type; // search 结果自带，details 不带，补上
+				return d;
+			} catch (e) { return null; }
+		}
+		// 多语言回退搜索：zh-CN → en-US → 无语言限定
+		// 很多国产/小众作品 TMDB 没有中文译名，先试中文，空了再试英文/原名，最大化命中。
 		async function searchTmdb(query) {
 			var key = (getTmdbKey() || "").trim();
 			if (!key) throw new Error("请先填写 TMDB API Key 或读访问令牌");
 			var isV4 = isV4Token(key);
-			var url =
-				TMDB_API_BASE + "/search/multi?query=" + encodeURIComponent(query) +
-				"&language=zh-CN&include_adult=false&page=1";
-			if (!isV4) url += "&api_key=" + encodeURIComponent(key);
-			var headers = isV4 ? { Authorization: "Bearer " + key } : {};
-			var r = await fetch(url, { headers: headers });
-			if (!r.ok) {
-				var err = await r.json().catch(function () { return {}; });
-				throw new Error("TMDB 搜索失败 " + r.status + "：" + (err.status_message || r.statusText));
+			// 1) 优先：粘贴了 TMDB 链接就直接取详情
+			var byUrl = await tryTmdbUrl(query, key, isV4);
+			if (byUrl) return [byUrl];
+			// 2) 多语言回退搜索
+			var langs = ["zh-CN", "en-US", ""];
+			var lastErr = "";
+			var onlyPerson = false;
+			for (var li = 0; li < langs.length; li++) {
+				var lang = langs[li];
+				try {
+					var url =
+						TMDB_API_BASE + "/search/multi?query=" + encodeURIComponent(query) +
+						"&include_adult=false&page=1";
+					if (lang) url += "&language=" + lang;
+					if (!isV4) url += "&api_key=" + encodeURIComponent(key);
+					var headers = isV4 ? { Authorization: "Bearer " + key } : {};
+					var r = await fetch(url, { headers: headers });
+					if (!r.ok) {
+						var err = await r.json().catch(function () { return {}; });
+						lastErr = "TMDB 搜索失败 " + r.status + "：" + (err.status_message || r.statusText);
+						continue;
+					}
+					var data = await r.json();
+					var results = (data.results || []).filter(function (x) {
+						return x.media_type === "movie" || x.media_type === "tv";
+					}).slice(0, 8);
+					if (results.length) return results;
+					// 记录是否只搜到 person（用于更友好的提示）
+					if ((data.results || []).length && !results.length) onlyPerson = true;
+				} catch (e) { lastErr = e.message || String(e); }
 			}
-			var data = await r.json();
-			// 过滤掉 person，只要 movie/tv
-			return (data.results || []).filter(function (x) {
-				return x.media_type === "movie" || x.media_type === "tv";
-			}).slice(0, 8);
+			// 全部语言都 0 结果：返回空，UI 显示「没有匹配」（提示可粘贴 TMDB 链接）
+			if (onlyPerson) console.info("[TMDB] 只匹配到人物，请换作品名或粘贴 TMDB 链接");
+			else if (lastErr) console.info("[TMDB] " + lastErr);
+			return [];
 		}
 		// 渲染候选列表
 		function renderTmdbCandidates(rowEl, results) {
@@ -1310,6 +1354,7 @@ const STAR_PATH =
 					"ok"
 				);
 				renderList();
+				restoreDraft();
 			} catch (e) {
 				setStatus($("mg-editor-status"), "❌ " + e.message, "error");
 			} finally {
@@ -1317,108 +1362,61 @@ const STAR_PATH =
 			}
 		}
 
-		async function saveRemote() {
-			var token = getPat();
-			if (!token) {
-				setStatus($("mg-editor-foot-status"), "请先填写 GitHub PAT", "error");
+		// ===== 本地草稿（不再直推 GitHub，统一由「上传中心」一次性提交）=====
+		var _mgDraftTimer = null;
+		function scheduleDraftSave() {
+			if (_mgDraftTimer) clearTimeout(_mgDraftTimer);
+			_mgDraftTimer = setTimeout(function () { saveDraftLocal(); }, 800);
+		}
+		async function saveDraftLocal() {
+			var ds = getDs();
+			if (!ds || !ds.putDraft) {
+				setStatus($("mg-editor-foot-status"), "本地草稿模块未就绪，请刷新页面", "error");
 				return;
 			}
 			if (state.saving) return;
 			state.saving = true;
 			var saveBtn = $("mg-editor-save");
-			saveBtn.disabled = true;
-			setStatus($("mg-editor-foot-status"), "正在重新拉取最新 sha 防冲突...", "");
+			if (saveBtn) saveBtn.disabled = true;
 			try {
-				// 1) 重新 GET 拿最新 sha（避免本地副本过期）
-				var r1 = await fetch(API_FILE_URL, {
-					headers: {
-						Accept: "application/vnd.github+json",
-						Authorization: "Bearer " + token,
-					},
-				});
-				if (!r1.ok) {
-					var err1 = await r1.json().catch(function () { return {}; });
-					throw new Error("拉取 sha 失败 " + r1.status + "：" + (err1.message || r1.statusText));
+				if (!state.sourceContent) {
+					setStatus($("mg-editor-foot-status"), "请先「加载远端」再保存草稿", "error");
+					return;
 				}
-				var file = await r1.json();
-				var latestSha = file.sha;
-				var latestSource = base64ToUtf8(file.content || "");
-
-				// 2) 防冲突：只有远端 sha 与加载时不同（说明别人在网页外改过）才 confirm
-				if (latestSha !== state.sha) {
-					// 远端数组与本地可能不同，提示覆盖
-					var remoteRange = findArrayRange(latestSource);
-					var differs = false;
-					if (remoteRange) {
-						try {
-							var remoteArr = new Function(
-								"return (" + latestSource.substring(remoteRange.start, remoteRange.end) + ");"
-							)();
-							differs = JSON.stringify(remoteArr) !== JSON.stringify(state.items);
-						} catch (_e) { differs = true; }
-					}
-					if (differs) {
-						var overwrite = confirm(
-							"⚠️ 远端文件已于「你加载后」被修改（可能有人在 GitHub 网页改过）。\n\n" +
-								"点击「确定」用本地版本覆盖远端；\n" +
-								"点击「取消」放弃保存，先点「加载远端」重新拉取。"
-						);
-						if (!overwrite) {
-							setStatus(
-								$("mg-editor-foot-status"),
-								"已取消保存。请先「加载远端」同步最新数据。",
-								""
-							);
-							return;
-						}
-					}
-				}
-				state.sha = latestSha;
-
-				// 3) 序列化新内容
-				var newSource = serializeToSource(latestSource, state.items);
+				var newSource = serializeToSource(state.sourceContent, state.items);
 				var newContent = utf8ToBase64(newSource);
-
-				setStatus($("mg-editor-foot-status"), "正在提交到 GitHub...", "");
-				var r2 = await fetch(
-					"https://api.github.com/repos/FeiZhouHeShang/blog/contents/src/data/movies-games.ts",
-					{
-						method: "PUT",
-						headers: {
-							Accept: "application/vnd.github+json",
-							Authorization: "Bearer " + token,
-							"Content-Type": "application/json",
-						},
-						body: JSON.stringify({
-							message: "chore(movies-games): update via web editor (" + state.items.length + " items)",
-							content: newContent,
-							sha: latestSha,
-							branch: "main",
-						}),
-					}
-				);
-				if (!r2.ok) {
-					var err2 = await r2.json().catch(function () { return {}; });
-					throw new Error(
-						"提交失败 " + r2.status + "：" + (err2.message || r2.statusText)
-					);
-				}
-				var result = await r2.json();
-				state.sha = result.content.sha;
+				await ds.putDraft({
+					feature: "movies-games",
+					id: SRC_PATH,
+					label: "影视游戏（" + state.items.length + " 条）",
+					files: [{ path: SRC_PATH, content: newContent, sha: null }],
+				});
 				state.sourceContent = newSource;
-				setStatus(
-					$("mg-editor-foot-status"),
-					"✅ 已提交！Cloudflare 部署约 1 分钟后刷新可见",
-					"ok"
-				);
-				var commitsLink = $("mg-editor-commits");
-				if (commitsLink) commitsLink.style.display = "";
+				setStatus($("mg-editor-foot-status"), "✅ 已存为本地草稿 · 待右下角「上传中心」统一推送", "ok");
 			} catch (e) {
 				setStatus($("mg-editor-foot-status"), "❌ " + e.message, "error");
 			} finally {
 				state.saving = false;
-				saveBtn.disabled = false;
+				if (saveBtn) saveBtn.disabled = false;
 			}
+		}
+		// 加载远端后，若本地有未上传草稿则覆盖（断点续编）
+		async function restoreDraft() {
+			var ds = getDs();
+			if (!ds || !ds.getDraft) return;
+			var d = await ds.getDraft("movies-games", SRC_PATH);
+			if (!d || !d.files || !d.files.length || d.files[0].delete) return;
+			var src = base64ToUtf8(d.files[0].content || "");
+			var range = findArrayRange(src);
+			if (!range) return;
+			try {
+				var arr = new Function("return (" + src.substring(range.start, range.end) + ");")();
+				if (!Array.isArray(arr)) return;
+				state.items = arr;
+				state.sourceContent = src;
+				setStatus($("mg-editor-foot-status"), "⚠️ 已载入本地未上传草稿（" + arr.length + " 条）", "ok");
+				renderList();
+			} catch (_e) {}
 		}
 
 		// ===== 列表渲染 =====
@@ -1492,8 +1490,8 @@ const STAR_PATH =
 					'<div class="mg-form-field mg-form-full">' +
 						'<label>标题 *</label>' +
 						'<div class="mg-form-title-row">' +
-							'<input type="text" class="mg-editor-input-sm" data-f="title" value="' + escHtml(item.title || "") + '" placeholder="输入名称后点 🔍 智能匹配" />' +
-							'<button type="button" class="mg-editor-btn mg-form-search-btn" data-act="tmdb-search" title="在 TMDB 搜名称，候选列表点选自动填字段">' +
+						'<input type="text" class="mg-editor-input-sm" data-f="title" value="' + escHtml(item.title || "") + '" placeholder="输入名称，或粘贴 TMDB 链接" />' +
+						'<button type="button" class="mg-editor-btn mg-form-search-btn" data-act="tmdb-search" title="在 TMDB 搜名称（自动中/英/原名回退）；也可直接粘贴 themoviedb.org 链接精确匹配。候选点选自动填字段">' +
 								'<span class="mg-form-search-icon">🔍</span>' +
 								'<span>智能匹配</span>' +
 							'</button>' +
@@ -1653,9 +1651,10 @@ const STAR_PATH =
 				state.items.unshift(newItem);
 				state.editingId = newItem.id;
 				renderList();
+				scheduleDraftSave();
 			});
-			// 保存到 GitHub
-			$("mg-editor-save")?.addEventListener("click", saveRemote);
+			// 存为本地草稿（统一由「上传中心」推送）
+			$("mg-editor-save")?.addEventListener("click", saveDraftLocal);
 
 			// 列表事件委托
 			$("mg-editor-list")?.addEventListener("click", function (e) {
@@ -1672,6 +1671,7 @@ const STAR_PATH =
 					state.items = state.items.filter(function (x) { return x.id !== id; });
 					if (state.editingId === id) state.editingId = null;
 					renderList();
+					scheduleDraftSave();
 				} else if (act === "cancel") {
 					// 取消编辑：若 id 是新生成且无标题，从列表删除
 					var item = state.items.find(function (x) { return x.id === state.editingId; });
@@ -1680,6 +1680,7 @@ const STAR_PATH =
 					}
 					state.editingId = null;
 					renderList();
+					scheduleDraftSave();
 				} else if (act === "save-row") {
 					if (!rowEl) return;
 					var data = collectForm(rowEl);
@@ -1700,6 +1701,7 @@ const STAR_PATH =
 					}
 					state.editingId = null;
 					renderList();
+					scheduleDraftSave();
 				} else if (act === "tmdb-search") {
 					if (!rowEl) return;
 					var titleInp = rowEl.querySelector('[data-f="title"]');

@@ -464,6 +464,32 @@ const siteLang = lang.replace("_", "-");
       scheduleContentOverflowEnhancements();
     });
   } else {
-    scheduleContentOverflowEnhancements();
-  }
+	scheduleContentOverflowEnhancements();
+}
+</script>
+
+{/* 文章编辑器 / 日常吐槽：Swup 软导航后重新初始化。
+    内联脚本在容器替换后不会重跑，故将引导逻辑抽到持久化模块，
+    并在每次导航（astro:page-load，由 @swup/astro 在 page:view 时派发）后惰性加载执行。 */}
+<script>
+	function bootEditorsOnNav() {
+		import("@/scripts/postEditor")
+			.then((m) => m.bootPostEditor())
+			.catch((e) => console.error("[bootPostEditor]", e));
+		import("@/scripts/dailyGrumble")
+			.then((m) => m.bootDailyGrumble())
+			.catch((e) => console.error("[bootDailyGrumble]", e));
+		// 全局上传中心（悬浮按钮 + 抽屉）：任何页面都注入，统一把本地草稿合并为 1 次提交
+		import("@/scripts/uploadCenter")
+			.then((m) => m.bootUploadCenter())
+			.catch((e) => console.error("[bootUploadCenter]", e));
+		// 把 draftStore 暴露到 window，供 movies-games.astro 内联脚本（无法 ES import）使用
+		import("@/scripts/draftStoreGlobal").catch((e) => console.error("[bootDraftStoreGlobal]", e));
+	}
+	if (document.readyState === "loading") {
+		document.addEventListener("DOMContentLoaded", bootEditorsOnNav);
+	} else {
+		bootEditorsOnNav();
+	}
+	document.addEventListener("astro:page-load", bootEditorsOnNav);
 </script>

@@ -2,7 +2,6 @@
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import LeftSidebar from "@/components/layout/LeftSidebar.astro";
 import RightSidebar from "@/components/layout/RightSidebar.astro";
-import { postsIndex, type PostIndexItem } from "@/data/posts-index";
 import { editorSecrets } from "@/config/editorSecrets";
 
 // 文章前端编辑器（写 / 改 / 删）
@@ -27,178 +26,190 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 	<RightSidebar slot="sidebar-right" />
 
 	<div class="pe-page-wrapper w-full rounded-(--radius-large) overflow-hidden relative min-h-32" id="pe-root">
-		<div class="pe-header relative w-full mb-8 flex flex-wrap items-end justify-between gap-4">
-			<div>
-				<h1 class="text-2xl font-bold tracking-tight text-[var(--deep-text)]">文章编辑器</h1>
-				<p class="mt-1 text-sm text-[var(--content-meta)]">
-					共 {postsIndex.length} 篇（种子列表）· 网页上直接写 / 改 / 删，输入 GitHub PAT 即保存到仓库并部署
-				</p>
-			</div>
-			<div class="flex items-center gap-2">
-				<button
-					type="button"
-					id="pe-open-editor"
-					class="btn-card inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm hover:shadow-md transition-all duration-150"
-				>
-					✏️ 编辑文章
-				</button>
-			</div>
-		</div>
-
-		<!-- 文章列表 -->
-		<div class="pe-list flex flex-col gap-3" data-pe-list="">
-			{
-				postsIndex.map((p) => (
-					<article class="pe-item" data-pe-item="" data-path={p.path}>
-						<div class="pe-item-main">
-							<div class="pe-item-title">{p.title}</div>
-							<div class="pe-item-meta">
-								<span class="pe-badge">{p.folder}</span>
-								{p.pinned && <span class="pe-badge pe-badge-pin">📌 置顶</span>}
-								{p.draft && <span class="pe-badge pe-badge-draft">草稿</span>}
-								<span class="pe-item-date">{p.published}</span>
-							</div>
-						</div>
-						<div class="pe-item-actions">
-							<button type="button" class="pe-btn pe-btn-edit" data-pe-edit={p.path}>编辑</button>
-							<button type="button" class="pe-btn pe-btn-del" data-pe-del={p.path}>删除</button>
-							<a
-								href={EDIT_BASE + p.path}
-								target="_blank"
-								rel="noopener noreferrer"
-								class="pe-btn pe-btn-ghost"
-							>GitHub</a>
-						</div>
-					</article>
-				))
-			}
-		</div>
-
-		<div class="pe-empty py-16 text-center text-[var(--content-meta)]" data-pe-empty="" style="display:none;">
-			暂无文章
-		</div>
-
+		<!-- ========== 编辑器（页面本身就是编辑器，无中间列表） ========== -->
 		<!-- ========== 编辑器模态框 ========== -->
-		<dialog
+		<div
 			id="pe-editor"
 			data-pe-editor=""
-			class="pe-editor-dialog"
+			class="pe-editor-page"
+			data-open="true"
 			data-imgbed-url={editorSecrets.imageBedUrl}
 			data-imgbed-auth={import.meta.env.PUBLIC_IMGBED_UPLOAD_CODE ?? ""}
 			data-imgbed-token={import.meta.env.PUBLIC_IMG_UPLOAD_TOKEN ?? ""}
 		>
 			<div class="pe-editor-panel">
-				<header class="pe-editor-head">
-					<div>
-						<h2 class="pe-editor-title" id="pe-editor-title">编辑文章</h2>
-						<p class="pe-editor-sub">GitHub PAT 校验后，本次浏览内保存/删除无需再次输入；图片直传图床按标题归档</p>
+				<!-- 顶部面包屑 + 操作工具栏（仿 fqzlr） -->
+				<header class="pe-editor-topbar">
+					<div class="pe-topbar-left">
+						<button type="button" id="pe-editor-back" class="pe-topbar-btn" title="返回文章列表" aria-label="返回文章列表">
+							<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+							<span>返回列表</span>
+						</button>
+						<span class="pe-topbar-divider"></span>
+						<span class="pe-topbar-mode" id="pe-editor-mode-chip">WRITE</span>
+						<span class="pe-topbar-title" id="pe-editor-title">编辑文章</span>
 					</div>
-					<button type="button" id="pe-editor-close" class="pe-editor-close" aria-label="关闭">×</button>
+					<div class="pe-topbar-right">
+						<button type="button" id="pe-pat-open" class="pe-topbar-btn" title="配置 GitHub PAT">🔑 密钥</button>
+						<span class="pe-topbar-divider"></span>
+						<button type="button" id="pe-toolbar-import-md" class="pe-topbar-btn" title="导入本地 .md 文件">📥 导入MD</button>
+						<button type="button" id="pe-toolbar-preview" class="pe-topbar-btn" title="预览 Markdown 渲染效果">👁 预览</button>
+					<button type="button" id="pe-toolbar-save-draft" class="pe-topbar-btn pe-topbar-btn-save" title="存为本地草稿（标记为草稿，不推送）">💾 存草稿</button>
+					<button type="button" id="pe-editor-save" class="pe-topbar-btn pe-topbar-btn-publish" title="保存到本地草稿（标记为已发布）">🚀 存本地</button>
+						<button type="button" id="pe-toolbar-delete" class="pe-topbar-btn pe-topbar-btn-delete" title="删除当前文章（不可恢复）" hidden>🗑 删除</button>
+					<button type="button" id="pe-editor-close" class="pe-topbar-btn pe-topbar-btn-close" title="返回文章列表" aria-label="返回文章列表">×</button>
+					</div>
 				</header>
 
-				<!-- 令牌区 -->
-				<section class="pe-editor-token">
-					<label class="pe-editor-label">
-						<span>GitHub Personal Access Token</span>
-						<span class="pe-editor-label-tip">
-							本次浏览会话有效（关闭浏览器需重输）
-							· <a href={PAT_HELP_URL} target="_blank" rel="noopener noreferrer" class="pe-editor-link">生成 fine-grained PAT</a>
-						</span>
+				<!-- 副标题 / 状态行 -->
+				<div class="pe-editor-subbar">
+					<p class="pe-editor-sub">实时存入<b>本地草稿</b>，最后在右下角「上传中心」统一推送（所有改动合并为 1 次提交）。</p>
+					<div class="pe-editor-subbar-right">
+						<span id="pe-session-chip" class="pe-session-chip is-lock">🔒 未验证</span>
+						<span class="pe-topbar-divider"></span>
+						<span id="pe-editor-status" class="pe-editor-status-inline">未验证令牌</span>
+					</div>
+				</div>
+
+				<!-- 主体两栏：左 = 编辑器（标题 + 正文），右 = 字段侧栏（slug/封面/分类/标签/日期/草稿/置顶/图片） -->
+				<div class="pe-editor-main">
+					<div class="pe-editor-col">
+						<textarea id="pe-f-title" class="pe-title-input" rows="1" placeholder="输入文章标题..." aria-label="文章标题"></textarea>
+
+						<!-- Markdown 工具栏 -->
+						<div class="pe-md-toolbar" role="toolbar" aria-label="Markdown 格式工具栏">
+							<button type="button" class="pe-md-tb" data-md="bold" title="加粗 Ctrl+B"><b>B</b></button>
+							<button type="button" class="pe-md-tb" data-md="italic" title="斜体 Ctrl+I"><i>I</i></button>
+							<span class="pe-md-tb-divider"></span>
+							<button type="button" class="pe-md-tb" data-md="h1" title="一级标题">H1</button>
+							<button type="button" class="pe-md-tb" data-md="h2" title="二级标题">H2</button>
+							<button type="button" class="pe-md-tb" data-md="h3" title="三级标题">H3</button>
+							<span class="pe-md-tb-divider"></span>
+							<button type="button" class="pe-md-tb" data-md="quote" title="引用">❝</button>
+							<button type="button" class="pe-md-tb" data-md="code" title="行内代码">‹›</button>
+							<button type="button" class="pe-md-tb" data-md="codeblock" title="代码块">⌘</button>
+							<button type="button" class="pe-md-tb" data-md="ul" title="无序列表">☰</button>
+							<button type="button" class="pe-md-tb" data-md="ol" title="有序列表">1.</button>
+							<button type="button" class="pe-md-tb" data-md="link" title="链接 Ctrl+K">🔗</button>
+							<button type="button" class="pe-md-tb" data-md="image" title="插入图片">🖼</button>
+							<button type="button" class="pe-md-tb" data-md="hr" title="分割线">—</button>
+						</div>
+
+						<textarea id="pe-f-body" class="pe-textarea pe-body-input" placeholder="开始写作... 支持 Markdown 语法 快捷键：Ctrl+B 加粗 / Ctrl+I 斜体 / Ctrl+K 链接 / Ctrl+S 保存" aria-label="文章正文 Markdown"></textarea>
+				<!-- 预览容器直接套 Markdown.astro 同款 class，确保任何 CSS 改动两侧自动同步 -->
+				<div id="pe-preview" class="prose dark:prose-invert prose-base max-w-none! custom-md markdown-bordered pe-preview" hidden></div>
+					</div>
+
+					<aside class="pe-editor-side">
+						<label class="pe-field">
+							<span>🔗 文章 Slug</span>
+							<input type="text" id="pe-f-slug" class="pe-input" placeholder="article-slug" />
+							<small class="pe-field-hint">留空自动从标题生成</small>
+						</label>
+						<label class="pe-field">
+							<span>🖼 封面图 URL</span>
+							<input type="url" id="pe-f-cover" class="pe-input" placeholder="https://example.com/cover.jpg" />
+						</label>
+						<label class="pe-field">
+							<span>📝 文章描述</span>
+							<textarea id="pe-f-desc" class="pe-input pe-textarea-sm" rows="2" placeholder="简短的描述文章内容，用于 SEO 列表展示"></textarea>
+						</label>
+<!-- 标签：三连框 —— ① 已有标签 ② 新建标签 ③ 已选择标签 -->
+					<label class="pe-field">
+						<span># 标签</span>
+						<div class="pe-tags3" data-tags-for="pe-f-tags">
+							<div class="pe-tags3-row">
+								<div class="pe-tags3-label">① 已有标签（点击选择）</div>
+								<div class="pe-tags3-pool" id="pe-tags-pool" role="listbox" aria-label="已有标签"></div>
+							</div>
+							<div class="pe-tags3-row">
+								<div class="pe-tags3-label">② 新建标签（回车或点 + 添加）</div>
+								<div class="pe-tags3-input-wrap">
+									<input type="text" id="pe-tag-input" class="pe-input" placeholder="输入新标签名后回车或点 +" autocomplete="off" spellcheck="false" />
+									<button type="button" id="pe-tag-add-btn" class="pe-tags3-add-btn">+ 添加</button>
+								</div>
+							</div>
+							<div class="pe-tags3-row">
+								<div class="pe-tags3-label">③ 已选择标签（点 × 取消）</div>
+								<div class="pe-tags3-selected" id="pe-tags-selected"></div>
+							</div>
+						</div>
+						<input type="hidden" id="pe-f-tags" value="" />
+						<small class="pe-field-hint">第一排选已有 · 第二排新建 · 第三排已选（点 × 取消关联）</small>
 					</label>
-					<div class="pe-editor-token-row">
+
+					<!-- 分类：combo-box（已移到原分类目录位置；目录展示隐藏，仅保留隐藏字段用于保存） -->
+					<label class="pe-field">
+						<span>📁 分类</span>
+						<div class="pe-combo" data-combo-for="pe-f-cat">
+							<input type="text" id="pe-f-cat" class="pe-input pe-combo-input" placeholder="选择或输入新分类..." autocomplete="off" spellcheck="false" />
+							<button type="button" class="pe-combo-toggle" aria-label="打开分类列表" tabindex="-1">▾</button>
+							<ul class="pe-combo-menu" role="listbox" hidden></ul>
+						</div>
+						<small class="pe-field-hint">从已有分类中选，或直接输入新分类（目录由前后端自动匹配）</small>
+						<input type="hidden" id="pe-f-folder" value="others" />
+					</label>
+						<label class="pe-field">
+							<span>📅 发布日期</span>
+							<input type="date" id="pe-f-pub" class="pe-input" />
+						</label>
+						<div class="pe-field pe-field-flags">
+							<label class="pe-check"><input type="checkbox" id="pe-f-draft" /> 📝 草稿（不发布）</label>
+							<label class="pe-check"><input type="checkbox" id="pe-f-pinned" /> 📌 置顶文章</label>
+						</div>
+
+						<div class="pe-side-divider"></div>
+
+						<!-- 图片上传（方案 A 切换） -->
+						<div class="pe-side-block">
+							<div class="pe-channel-seg" role="radiogroup" aria-label="上传目标">
+								<label class="pe-channel-opt"><input type="radio" name="pe-channel" value="imgbed" checked /> 图床</label>
+								<label class="pe-channel-opt"><input type="radio" name="pe-channel" value="repo" /> 仓库本地</label>
+							</div>
+							<button type="button" id="pe-img-pick" class="pe-editor-btn pe-editor-btn-primary pe-side-btn">🖼 上传图片</button>
+							<input type="file" id="pe-img-file" accept="image/*" multiple style="display:none;" />
+							<p id="pe-img-tip" class="pe-editor-status pe-side-tip"></p>
+							<p class="pe-channel-desc pe-side-desc">图床：直传 CloudFlare 图床。仓库本地（方案 A）：存到 <code>public/assets/images/&lt;标题&gt;/</code>，部署后本地加载、不依赖图床。</p>
+							<p id="pe-imgbed-status" class="pe-editor-status" data-imgbed-status></p>
+						</div>
+					</aside>
+				</div>
+
+				<!-- 隐藏的 PAT 面板（默认折叠，点顶部「🔑 密钥」展开） -->
+				<section class="pe-pat-panel" id="pe-pat-panel" hidden>
+					<div class="pe-pat-row">
 						<input type="password" id="pe-editor-pat" placeholder="github_pat_xxxxxxxxxxxxxx" autocomplete="off" spellcheck="false" class="pe-editor-input" />
 						<button type="button" id="pe-editor-pat-toggle" class="pe-editor-mini" title="显示/隐藏">👁</button>
 						<button type="button" id="pe-editor-pat-validate" class="pe-editor-btn pe-editor-btn-secondary">✅ 验证令牌</button>
 						<button type="button" id="pe-editor-pat-clear" class="pe-editor-mini pe-editor-mini-danger" title="退出本次会话">🗑</button>
 						<button type="button" id="pe-editor-load" class="pe-editor-btn pe-editor-btn-secondary">🔄 加载远端</button>
 					</div>
-					<div class="pe-editor-token-meta">
-						<span id="pe-session-chip" class="pe-session-chip is-lock">🔒 未验证</span>
-						<span class="pe-editor-label-tip">验证后，本次浏览内保存/删除均无需再次输入</span>
-					</div>
-					<p id="pe-editor-status" class="pe-editor-status">未验证令牌</p>
+					<p class="pe-editor-label-tip">本次浏览会话有效（关闭浏览器需重输）· <a href={PAT_HELP_URL} target="_blank" rel="noopener noreferrer" class="pe-editor-link">生成 fine-grained PAT</a></p>
 				</section>
 
-				<!-- 表单区 -->
-				<section class="pe-editor-form" data-pe-form="">
-					<div class="pe-form-grid">
-						<label class="pe-field pe-field-title">
-							<span>标题（决定图片目录 <code>/文章/&lt;标题&gt;/</code>）</span>
-							<input type="text" id="pe-f-title" class="pe-input" placeholder="例如：笑嘻嘻" />
-						</label>
-						<label class="pe-field pe-field-folder">
-							<span>分类目录</span>
-							<select id="pe-f-folder" class="pe-input">
-								<option value="ai">ai</option>
-								<option value="others">others</option>
-								<option value="projects">projects</option>
-							</select>
-						</label>
-						<label class="pe-field pe-field-slug">
-							<span>文件名（slug，仅英文/数字/连字符）</span>
-							<input type="text" id="pe-f-slug" class="pe-input" placeholder="my-post" />
-						</label>
-						<label class="pe-field pe-field-cat">
-							<span>分类标签（展示用）</span>
-							<input type="text" id="pe-f-cat" class="pe-input" placeholder="学习文档" />
-						</label>
-						<label class="pe-field pe-field-desc">
-							<span>描述</span>
-							<input type="text" id="pe-f-desc" class="pe-input" placeholder="一句话简介" />
-						</label>
-						<label class="pe-field pe-field-tags">
-							<span>标签（逗号分隔）</span>
-							<input type="text" id="pe-f-tags" class="pe-input" placeholder="博客, 教程" />
-						</label>
-						<label class="pe-field pe-field-pub">
-							<span>发布日期</span>
-							<input type="date" id="pe-f-pub" class="pe-input" />
-						</label>
-						<label class="pe-field pe-field-upd">
-							<span>更新日期</span>
-							<input type="date" id="pe-f-upd" class="pe-input" />
-						</label>
-						<div class="pe-field pe-field-flags">
-							<label class="pe-check"><input type="checkbox" id="pe-f-pinned" /> 置顶</label>
-							<label class="pe-check"><input type="checkbox" id="pe-f-draft" /> 草稿</label>
-						</div>
-					</div>
+				<!-- 标题变更提示 -->
+				<div class="pe-title-warn" id="pe-title-warn" style="display:none;"></div>
 
-					<!-- 标题变更提示 -->
-					<div class="pe-title-warn" id="pe-title-warn" style="display:none;"></div>
-
-					<!-- 正文 -->
-					<label class="pe-field pe-field-body">
-						<span>正文（Markdown）</span>
-						<textarea id="pe-f-body" class="pe-textarea" rows="14" placeholder="支持 Markdown…"></textarea>
-					</label>
-
-					<!-- 图片上传 -->
-					<div class="pe-img-row">
-						<button type="button" id="pe-img-pick" class="pe-editor-btn pe-editor-btn-primary">🖼 上传图片到 /文章/&lt;标题&gt;/</button>
-						<input type="file" id="pe-img-file" accept="image/*" multiple style="display:none;" />
-						<span id="pe-img-tip" class="pe-editor-status"></span>
-					</div>
-					<p id="pe-imgbed-status" class="pe-editor-status" data-imgbed-status=""></p>
-				</section>
-
+				<!-- 底部状态条 + 字符计数 -->
 				<footer class="pe-editor-foot">
-					<p id="pe-editor-foot-status" class="pe-editor-foot-status">准备就绪</p>
+					<div class="pe-editor-foot-left">
+						<span id="pe-char-count" class="pe-char-count">0 字</span>
+						<span class="pe-topbar-divider"></span>
+						<span class="pe-kbd-hint">Ctrl+B 加粗 · Ctrl+I 斜体 · Ctrl+K 链接 · Ctrl+S 保存</span>
+					</div>
 					<div class="pe-editor-foot-actions">
 						<a id="pe-editor-commits" href={COMMIT_URL_BASE} target="_blank" rel="noopener noreferrer" class="pe-editor-link" style="display:none;">查看提交历史</a>
-						<button type="button" id="pe-editor-cancel" class="pe-editor-btn">关闭</button>
-						<button type="button" id="pe-editor-save" class="pe-editor-btn pe-editor-btn-primary">💾 保存到 GitHub</button>
+						<p id="pe-editor-foot-status" class="pe-editor-foot-status">准备就绪</p>
 					</div>
 				</footer>
 			</div>
-		</dialog>
+					<input type="file" id="pe-md-import" accept=".md,.markdown,text/markdown" hidden />
+		</div>
 	</div>
 </MainGridLayout>
 
 <style>
-	.pe-page-wrapper { padding: 1rem 0.25rem; }
-	.pe-header h1 { letter-spacing: -0.01em; }
-	.pe-list { gap: 0.6rem; }
+	.pe-page-wrapper { padding: 0; max-width: 1280px; margin: 0 auto; }
 	.pe-item {
 		display: flex; align-items: center; justify-content: space-between; gap: 1rem;
 		padding: 0.85rem 1.1rem; border: 1px solid var(--line-divider, #e5e7eb);
@@ -209,31 +220,36 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 	.pe-item-main { min-width: 0; }
 	.pe-item-title { font-weight: 600; color: var(--deep-text, #111); font-size: 1rem; }
 	.pe-item-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem; flex-wrap: wrap; }
-	.pe-badge { font-size: 0.7rem; padding: 0.1rem 0.45rem; border-radius: 999px; background: rgba(99,102,241,0.12); color: #4f46e5; }
+	.pe-badge { font-size: 0.7rem; padding: 0.1rem 0.45rem; border-radius: 999px; background: var(--btn-card-bg-active, #ececf1); color: var(--content-meta, #6b7280); }
 	.pe-badge-pin { background: rgba(245,158,11,0.15); color: #b45309; }
 	.pe-badge-draft { background: rgba(107,114,128,0.15); color: #4b5563; }
 	.pe-item-date { font-size: 0.72rem; color: var(--content-meta, #6b7280); }
 	.pe-item-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
 	.pe-btn {
 		font-size: 0.78rem; padding: 0.4rem 0.75rem; border-radius: 8px; cursor: pointer;
-		border: 1px solid var(--line-divider, #e5e7eb); background: var(--btn-card-bg, #f5f5f7); color: var(--deep-text, #111);
+		border: 1px solid var(--line-divider, #e5e7eb); background: var(--btn-card-bg-hover, #f5f5f7); color: var(--deep-text, #111);
 		transition: all 0.15s ease; min-height: 44px;
 	}
-	.pe-btn:hover { background: var(--btn-card-bg-hover, #ececf1); }
-	.pe-btn-edit { background: #4f46e5; color: #fff; border-color: #4f46e5; }
-	.pe-btn-edit:hover { background: #4338ca; }
+	.pe-btn:hover { background: var(--btn-card-bg-active, #ececf1); }
+	.pe-btn-edit { background: var(--primary); color: var(--page-bg); border-color: var(--primary); }
+	.pe-btn-edit:hover { filter: brightness(1.15); }
+:root.dark .pe-btn-edit:hover { filter: brightness(0.9); }
 	.pe-btn-del { background: #fff; color: #e11d48; border-color: rgba(225,29,72,0.3); }
 	.pe-btn-del:hover { background: rgba(225,29,72,0.08); }
 	.pe-btn-ghost { color: #6b7280; text-decoration: none; display: inline-flex; align-items: center; }
 
-	/* 模态框 */
-	.pe-editor-dialog {
-		width: min(880px, 96vw); max-height: 94vh; padding: 0; border: none;
-		border-radius: var(--radius-large, 16px); background: var(--card-bg, #fff);
-		box-shadow: 0 24px 70px rgba(0,0,0,0.3); color: var(--deep-text, #111);
+	/* 页面模式（不是 dialog，div 承载） */
+	.pe-editor-page {
+		width: 100%;
+		min-height: calc(100vh - 6rem);
+		padding: 0;
+		background: var(--card-bg, #fff);
+		color: var(--deep-text, #111);
+		border-radius: var(--radius-large, 12px);
+		overflow: hidden;
+		box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 	}
-	.pe-editor-dialog::backdrop { background: rgba(15,23,42,0.55); backdrop-filter: blur(2px); }
-	.pe-editor-panel { display: flex; flex-direction: column; max-height: 94vh; }
+	.pe-editor-panel { display: flex; flex-direction: column; min-height: calc(100vh - 6rem); }
 	.pe-editor-head {
 		display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem;
 		padding: 1.1rem 1.4rem 0.8rem; border-bottom: 1px solid var(--line-divider, #e5e7eb);
@@ -244,25 +260,26 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 	.pe-editor-token { padding: 0.9rem 1.4rem; border-bottom: 1px solid var(--line-divider, #e5e7eb); }
 	.pe-editor-label { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.8rem; font-weight: 600; }
 	.pe-editor-label-tip { font-weight: 400; font-size: 0.7rem; color: var(--content-meta, #6b7280); }
-	.pe-editor-link { color: #4f46e5; text-decoration: none; }
+	.pe-editor-link { color: var(--primary); text-decoration: none; }
 	.pe-editor-token-row { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; margin-top: 0.5rem; }
 	.pe-editor-input {
 		flex: 1 1 200px; min-width: 160px; padding: 0.5rem 0.7rem; border-radius: 8px;
-		border: 1px solid var(--line-divider, #e5e7eb); background: var(--bg-main, #fff); color: var(--deep-text, #111);
+		border: 1px solid var(--line-divider, #e5e7eb); background: var(--page-bg, #fff); color: var(--deep-text, #111);
 		font-size: 0.82rem; min-height: 44px;
 	}
 	.pe-editor-mini {
 		min-width: 44px; min-height: 44px; padding: 0 0.6rem; border-radius: 8px; cursor: pointer;
-		border: 1px solid var(--line-divider, #e5e7eb); background: var(--btn-card-bg, #f5f5f7); color: var(--deep-text, #111);
+		border: 1px solid var(--line-divider, #e5e7eb); background: var(--btn-card-bg-hover, #f5f5f7); color: var(--deep-text, #111);
 	}
 	.pe-editor-mini-danger:hover { background: rgba(244,63,94,0.1); border-color: rgba(244,63,94,0.4); }
 	.pe-editor-btn {
 		min-height: 44px; padding: 0.5rem 0.9rem; border-radius: 8px; cursor: pointer; font-size: 0.82rem;
-		border: 1px solid var(--line-divider, #e5e7eb); background: var(--btn-card-bg, #f5f5f7); color: var(--deep-text, #111);
+		border: 1px solid var(--line-divider, #e5e7eb); background: var(--btn-card-bg-hover, #f5f5f7); color: var(--deep-text, #111);
 	}
 	.pe-editor-btn-secondary { background: #eef2ff; border-color: #c7d2fe; color: #4338ca; }
-	.pe-editor-btn-primary { background: #4f46e5; border-color: #4f46e5; color: #fff; font-weight: 600; }
-	.pe-editor-btn-primary:hover { background: #4338ca; }
+	.pe-editor-btn-primary { background: var(--primary); border-color: var(--primary); color: var(--page-bg); font-weight: 600; }
+	.pe-editor-btn-primary:hover { filter: brightness(1.15); }
+:root.dark .pe-editor-btn-primary:hover { filter: brightness(0.9); }
 	.pe-editor-token-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
 	.pe-session-chip { font-size: 0.72rem; padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid transparent; font-weight: 500; }
 	.pe-session-chip.is-ok { color: #047857; background: rgba(16,185,129,0.12); border-color: rgba(16,185,129,0.35); }
@@ -276,520 +293,267 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 	.pe-field { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.74rem; color: var(--content-meta, #6b7280); }
 	.pe-field-title { grid-column: 1 / -1; }
 	.pe-field-body { grid-column: 1 / -1; }
-	.pe-field code { background: rgba(99,102,241,0.1); padding: 0 0.3rem; border-radius: 4px; color: #4f46e5; }
+	.pe-field code { background: rgba(99,102,241,0.1); padding: 0 0.3rem; border-radius: 4px; color: var(--primary); }
 	.pe-input {
 		padding: 0.5rem 0.7rem; border-radius: 8px; border: 1px solid var(--line-divider, #e5e7eb);
-		background: var(--bg-main, #fff); color: var(--deep-text, #111); font-size: 0.85rem; min-height: 44px;
+		background: var(--page-bg, #fff); color: var(--deep-text, #111); font-size: 0.85rem; min-height: 44px;
 	}
-	.pe-textarea { padding: 0.6rem 0.7rem; border-radius: 8px; border: 1px solid var(--line-divider, #e5e7eb); background: var(--bg-main, #fff); color: var(--deep-text, #111); font-size: 0.85rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; line-height: 1.6; resize: vertical; }
+	.pe-textarea { padding: 0.6rem 0.7rem; border-radius: 8px; border: 1px solid var(--line-divider, #e5e7eb); background: var(--page-bg, #fff); color: var(--deep-text, #111); font-size: 0.85rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; line-height: 1.6; resize: vertical; }
 	.pe-field-flags { flex-direction: row; gap: 1rem; align-items: center; }
 	.pe-check { display: flex; align-items: center; gap: 0.35rem; font-size: 0.82rem; color: var(--deep-text, #111); }
 	.pe-title-warn { grid-column: 1 / -1; margin: 0.4rem 0 0; padding: 0.6rem 0.8rem; border-radius: 8px; background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.35); color: #b45309; font-size: 0.76rem; }
 	.pe-img-row { display: flex; align-items: center; gap: 0.6rem; margin-top: 0.8rem; flex-wrap: wrap; }
 
+	/* 方案 A：上传目标切换（图床 / 仓库本地） */
+	.pe-channel-seg { display: inline-flex; border: 1px solid var(--line-divider, #e5e7eb); border-radius: 8px; overflow: hidden; flex-shrink: 0; }
+	.pe-channel-opt { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.78rem; padding: 0.4rem 0.65rem; cursor: pointer; color: var(--content-meta, #6b7280); user-select: none; background: var(--btn-card-bg-hover, #f5f5f7); transition: all 0.15s; }
+	.pe-channel-opt:not(:last-child) { border-right: 1px solid var(--line-divider, #e5e7eb); }
+	.pe-channel-opt:has(input:checked) { background: var(--primary); color: var(--page-bg); }
+	.pe-channel-opt input { accent-color: currentColor; margin: 0; width: 0.95rem; height: 0.95rem; }
+	.pe-channel-desc { margin: 0.4rem 0 0; line-height: 1.55; }
+	.pe-channel-desc code { background: rgba(99,102,241,0.1); padding: 0 0.3rem; border-radius: 4px; color: var(--primary); }
+
 	.pe-editor-foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.9rem 1.4rem; border-top: 1px solid var(--line-divider, #e5e7eb); }
 	.pe-editor-foot-status { font-size: 0.74rem; color: var(--content-meta, #6b7280); margin: 0; flex: 1; }
 	.pe-editor-foot-actions { display: flex; gap: 0.5rem; align-items: center; }
+
+	/* ===== fqzlr 风格全屏编辑器 ===== */
+	/* 顶栏 */
+	.pe-editor-topbar {
+		display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+		padding: 0.7rem 1.4rem; border-bottom: 1px solid var(--line-divider, #e5e7eb);
+		background: var(--card-bg, #fff); flex-shrink: 0;
+	}
+	.pe-topbar-left, .pe-topbar-right { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+	.pe-topbar-divider { width: 1px; height: 18px; background: var(--line-divider, #e5e7eb); margin: 0 0.25rem; }
+	.pe-topbar-mode {
+		font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.7rem;
+		color: var(--content-meta, #6b7280); letter-spacing: 0.2em;
+	}
+	.pe-topbar-title { font-size: 0.95rem; font-weight: 600; color: var(--deep-text, #111); }
+	.pe-topbar-btn {
+		display: inline-flex; align-items: center; gap: 0.35rem;
+		padding: 0.45rem 0.8rem; min-height: 36px;
+		border-radius: 8px; cursor: pointer; font-size: 0.82rem; font-weight: 500;
+		border: 1px solid var(--line-divider, #e5e7eb);
+		background: var(--btn-card-bg-hover, #f5f5f7);
+		color: var(--deep-text, #111);
+		transition: all 0.15s ease;
+	}
+	.pe-topbar-btn:hover { background: var(--btn-card-bg-active, #ececf1); }
+	.pe-topbar-btn-save { background: var(--btn-card-bg-hover, #f5f5f7); color: var(--primary, #4f46e5); border-color: var(--line-divider, #e5e7eb); }
+	.pe-topbar-btn-publish { background: var(--primary); color: var(--page-bg); border-color: var(--primary); font-weight: 600; }
+	.pe-topbar-btn-publish:hover { filter: brightness(1.15); }
+:root.dark .pe-topbar-btn-publish:hover { filter: brightness(0.9); }
+	.pe-topbar-btn-delete {
+		background: transparent;
+		color: #e11d48;
+		border-color: rgba(225,29,72,0.25);
+	}
+	.pe-topbar-btn-delete:hover {
+		background: rgba(225,29,72,0.08);
+		border-color: rgba(225,29,72,0.5);
+		color: #e11d48;
+	}
+	.pe-topbar-btn-delete[hidden] { display: none !important; }
+	.pe-topbar-btn-close { padding: 0.45rem 0.7rem; font-size: 1.2rem; line-height: 1; }
+
+	/* 副标题 / 状态行 */
+	.pe-editor-subbar {
+		display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+		padding: 0.55rem 1.4rem; border-bottom: 1px solid var(--line-divider, #e5e7eb);
+		background: var(--card-bg, #fff); flex-shrink: 0;
+	}
+	.pe-editor-subbar-right { display: flex; align-items: center; gap: 0.5rem; }
+	.pe-editor-status-inline { font-size: 0.72rem; color: var(--content-meta, #6b7280); }
+	.pe-editor-status-inline.is-error { color: #f43f5e; }
+	.pe-editor-status-inline.is-ok { color: #10b981; }
+
+	/* 主体两栏 */
+	.pe-editor-main {
+		display: grid; grid-template-columns: minmax(0, 1fr) 320px;
+		gap: 0; flex: 1 1 auto; min-height: 0;
+	}
+
+	/* 左栏：编辑器 */
+	.pe-editor-col { display: flex; flex-direction: column; min-width: 0; padding: 0; overflow: hidden; }
+	.pe-title-input {
+		width: 100%; box-sizing: border-box;
+		padding: 1.4rem 1.6rem 0.6rem;
+		border: none; outline: none; resize: none; background: transparent;
+		font-size: 1.6rem; font-weight: 700; color: var(--deep-text, #111);
+		font-family: inherit; line-height: 1.4; min-height: 64px;
+		overflow: hidden;
+	}
+	.pe-title-input::placeholder { color: var(--content-meta, #9ca3af); font-weight: 500; }
+	.pe-md-toolbar {
+		display: flex; align-items: center; gap: 0.15rem;
+		padding: 0.4rem 1.4rem; border-top: 1px solid var(--line-divider, #e5e7eb);
+		border-bottom: 1px solid var(--line-divider, #e5e7eb);
+		background: var(--card-bg, #fff); flex-shrink: 0;
+	}
+	.pe-md-tb {
+		min-width: 32px; min-height: 32px; padding: 0 0.5rem;
+		border: none; background: transparent; border-radius: 6px; cursor: pointer;
+		color: var(--content-meta, #6b7280); font-size: 0.85rem;
+		transition: all 0.15s ease;
+	}
+	.pe-md-tb:hover { background: var(--btn-card-bg-active, #ececf1); color: var(--primary, #4f46e5); }
+	.pe-md-tb-divider { width: 1px; height: 16px; background: var(--line-divider, #e5e7eb); margin: 0 0.25rem; }
+	.pe-body-input {
+		flex: 1 1 auto; min-height: 0;
+		padding: 1rem 1.6rem;
+		border: none; outline: none; resize: none; background: transparent;
+		font-size: 0.95rem; line-height: 1.7; color: var(--deep-text, #111);
+		font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	}
+
+	/* 右栏：字段侧栏 */
+	.pe-editor-side {
+		border-left: 1px solid var(--line-divider, #e5e7eb);
+		padding: 1rem 1.2rem; overflow-y: auto;
+		display: flex; flex-direction: column; gap: 0.7rem;
+		background: var(--card-bg, #fff);
+	}
+	.pe-side-divider { height: 1px; background: var(--line-divider, #e5e7eb); margin: 0.3rem 0; }
+	.pe-side-block { display: flex; flex-direction: column; gap: 0.5rem; }
+	.pe-side-btn { width: 100%; }
+	.pe-side-tip { margin: 0; }
+	.pe-side-desc { margin: 0; }
+	.pe-textarea-sm { min-height: 56px; font-family: inherit; }
+	.pe-field-hint { font-size: 0.68rem; color: var(--content-meta, #9ca3af); line-height: 1.5; }
+	.pe-field-hint code { background: rgba(99,102,241,0.08); padding: 0 0.25rem; border-radius: 3px; color: var(--primary); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; }
+
+	/* ===== 分类 combo-box ===== */
+	.pe-combo { position: relative; }
+	.pe-combo-input { padding-right: 2.2rem; }
+	.pe-combo-toggle {
+		position: absolute; right: 0.4rem; top: 50%; transform: translateY(-50%);
+		width: 28px; height: 28px; padding: 0; border: none; background: transparent;
+		cursor: pointer; color: var(--content-meta, #6b7280); font-size: 0.9rem; line-height: 1; border-radius: 6px;
+	}
+	.pe-combo-toggle:hover { background: var(--btn-card-bg-active, #ececf1); color: var(--primary); }
+	.pe-combo-menu {
+		position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+		max-height: 14rem; overflow-y: auto; z-index: 30;
+		background: var(--card-bg, #fff); border: 1px solid var(--line-divider, #e5e7eb);
+		border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+		padding: 0.25rem 0; margin: 0; list-style: none;
+	}
+	/* 分类 combo 菜单项、标签 chip / 三连框 均为 innerHTML 动态创建，
+	   scoped <style> 不生效，统一下移至末尾的 <style is:global> 块。 */
+
+	/* PAT 面板（折叠） */
+	.pe-pat-panel {
+		padding: 0.8rem 1.4rem; border-top: 1px solid var(--line-divider, #e5e7eb);
+		background: var(--card-bg, #fff); flex-shrink: 0;
+	}
+	.pe-pat-row { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
+
+	/* 字符计数 */
+	.pe-editor-foot-left { display: flex; align-items: center; gap: 0.5rem; flex: 1; min-width: 0; }
+	.pe-char-count { font-size: 0.78rem; color: var(--content-meta, #6b7280); font-variant-numeric: tabular-nums; }
+	.pe-kbd-hint { font-size: 0.7rem; color: var(--content-meta, #6b7280); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+	/* 响应式：窄屏下右栏下沉到编辑器下方 */
+	@media (max-width: 900px) {
+		.pe-editor-main { grid-template-columns: 1fr; }
+		.pe-editor-side { border-left: none; border-top: 1px solid var(--line-divider, #e5e7eb); }
+		.pe-kbd-hint { display: none; }
+		.pe-title-input { font-size: 1.3rem; padding: 1rem 1.2rem 0.5rem; }
+		.pe-body-input { padding: 0.8rem 1.2rem; }
+		.pe-editor-topbar { padding: 0.5rem 0.8rem; }
+		.pe-editor-subbar { padding: 0.5rem 0.8rem; }
+		.pe-topbar-title { display: none; }
+	}
+	@media (max-width: 640px) {
+		.pe-topbar-left .pe-topbar-divider, .pe-topbar-left .pe-topbar-mode { display: none; }
+		.pe-topbar-btn span { display: none; }
+		.pe-topbar-btn { padding: 0.4rem 0.55rem; }
+	}
 
 	@media (max-width: 640px) {
 		.pe-form-grid { grid-template-columns: 1fr; }
 		.pe-item { flex-direction: column; align-items: stretch; }
 		.pe-item-actions { justify-content: flex-end; }
 	}
+
+	/* Markdown 预览容器（套 Markdown.astro 同款 prose+custom-md class，CSS 两侧自动同步） */
+	.pe-preview { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 1rem 1.6rem; background: var(--card-bg, #fff); }
+		.pe-topbar-btn.is-active { background: var(--btn-card-bg-active, #ececf1); }
+		.pe-md-pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85rem; }
 </style>
 
-<script>
-	// ===================== 文章前端编辑器逻辑 =====================
-	(function () {
-		var $ = function (id) { return document.getElementById(id); };
-		var REPO = "FeiZhouHeShang/blog";
-		var API_TREE_URL = "https://api.github.com/repos/" + REPO + "/git/trees/main?recursive=1";
-		var API_CONTENT = function (p) { return "https://api.github.com/repos/" + REPO + "/contents/" + p + "?ref=main"; };
-		var IMGBED_POST_DIR_PREFIX = "文章";
-		var PAT_STORAGE_KEY = "__pe_session_pat__";
+<!-- 以下样式针对 innerHTML 动态创建的节点（Astro scoped <style> 不作用），必须 is:global -->
+<style is:global>
+	/* ===== 分类 combo 菜单项（dynamic li） ===== */
+	.pe-combo-menu li {
+		padding: 0.5rem 0.7rem; cursor: pointer; font-size: 0.85rem;
+		color: var(--deep-text, #111); display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
+		line-height: 1.5; min-height: 1.8rem;
+	}
+	.pe-combo-menu li:hover,
+	.pe-combo-menu li.is-active { background: var(--btn-card-bg-active, #ececf1); color: var(--primary); }
+	.pe-combo-menu li.pe-combo-empty { color: var(--content-meta, #9ca3af); cursor: default; font-style: italic; }
+	.pe-combo-menu li.pe-combo-empty:hover { background: transparent; color: var(--content-meta, #9ca3af); }
+	.pe-combo-menu li.pe-combo-create { color: var(--primary); font-weight: 500; border-top: 1px solid var(--line-divider, #e5e7eb); margin-top: 0.2rem; }
+	.pe-combo-menu li .pe-combo-count { font-size: 0.7rem; color: var(--content-meta, #9ca3af); flex-shrink: 0; }
+	.pe-combo-menu li.is-active .pe-combo-count { color: var(--primary); }
 
-		// 图床配置（构建时注入）
-		var peDialog = $("pe-editor");
-		var IMGBED_URL = (peDialog && peDialog.getAttribute("data-imgbed-url")) || "";
-		var IMGBED_AUTH = (peDialog && peDialog.getAttribute("data-imgbed-auth")) || "";
-		var IMGBED_API_TOKEN = (peDialog && peDialog.getAttribute("data-imgbed-token")) || "";
+	/* ===== 标签三连框（pool / input / selected 全部 dynamic） ===== */
+	.pe-tags3 { display: flex; flex-direction: column; gap: 0.75rem; }
+	.pe-tags3-row { display: flex; flex-direction: column; gap: 0.4rem; }
+	.pe-tags3-label { font-size: 0.74rem; color: var(--content-meta, #6b7280); font-weight: 500; letter-spacing: 0.02em; }
+	.pe-tags3-pool,
+	.pe-tags3-selected {
+		display: flex; flex-wrap: wrap; gap: 0.45rem; min-height: 2.2rem;
+		padding: 0.5rem; border: 1px solid var(--line-divider, #e5e7eb); border-radius: 8px;
+		background: var(--btn-card-bg-hover, #fafafa);
+	}
+	.pe-tags3-pool:empty::before { content: "（暂无已有标签，可在第二排新建）"; color: var(--content-meta); font-size: 0.78rem; font-style: italic; align-self: center; }
+	.pe-tags3-selected:empty::before { content: "（尚未选择标签）"; color: var(--content-meta); font-size: 0.78rem; font-style: italic; align-self: center; }
 
-		// ===== 状态 =====
-		var state = {
-			posts: [],          // { path, folder, slug, title, sha, ...meta }
-			editingPath: null,  // 正在编辑的文件仓库路径（null=新建）
-			editingSha: null,   // 文件 blob sha（新建为 null）
-			originalTitle: "",  // 编辑前的标题（用于变更提示）
-			isNew: true,
-			saving: false,
-		};
-		// 图片去重：本次会话已上传哈希 -> URL
-		var uploadedHashes = {};
+	.pe-tags3-pool-item {
+		display: inline-flex; align-items: center; gap: 0.35rem;
+		padding: 0.3rem 0.75rem; font-size: 0.82rem;
+		background: var(--card-bg, #fff); color: var(--deep-text, #111);
+		border: 1px solid var(--line-divider, #e5e7eb); border-radius: 999px;
+		cursor: pointer; font-weight: 500; transition: all 0.12s; min-height: 32px;
+	}
+	.pe-tags3-pool-item:hover { background: var(--btn-card-bg-active); border-color: var(--primary); color: var(--primary); }
+	.pe-tags3-pool-item.is-selected {
+		background: rgba(99,102,241,0.12); border-color: var(--primary); color: var(--primary);
+		opacity: 0.55; cursor: not-allowed;
+	}
+	.pe-tags3-pool-count { font-size: 0.68rem; color: var(--content-meta); margin-left: 0.15rem; }
 
-		// ===== 工具 =====
-		function setStatus(el, msg, kind) {
-			if (!el) return;
-			el.textContent = msg || "";
-			el.classList.remove("is-error", "is-ok");
-			if (kind) el.classList.add("is-" + kind);
-		}
-		function base64ToUtf8(b64) {
-			try { return decodeURIComponent(escape(atob(b64.replace(/\s/g, "")))); }
-			catch (_e) { return atob(b64.replace(/\s/g, "")); }
-		}
-		function utf8ToBase64(str) {
-			return btoa(unescape(encodeURIComponent(str)));
-		}
-		function escHtml(s) {
-			return String(s).replace(/[&<>"']/g, function (c) {
-				return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
-			});
-		}
-		function slugify(s) {
-			var out = String(s).toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9\-]/g, "");
-			return out || ("post-" + new Date().toISOString().slice(0, 10));
-		}
-		function nowDate() { return new Date().toISOString().slice(0, 10); }
+	.pe-tags3-input-wrap { display: flex; gap: 0.4rem; align-items: stretch; }
+	.pe-tags3-input-wrap .pe-input { flex: 1; min-width: 0; }
+	.pe-tags3-add-btn {
+		padding: 0 1.1rem; background: var(--primary); color: var(--page-bg, #fff);
+		border: none; border-radius: 8px; cursor: pointer;
+		font-size: 0.85rem; font-weight: 600; min-height: 38px;
+		transition: filter 0.15s;
+	}
+	.pe-tags3-add-btn:hover { filter: brightness(1.1); }
 
-		// ===== 会话令牌 =====
-		function getPat() { return sessionStorage.getItem(PAT_STORAGE_KEY) || ""; }
-		function setPat(v) { if (v) sessionStorage.setItem(PAT_STORAGE_KEY, v); else sessionStorage.removeItem(PAT_STORAGE_KEY); }
-		async function validatePat(token) {
-			var r = await fetch("https://api.github.com/user", {
-				headers: { Authorization: "Bearer " + token, Accept: "application/vnd.github+json" },
-			});
-			if (!r.ok) {
-				var err = await r.json().catch(function () { return {}; });
-				throw new Error("令牌无效（" + r.status + "：" + (err.message || r.statusText) + "）");
-			}
-			return true;
-		}
-		function renderSessionState() {
-			var chip = $("pe-session-chip");
-			if (!chip) return;
-			if (getPat()) { chip.textContent = "🔓 本次浏览已验证"; chip.className = "pe-session-chip is-ok"; }
-			else { chip.textContent = "🔒 未验证"; chip.className = "pe-session-chip is-lock"; }
-		}
+	.pe-tags3-selected-item {
+		display: inline-flex; align-items: center; gap: 0.5rem;
+		padding: 0.35rem 0.5rem 0.35rem 0.85rem;
+		background: rgba(99,102,241,0.12); color: var(--primary, #4f46e5);
+		border: 1px solid rgba(99,102,241,0.3); border-radius: 999px;
+		font-size: 0.82rem; font-weight: 500; min-height: 34px;
+	}
+	.pe-tags3-remove-btn {
+		display: inline-flex; align-items: center; justify-content: center;
+		width: 22px; height: 22px; flex-shrink: 0;
+		background: #ef4444; color: #fff; border: none; border-radius: 50%;
+		cursor: pointer; font-size: 1rem; line-height: 1; font-weight: 700;
+		transition: background 0.15s, transform 0.15s;
+	}
+	.pe-tags3-remove-btn:hover { background: #dc2626; transform: scale(1.1); }
+</style>
 
-		// ===== 图床上传 =====
-		function extractImgUrl(data) {
-			if (!data) return "";
-			if (typeof data === "string") return data;
-			if (Array.isArray(data)) {
-				var f = data[0];
-				if (!f || typeof f !== "object") return "";
-				return f.src || f.url || f.link || f.absolute_url || f.full_url || f.pathname || f.publicUrl || "";
-			}
-			var inner = data.data;
-			if (inner && typeof inner === "object") {
-				var arr = Array.isArray(inner) ? inner : [inner];
-				var ff = arr[0];
-				if (ff && typeof ff === "object") return ff.src || ff.url || ff.publicUrl || "";
-			}
-			return data.src || data.url || data.publicUrl || "";
-		}
-		async function hashFile(file) {
-			try {
-				var buf = await file.arrayBuffer();
-				var digest = await crypto.subtle.digest("SHA-256", buf);
-				return Array.from(new Uint8Array(digest)).map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
-			} catch (_e) { return ""; }
-		}
-		async function uploadToImgbed(file, folder) {
-			var fd = new FormData();
-			fd.append("file", file);
-			var base = (IMGBED_URL || "").replace(/\/+$/, "");
-			var url = base + "/upload?returnFormat=full&uploadNameType=origin";
-			if (folder) url += "&uploadFolder=" + encodeURIComponent(folder);
-			var headers = { Accept: "application/json" };
-			// 单令牌（list+upload）优先 Bearer；否则 authCode 兜底
-			if (IMGBED_API_TOKEN) headers["Authorization"] = "Bearer " + IMGBED_API_TOKEN;
-			else if (IMGBED_AUTH) url += "&authCode=" + encodeURIComponent(IMGBED_AUTH);
-			var r = await fetch(url, { method: "POST", body: fd, headers: headers });
-			if (!r.ok) throw new Error("图床上传失败 " + r.status);
-			var data = await r.json().catch(function () { return null; });
-			var u = extractImgUrl(data);
-			if (!u) throw new Error("无法从图床响应解析图片 URL");
-			return u;
-		}
-		async function handleImgUpload() {
-			var fileInput = $("pe-img-file");
-			if (!fileInput || !fileInput.files || !fileInput.files.length) return;
-			var title = ($("pe-f-title").value || "").trim();
-			if (!title) { setStatus($("pe-img-tip"), "⚠️ 请先填写标题，图片才能归到 /文章/<标题>/ 目录", "is-error"); return; }
-			var folder = IMGBED_POST_DIR_PREFIX + "/" + title;
-			var files = Array.from(fileInput.files);
-			var tip = $("pe-img-tip");
-			var done = 0, reused = 0;
-			setStatus(tip, "上传中 0/" + files.length, "");
-			try {
-				for (var i = 0; i < files.length; i++) {
-					var file = files[i];
-					var h = await hashFile(file);
-					if (h && uploadedHashes[h]) {
-						insertImageMarkdown(uploadedHashes[h]);
-						reused++; setStatus(tip, "复用 " + reused + " · 上传 " + done + "/" + files.length, "is-ok");
-						continue;
-					}
-					var url = await uploadToImgbed(file, folder);
-					if (h) uploadedHashes[h] = url;
-					insertImageMarkdown(url);
-					done++; setStatus(tip, "上传 " + done + "/" + files.length + (reused ? " · 复用 " + reused : ""), "is-ok");
-				}
-				setStatus(tip, "已上传 " + done + " 张" + (reused ? " · 复用 " + reused + " 张" : ""), "is-ok");
-			} catch (e) {
-				setStatus(tip, "❌ " + e.message, "is-error");
-			} finally {
-				fileInput.value = "";
-			}
-		}
-		function insertImageMarkdown(url) {
-			var ta = $("pe-f-body");
-			if (!ta) return;
-			var md = "\n![](" + url + ")\n";
-			var start = ta.selectionStart || ta.value.length;
-			ta.value = ta.value.slice(0, start) + md + ta.value.slice(start);
-			ta.focus();
-			ta.selectionStart = ta.selectionEnd = start + md.length;
-		}
 
-		// ===== 读取现有文章 =====
-		function splitFrontmatter(raw) {
-			var m = raw.match(/^---\s*\r?\n([\s\S]*?)\r?\n---\s*\r?\n?([\s\S]*)$/);
-			if (!m) return { fm: "", body: raw };
-			return { fm: m[1], body: m[2] || "" };
-		}
-		function parseFm(fm) {
-			var out = {};
-			fm.split(/\r?\n/).forEach(function (line) {
-				var mm = line.match(/^([A-Za-z_][\w-]*)\s*:\s*(.*)$/);
-				if (!mm) return;
-				var k = mm[1], v = mm[2].trim();
-				if (v.startsWith("[") && v.endsWith("]")) {
-					out[k] = v.slice(1, -1).split(",").map(function (s) { return s.trim().replace(/^["']|["']$/g, ""); }).filter(Boolean);
-				} else if (v === "true") out[k] = true;
-				else if (v === "false") out[k] = false;
-				else out[k] = v.replace(/^["']|["']$/g, "");
-			});
-			return out;
-		}
-		function buildMarkdown(fm, body) {
-			var lines = Object.keys(fm).map(function (k) {
-				var v = fm[k];
-				if (Array.isArray(v)) return k + ": [" + v.map(function (x) { return '"' + x + '"'; }).join(", ") + "]";
-				if (typeof v === "boolean") return k + ": " + (v ? "true" : "false");
-				return k + ': "' + String(v).replace(/"/g, '\\"') + '"';
-			});
-			return "---\n" + lines.join("\n") + "\n---\n\n" + body + "\n";
-		}
 
-		// ===== 渲染列表 =====
-		function renderList() {
-			var listEl = $("pe-root").querySelector("[data-pe-list]");
-			if (!listEl) return;
-			listEl.innerHTML = state.posts.map(function (p) {
-				var badges = '<span class="pe-badge">' + escHtml(p.folder) + "</span>" +
-					(p.pinned ? '<span class="pe-badge pe-badge-pin">📌 置顶</span>' : "") +
-					(p.draft ? '<span class="pe-badge pe-badge-draft">草稿</span>' : "") +
-					'<span class="pe-item-date">' + escHtml(p.published || "") + "</span>";
-				return '<article class="pe-item" data-pe-item="" data-path="' + escHtml(p.path) + '">' +
-					'<div class="pe-item-main"><div class="pe-item-title">' + escHtml(p.title || p.slug) + "</div>" +
-					'<div class="pe-item-meta">' + badges + "</div></div>" +
-					'<div class="pe-item-actions">' +
-					'<button type="button" class="pe-btn pe-btn-edit" data-pe-edit="' + escHtml(p.path) + '">编辑</button>' +
-					'<button type="button" class="pe-btn pe-btn-del" data-pe-del="' + escHtml(p.path) + '">删除</button>' +
-					'<a href="https://github.com/' + REPO + "/edit/main/" + encodeURIComponent(p.path) + '" target="_blank" rel="noopener noreferrer" class="pe-btn pe-btn-ghost">GitHub</a>' +
-					"</div></article>";
-			}).join("");
-			var empty = $("pe-root").querySelector("[data-pe-empty]");
-			if (empty) empty.style.display = state.posts.length === 0 ? "" : "none";
-		}
 
-		// ===== 加载远端（GitHub tree）=====
-		async function loadRemote() {
-			var token = getPat();
-			if (!token) { setStatus($("pe-editor-status"), "请先验证 GitHub PAT", "is-error"); return; }
-			setStatus($("pe-editor-status"), "正在从 GitHub 加载文章树...", "");
-			try {
-				var r = await fetch(API_TREE_URL, { headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token } });
-				if (!r.ok) { var e = await r.json().catch(function(){return{};}); throw new Error("加载失败 " + r.status + "：" + (e.message || r.statusText)); }
-				var data = await r.json();
-				var posts = (data.tree || [])
-					.filter(function (n) { return n.path.startsWith("src/content/posts/") && n.path.endsWith(".md"); })
-					.map(function (n) {
-						var rel = n.path.slice("src/content/posts/".length);
-						var parts = rel.split("/");
-						var folder = parts.length > 1 ? parts[0] : "";
-						var slug = parts[parts.length - 1].replace(/\.md$/, "");
-						return { path: n.path, folder: folder, slug: slug, title: slug, sha: n.sha, published: "", pinned: false, draft: false };
-					});
-				// 用种子索引补全标题等元信息
-				var seedMap = {};
-				(state.seed || []).forEach(function (s) { seedMap[s.path] = s; });
-				posts.forEach(function (p) { var s = seedMap[p.path]; if (s) { p.title = s.title; p.published = s.published; p.pinned = s.pinned; p.draft = s.draft; } });
-				state.posts = posts;
-				setStatus($("pe-editor-status"), "已加载 " + posts.length + " 篇 · SHA 树已就绪", "is-ok");
-				renderList();
-			} catch (e) {
-				setStatus($("pe-editor-status"), "❌ " + e.message, "is-error");
-			}
-		}
-
-		// ===== 打开编辑器 / 编辑某篇 =====
-		function openEditor(path) {
-			var dlg = $("pe-editor");
-			if (!dlg) return;
-			if (typeof dlg.showModal === "function") dlg.showModal(); else dlg.setAttribute("open", "");
-			renderSessionState();
-			if (path) editPost(path); else newPost();
-		}
-		function newPost() {
-			state.isNew = true; state.editingPath = null; state.editingSha = null; state.originalTitle = "";
-			$("pe-editor-title").textContent = "写新文章";
-			clearForm();
-			hideTitleWarn();
-			setStatus($("pe-editor-foot-status"), "填写信息后保存即创建新文章", "");
-		}
-		async function editPost(path) {
-			var token = getPat();
-			if (!token) { setStatus($("pe-editor-status"), "请先验证 GitHub PAT", "is-error"); return; }
-			state.isNew = false; state.editingPath = path;
-			$("pe-editor-title").textContent = "编辑文章";
-			setStatus($("pe-editor-foot-status"), "正在拉取文章内容...", "");
-			try {
-				var r = await fetch(API_CONTENT(path), { headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token } });
-				if (!r.ok) { var e = await r.json().catch(function(){return{};}); throw new Error("拉取失败 " + r.status + "：" + (e.message || r.statusText)); }
-				var file = await r.json();
-				state.editingSha = file.sha;
-				var raw = base64ToUtf8(file.content || "");
-				var sp = splitFrontmatter(raw);
-				var fm = parseFm(sp.fm);
-				fillForm(fm, sp.body, path);
-				state.originalTitle = fm.title || "";
-				hideTitleWarn();
-				setStatus($("pe-editor-foot-status"), "✅ 已载入，可编辑后保存", "is-ok");
-			} catch (e) {
-				setStatus($("pe-editor-foot-status"), "❌ " + e.message, "is-error");
-			}
-		}
-		function fillForm(fm, body, path) {
-			$("pe-f-title").value = fm.title || "";
-			var parts = (path || "").split("/");
-			$("pe-f-folder").value = parts.length > 2 ? parts[2] : "others";
-			$("pe-f-slug").value = (parts[parts.length - 1] || "").replace(/\.md$/, "");
-			$("pe-f-cat").value = fm.category || "";
-			$("pe-f-desc").value = fm.description || "";
-			$("pe-f-tags").value = Array.isArray(fm.tags) ? fm.tags.join(", ") : "";
-			$("pe-f-pub").value = (fm.published || "").slice(0, 10);
-			$("pe-f-upd").value = (fm.updated || fm.published || "").slice(0, 10);
-			$("pe-f-pinned").checked = fm.pinned === true;
-			$("pe-f-draft").checked = fm.draft === true;
-			$("pe-f-body").value = body || "";
-		}
-		function clearForm() {
-			["pe-f-title","pe-f-slug","pe-f-cat","pe-f-desc","pe-f-tags","pe-f-pub","pe-f-upd","pe-f-body"].forEach(function (id) { if ($(id)) $(id).value = ""; });
-			$("pe-f-folder").value = "others";
-			$("pe-f-pub").value = nowDate();
-			$("pe-f-upd").value = nowDate();
-			$("pe-f-pinned").checked = false;
-			$("pe-f-draft").checked = false;
-		}
-
-		// ===== 标题变更提示 =====
-		function onTitleInput() {
-			if (state.isNew) { autoSlugFromTitle(); hideTitleWarn(); return; }
-			var t = ($("pe-f-title").value || "").trim();
-			if (state.originalTitle && t && t !== state.originalTitle) {
-				showTitleWarn("⚠️ 标题已从「" + state.originalTitle + "」改为「" + t + "」，原图片目录 /文章/" + state.originalTitle + "/ 下的图片将失效。请重新上传，或手动把图床目录里的图片改名迁移。");
-			} else {
-				hideTitleWarn();
-			}
-		}
-		function autoSlugFromTitle() {
-			var t = ($("pe-f-title").value || "").trim();
-			var s = slugify(t);
-			if (t && !/[a-z0-9]/i.test(t)) $("pe-f-slug").value = s; // 中文标题给个 ASCII 兜底
-		}
-		function showTitleWarn(msg) { var w = $("pe-title-warn"); if (w) { w.textContent = msg; w.style.display = ""; } }
-		function hideTitleWarn() { var w = $("pe-title-warn"); if (w) w.style.display = "none"; }
-
-		// ===== 收集表单 =====
-		function collectForm() {
-			var title = ($("pe-f-title").value || "").trim();
-			var folder = $("pe-f-folder").value || "others";
-			var slug = ($("pe-f-slug").value || "").trim() || slugify(title);
-			var tags = ($("pe-f-tags").value || "").split(",").map(function (s) { return s.trim(); }).filter(Boolean);
-			var fm = {
-				title: title,
-				published: ($("pe-f-pub").value || nowDate()).slice(0, 10),
-				updated: ($("pe-f-upd").value || nowDate()).slice(0, 10),
-				description: $("pe-f-desc").value || "",
-				tags: tags,
-				category: $("pe-f-cat").value || "",
-				pinned: $("pe-f-pinned").checked,
-				draft: $("pe-f-draft").checked,
-			};
-			var body = $("pe-f-body").value || "";
-			return { fm: fm, body: body, folder: folder, slug: slug, path: "src/content/posts/" + folder + "/" + slug + ".md" };
-		}
-
-		// ===== 保存 =====
-		async function saveRemote() {
-			var token = getPat();
-			if (!token) { setStatus($("pe-editor-foot-status"), "请先验证 GitHub PAT", "is-error"); return; }
-			if (state.saving) return;
-			state.saving = true;
-			$("pe-editor-save").disabled = true;
-			try {
-				var c = collectForm();
-				if (!c.fm.title) throw new Error("标题不能为空");
-				var content = utf8ToBase64(buildMarkdown(c.fm, c.body));
-				var pathChanged = !state.isNew && c.path !== state.editingPath;
-				if (state.isNew) {
-					// 新建：直接 PUT
-					var r = await fetch(API_CONTENT(c.path), {
-						method: "PUT",
-						headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token, "Content-Type": "application/json" },
-						body: JSON.stringify({ message: "feat(post): create " + c.slug + " via web editor", content: content, branch: "main" }),
-					});
-					if (!r.ok) { var e = await r.json().catch(function(){return{};}); throw new Error("创建失败 " + r.status + "：" + (e.message || r.statusText)); }
-				} else if (pathChanged) {
-					// 路径变更：删旧 + 建新
-					var rd = await fetch(API_CONTENT(state.editingPath), {
-						method: "DELETE",
-						headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token, "Content-Type": "application/json" },
-						body: JSON.stringify({ message: "chore(post): move " + state.editingPath + " -> " + c.path, sha: state.editingSha, branch: "main" }),
-					});
-					if (!rd.ok) { var ed = await rd.json().catch(function(){return{};}); throw new Error("移动-删除旧文件失败 " + rd.status + "：" + (ed.message || rd.statusText)); }
-					var rn = await fetch(API_CONTENT(c.path), {
-						method: "PUT",
-						headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token, "Content-Type": "application/json" },
-						body: JSON.stringify({ message: "chore(post): move to " + c.path, content: content, branch: "main" }),
-					});
-					if (!rn.ok) { var en = await rn.json().catch(function(){return{};}); throw new Error("移动-创建新文件失败 " + rn.status + "：" + (en.message || rn.statusText)); }
-				} else {
-					// 原地更新：PUT 带 sha（先刷新 sha 防冲突）
-					var r1 = await fetch(API_CONTENT(state.editingPath), { headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token } });
-					if (!r1.ok) { var e1 = await r1.json().catch(function(){return{};}); throw new Error("拉取 sha 失败 " + r1.status + "：" + (e1.message || r1.statusText)); }
-					var latestSha = (await r1.json()).sha;
-					var r2 = await fetch(API_CONTENT(state.editingPath), {
-						method: "PUT",
-						headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token, "Content-Type": "application/json" },
-						body: JSON.stringify({ message: "update(post): " + c.slug + " via web editor", content: content, sha: latestSha, branch: "main" }),
-					});
-					if (!r2.ok) { var e2 = await r2.json().catch(function(){return{};}); throw new Error("保存失败 " + r2.status + "：" + (e2.message || r2.statusText)); }
-				}
-				state.editingPath = c.path; state.isNew = false; state.originalTitle = c.fm.title;
-				hideTitleWarn();
-				setStatus($("pe-editor-foot-status"), "✅ 已保存！部署约 1 分钟后可见", "is-ok");
-				var commits = $("pe-editor-commits"); if (commits) commits.style.display = "";
-				// 刷新列表种子（本地更新，无需等部署）
-				refreshLocalPost(c);
-			} catch (e) {
-				setStatus($("pe-editor-foot-status"), "❌ " + e.message, "is-error");
-			} finally {
-				state.saving = false;
-				$("pe-editor-save").disabled = false;
-			}
-		}
-		function refreshLocalPost(c) {
-			var idx = state.posts.findIndex(function (p) { return p.path === c.path; });
-			var item = { path: c.path, folder: c.folder, slug: c.slug, title: c.fm.title, sha: state.editingSha || "local", published: c.fm.published, pinned: c.fm.pinned, draft: c.fm.draft };
-			if (idx >= 0) state.posts[idx] = item; else state.posts.unshift(item);
-			renderList();
-		}
-
-		// ===== 删除 =====
-		async function deletePost(path) {
-			var token = getPat();
-			if (!token) { setStatus($("pe-editor-status"), "请先验证 GitHub PAT", "is-error"); return; }
-			if (!confirm("确定删除 " + path + " ？此操作不可撤销。")) return;
-			try {
-				// 先取 sha
-				var r0 = await fetch(API_CONTENT(path), { headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token } });
-				if (!r0.ok) { var e0 = await r0.json().catch(function(){return{};}); throw new Error("拉取失败 " + r0.status + "：" + (e0.message || r0.statusText)); }
-				var sha = (await r0.json()).sha;
-				var r = await fetch(API_CONTENT(path), {
-					method: "DELETE",
-					headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token, "Content-Type": "application/json" },
-					body: JSON.stringify({ message: "delete(post): " + path + " via web editor", sha: sha, branch: "main" }),
-				});
-				if (!r.ok) { var e = await r.json().catch(function(){return{};}); throw new Error("删除失败 " + r.status + "：" + (e.message || r.statusText)); }
-				state.posts = state.posts.filter(function (p) { return p.path !== path; });
-				renderList();
-				setStatus($("pe-editor-status"), "✅ 已删除 " + path, "is-ok");
-			} catch (e) {
-				setStatus($("pe-editor-status"), "❌ " + e.message, "is-error");
-			}
-		}
-
-		// ===== 事件绑定 =====
-		function bind() {
-			$("pe-open-editor")?.addEventListener("click", function () { state.editingPath = null; openEditor(null); });
-			$("pe-editor-close")?.addEventListener("click", closeEditor);
-			$("pe-editor-cancel")?.addEventListener("click", closeEditor);
-			$("pe-editor")?.addEventListener("click", function (e) { if (e.target === $("pe-editor")) closeEditor(); });
-			$("pe-editor")?.addEventListener("cancel", function (e) { e.preventDefault(); closeEditor(); });
-
-			$("pe-editor-pat")?.addEventListener("input", function () {
-				if (sessionStorage.getItem(PAT_STORAGE_KEY)) { sessionStorage.removeItem(PAT_STORAGE_KEY); renderSessionState(); }
-			});
-			$("pe-editor-pat-toggle")?.addEventListener("click", function () {
-				var inp = $("pe-editor-pat"); if (!inp) return; inp.type = inp.type === "password" ? "text" : "password";
-			});
-			$("pe-editor-pat-validate")?.addEventListener("click", async function () {
-				var inp = $("pe-editor-pat");
-				if (!inp || !inp.value.trim()) { setStatus($("pe-editor-status"), "请先填写 GitHub PAT", "is-error"); return; }
-				this.disabled = true; setStatus($("pe-editor-status"), "正在校验令牌...", "");
-				try { await validatePat(inp.value.trim()); setPat(inp.value.trim()); setStatus($("pe-editor-status"), "✓ 令牌有效，本次浏览期间免重复输入", "is-ok"); renderSessionState(); }
-				catch (e) { setStatus($("pe-editor-status"), "✗ " + e.message, "is-error"); }
-				finally { this.disabled = false; }
-			});
-			$("pe-editor-pat-clear")?.addEventListener("click", function () {
-				if (!confirm("确定退出本次浏览会话（清除已验证的令牌）？")) return;
-				setPat(""); var inp = $("pe-editor-pat"); if (inp) inp.value = "";
-				setStatus($("pe-editor-status"), "已退出会话，下次需重新验证", "is-ok"); renderSessionState();
-			});
-			$("pe-editor-load")?.addEventListener("click", loadRemote);
-			$("pe-editor-save")?.addEventListener("click", saveRemote);
-			$("pe-f-title")?.addEventListener("input", onTitleInput);
-			$("pe-img-pick")?.addEventListener("click", function () { $("pe-img-file")?.click(); });
-			$("pe-img-file")?.addEventListener("change", handleImgUpload);
-
-			// 列表委托
-			var listEl = $("pe-root").querySelector("[data-pe-list]");
-			listEl?.addEventListener("click", function (e) {
-				var t = e.target;
-				var editPath = t.getAttribute && t.getAttribute("data-pe-edit");
-				var delPath = t.getAttribute && t.getAttribute("data-pe-del");
-				if (editPath) { openEditor(editPath); }
-				else if (delPath) { deletePost(delPath); }
-			});
-
-			// 注入种子
-			try { state.seed = window.__peSeed || []; } catch (_e) {}
-		}
-		function closeEditor() {
-			var dlg = $("pe-editor");
-			if (!dlg) return;
-			if (typeof dlg.close === "function") dlg.close(); else dlg.removeAttribute("open");
-		}
-
-		// 初始化：用服务端种子填充列表
-		function init() {
-			try {
-				state.seed = window.__peSeed || [];
-				state.posts = (window.__peSeed || []).map(function (s) {
-					return { path: s.path, folder: s.folder, slug: s.slug, title: s.title, published: s.published, pinned: s.pinned, draft: s.draft, sha: "" };
-				});
-			} catch (_e) { state.posts = []; }
-			renderList();
-		}
-		init();
-		bind();
-	})();
-</script>
-
-<script is:inline define:vars={{ seed: postsIndex }}>
-	window.__peSeed = seed;
-</script>
