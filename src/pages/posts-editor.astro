@@ -54,8 +54,7 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 						<span class="pe-topbar-divider"></span>
 						<button type="button" id="pe-toolbar-import-md" class="pe-topbar-btn" title="导入本地 .md 文件">📥 导入MD</button>
 						<button type="button" id="pe-toolbar-preview" class="pe-topbar-btn" title="预览 Markdown 渲染效果">👁 预览</button>
-					<button type="button" id="pe-toolbar-save-draft" class="pe-topbar-btn pe-topbar-btn-save" title="存为本地草稿（标记为草稿，不推送）">💾 存草稿</button>
-					<button type="button" id="pe-editor-save" class="pe-topbar-btn pe-topbar-btn-publish" title="保存到本地草稿（标记为已发布）">🚀 存本地</button>
+					<button type="button" id="pe-editor-save" class="pe-topbar-btn pe-topbar-btn-publish" title="检测到内容有变动时才出现；点击把修改存入本地草稿，最后在「上传中心」统一推送" hidden>✏️ 修改保存</button>
 						<button type="button" id="pe-toolbar-delete" class="pe-topbar-btn pe-topbar-btn-delete" title="删除当前文章（不可恢复）" hidden>🗑 删除</button>
 					<button type="button" id="pe-editor-close" class="pe-topbar-btn pe-topbar-btn-close" title="返回文章列表" aria-label="返回文章列表">×</button>
 					</div>
@@ -63,7 +62,7 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 
 				<!-- 副标题 / 状态行 -->
 				<div class="pe-editor-subbar">
-					<p class="pe-editor-sub">实时存入<b>本地草稿</b>，最后在右下角「上传中心」统一推送（所有改动合并为 1 次提交）。</p>
+					<p class="pe-editor-sub">改完内容后点【修改保存】存入<b>本地草稿</b>；全部改完在右下角「上传中心」统一推送（所有改动合并为 1 次提交）。</p>
 					<div class="pe-editor-subbar-right">
 						<span id="pe-session-chip" class="pe-session-chip is-lock">🔒 未验证</span>
 						<span class="pe-topbar-divider"></span>
@@ -355,7 +354,7 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 		border-color: rgba(225,29,72,0.5);
 		color: #e11d48;
 	}
-	.pe-topbar-btn-delete[hidden] { display: none !important; }
+	.pe-topbar-btn[hidden] { display: none !important; }
 	.pe-topbar-btn-close { padding: 0.45rem 0.7rem; font-size: 1.2rem; line-height: 1; }
 
 	/* 副标题 / 状态行 */

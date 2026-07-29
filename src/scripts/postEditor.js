@@ -24,7 +24,8 @@ let IMGBED_API_TOKEN = "";
 			originalTitle: "",  // 编辑前的标题（用于变更提示）
 			isNew: true,
 			saving: false,
-			pendingEditSlug: null, // URL ?edit=<slug>：文章详情页「编辑当前文章」跳转携带的目标 slug
+			pendingEditSlug: null,
+			originalSnapshot: null, // URL ?edit=<slug>：文章详情页「编辑当前文章」跳转携带的目标 slug
 		};
 		// 图片去重：本次会话已上传哈希 -> URL
 		var uploadedHashes = {};
@@ -53,6 +54,94 @@ let IMGBED_API_TOKEN = "";
 			return out || ("post-" + new Date().toISOString().slice(0, 10));
 		}
 		function nowDate() { return new Date().toISOString().slice(0, 10); }
+		// ===== 编辑器辅助函数（抽模块时遗漏，此处补全）=====
+		function autoSizeTitle() {
+			var ta = $("pe-f-title");
+			if (!ta) return;
+			ta.style.height = "auto";
+			ta.style.height = (ta.scrollHeight || ta.clientHeight) + "px";
+		}
+		function autoSlugFromTitle() {
+			var t = ($("pe-f-title").value || "").trim();
+			var sl = slugify(t);
+			if (t && !/[a-z0-9]/i.test(t)) $("pe-f-slug").value = sl;
+		}
+		function showTitleWarn(msg) { var w = $("pe-title-warn"); if (w) { w.textContent = msg; w.style.display = ""; } }
+		function hideTitleWarn() { var w = $("pe-title-warn"); if (w) w.style.display = "none"; }
+		function updateCharCount() {
+			var ta = $("pe-f-body");
+			var el = $("pe-char-count");
+			if (!ta || !el) return;
+			el.textContent = (ta.value || "").length + " 字";
+		}
+		var _previewTimer = null;
+		function renderPreview() {
+			var ta = $("pe-f-body");
+			var box = $("pe-preview");
+			if (!ta || !box || box.hidden) return;
+			var md = ta.value || "";
+			fetch("/api/render-preview/", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ markdown: md }),
+			})
+				.then(function (r) { return r.ok ? r.text() : Promise.reject(); })
+				.then(function (html) { box.innerHTML = html; })
+				.catch(function () {});
+		}
+		function schedulePreview() {
+			if (_previewTimer) clearTimeout(_previewTimer);
+			_previewTimer = setTimeout(renderPreview, 400);
+		}
+		function togglePreview() {
+			var box = $("pe-preview");
+			if (!box) return;
+			box.hidden = !box.hidden;
+			if (!box.hidden) renderPreview();
+		}
+		async function importMdFile(file) {
+			try {
+				var text = await file.text();
+				var sp = splitFrontmatter(text);
+				var fm = parseFm(sp.fm);
+				fillForm(fm, sp.body, "");
+				state.isNew = true; state.editingPath = null; state.editingSha = null;
+				hideTitleWarn();
+				setStatus($("pe-editor-foot-status"), "✅ 已导入本地 .md", "is-ok");
+			} catch (e) {
+				setStatus($("pe-editor-foot-status"), "❌ 导入失败：" + e.message, "is-error");
+			}
+		}
+		function mdAction(act) {
+			var ta = $("pe-f-body");
+			if (!ta) return;
+			var start = ta.selectionStart, end = ta.selectionEnd;
+			var sel = ta.value.slice(start, end);
+			var before = ta.value.slice(0, start), after = ta.value.slice(end);
+			function set(newVal, sStart, sEnd) {
+				ta.value = before + newVal + after;
+				ta.selectionStart = sStart; ta.selectionEnd = sEnd;
+				ta.focus();
+				updateCharCount(); schedulePreview(); onEdit();
+			}
+			switch (act) {
+				case "bold": { var v = "**" + (sel || "粗体") + "**"; set(v, start + 2, start + 2 + (sel || "粗体").length); break; }
+				case "italic": { var v = "*" + (sel || "斜体") + "*"; set(v, start + 1, start + 1 + (sel || "斜体").length); break; }
+				case "code": { var v = "`" + (sel || "代码") + "`"; set(v, start + 1, start + 1 + (sel || "代码").length); break; }
+				case "codeblock": { var v = "```\n" + (sel || "代码块") + "\n```"; set(v, start + 4, start + 4 + (sel || "代码块").length); break; }
+				case "link": { var v = "[" + (sel || "链接文字") + "](url)"; set(v, start, start + v.length); break; }
+				case "image": { var v = "![" + (sel || "图片描述") + "](url)"; set(v, start, start + v.length); break; }
+				case "quote": { var lines = (sel || "引用").split("\n").map(function (l) { return "> " + l; }).join("\n"); set(lines, start, start + lines.length); break; }
+				case "ul": { var lines = (sel || "项目").split("\n").map(function (l) { return "- " + l; }).join("\n"); set(lines, start, start + lines.length); break; }
+				case "ol": { var lines = (sel || "项目").split("\n").map(function (l, i) { return (i + 1) + ". " + l; }).join("\n"); set(lines, start, start + lines.length); break; }
+				case "h1": { var v = "# " + (sel || "标题"); set(v, start, start + v.length); break; }
+				case "h2": { var v = "## " + (sel || "标题"); set(v, start, start + v.length); break; }
+				case "h3": { var v = "### " + (sel || "标题"); set(v, start, start + v.length); break; }
+				case "hr": { var v = (before && !before.endsWith("\n") ? "\n" : "") + "---" + (after && !after.startsWith("\n") ? "\n" : ""); set(v, start, start + 3); break; }
+				default: break;
+			}
+		}
+
 
 		// ===== 会话令牌 =====
 		function getPat() { return sessionStorage.getItem(PAT_STORAGE_KEY) || ""; }
@@ -433,7 +522,7 @@ let IMGBED_API_TOKEN = "";
 			renderTags();
 		}
 		function addTag(t) {
-			state._dirty = true; scheduleDraftSave();
+			onEdit();
 			t = String(t || "").trim();
 			if (!t) return;
 			if (!state._tagChips) state._tagChips = [];
@@ -442,7 +531,7 @@ let IMGBED_API_TOKEN = "";
 			renderTags();
 		}
 		function removeTag(t) {
-			state._dirty = true; scheduleDraftSave();
+			onEdit();
 			if (!state._tagChips) return;
 			var i = state._tagChips.indexOf(t);
 			if (i >= 0) { state._tagChips.splice(i, 1); renderTags(); }
@@ -631,6 +720,7 @@ function openEditor(path) {
 			$("pe-f-body").value = body || "";
 			autoSizeTitle();
 			updateCharCount();
+			captureSnapshot(); toggleSaveBtn(false);
 		}
 		function clearForm() {
 			state._dirty = false;
@@ -646,12 +736,13 @@ function openEditor(path) {
 			$("pe-f-draft").checked = false;
 			autoSizeTitle();
 			updateCharCount();
+			captureSnapshot(); toggleSaveBtn(false);
 		}
 
 		// ===== 标题变更提示 + 自动增高 =====
 		function onTitleInput() {
 			autoSizeTitle();
-			state._dirty = true; scheduleDraftSave();
+			onEdit();
 			if (state.isNew) { autoSlugFromTitle(); hideTitleWarn(); return; }
 			var t = ($("pe-f-title").value || "").trim();
 			if (state.originalTitle && t && t !== state.originalTitle) {
@@ -687,19 +778,55 @@ function openEditor(path) {
 				setStatus($("pe-editor-status"), "❌ " + e.message, "is-error");
 			}
 		}
-		var _draftTimer = null;
-		function scheduleDraftSave() {
-			if (!state._dirty) return;
-			if (_draftTimer) clearTimeout(_draftTimer);
-			_draftTimer = setTimeout(function () { saveDraftLocal(); }, 800);
+				// ===== 表单收集（保存到本地草稿用）=====
+		function collectForm() {
+			var title = ($("pe-f-title").value || "").trim();
+			var slugRaw = ($("pe-f-slug").value || "").trim();
+			var slug = slugRaw || slugify(title);
+			var folder = ($("pe-f-folder").value || "others").trim();
+			var fm = {
+				title: title,
+				description: ($("pe-f-desc").value || "").trim(),
+				category: ($("pe-f-cat").value || "").trim(),
+				tags: (state._tagChips || []).slice(),
+				published: (($("pe-f-pub").value || nowDate())).slice(0, 10),
+				image: ($("pe-f-cover").value || "").trim(),
+				pinned: !!($("pe-f-pinned") && $("pe-f-pinned").checked),
+				draft: !!($("pe-f-draft") && $("pe-f-draft").checked),
+			};
+			var body = $("pe-f-body").value || "";
+			var path = "src/content/posts/" + (folder && folder !== "others" ? folder + "/" : "") + slug + ".md";
+			return { fm: fm, body: body, path: path, folder: folder, slug: slug };
+		}
+		// ===== 脏检测：仅在内容与原文不一致时显示【修改保存】=====
+		function serializeCurrent() {
+			var c = collectForm();
+			return buildMarkdown(c.fm, c.body);
+		}
+		function captureSnapshot() {
+			state._originalSnapshot = serializeCurrent();
+		}
+		function toggleSaveBtn(show) {
+			var b = $("pe-editor-save");
+			if (!b) return;
+			b.hidden = !show;
+			b.style.display = show ? "" : "none";
+		}
+		function markDirty() {
+			if (!state._originalSnapshot) { captureSnapshot(); return; }
+			state._dirty = serializeCurrent() !== state._originalSnapshot;
+			toggleSaveBtn(state._dirty);
+		}
+		var _dirtyTimer = null;
+		function onEdit() {
+			if (_dirtyTimer) clearTimeout(_dirtyTimer);
+			_dirtyTimer = setTimeout(markDirty, 250);
 		}
 async function saveDraftLocal(forceDraft) {
 			if (state.saving) return;
 			state.saving = true;
 			var saveBtn = $("pe-editor-save");
-			var draftBtn = $("pe-toolbar-save-draft");
 			if (saveBtn) saveBtn.disabled = true;
-			if (draftBtn) draftBtn.disabled = true;
 			try {
 				var c = collectForm();
 				if (forceDraft === true) { c.fm.draft = true; if ($("pe-f-draft")) $("pe-f-draft").checked = true; }
@@ -711,6 +838,7 @@ async function saveDraftLocal(forceDraft) {
 				if (pathChanged && state.editingPath) { files.push({ path: state.editingPath, delete: true }); }
 				await putDraft({ feature: "posts", id: c.path, label: c.fm.title + (c.fm.draft ? "（草稿）" : ""), files: files });
 				state.editingPath = c.path; state.isNew = false; state.originalTitle = c.fm.title;
+			captureSnapshot(); toggleSaveBtn(false); state._dirty = false;
 				hideTitleWarn();
 				var _t = new Date();
 				var _hh = String(_t.getHours()).padStart(2, "0");
@@ -723,7 +851,6 @@ async function saveDraftLocal(forceDraft) {
 			} finally {
 				state.saving = false;
 				if (saveBtn) saveBtn.disabled = false;
-				if (draftBtn) draftBtn.disabled = false;
 			}
 		}
 
@@ -741,7 +868,6 @@ var _peBound = new WeakSet();
 			});
 			$("pe-toolbar-import-md")?.addEventListener("click", function () { $("pe-md-import")?.click(); });
 			$("pe-toolbar-preview")?.addEventListener("click", togglePreview);
-			$("pe-toolbar-save-draft")?.addEventListener("click", function () { saveDraftLocal(true); });
 			$("pe-toolbar-delete")?.addEventListener("click", function () {
 				if (!state.editingPath) return;
 				if (!confirm("确定删除「" + (state.originalTitle || state.editingPath) + "」？\n该操作不可恢复！")) return;
@@ -779,10 +905,10 @@ var _peBound = new WeakSet();
 				setStatus($("pe-editor-status"), "已退出会话，下次需重新验证", "is-ok"); renderSessionState();
 			});
 			$("pe-editor-load")?.addEventListener("click", loadRemote);
-			$("pe-editor-save")?.addEventListener("click", function () { saveDraftLocal(false); });
+			$("pe-editor-save")?.addEventListener("click", function () { saveDraftLocal(); });
 			$("pe-f-title")?.addEventListener("input", onTitleInput);
-			$("pe-f-body")?.addEventListener("input", function () { updateCharCount(); schedulePreview(); scheduleDraftSave(); });
-			$("pe-editor")?.addEventListener("input", function (e) { var id = e.target && e.target.id; if (id && (id.indexOf("pe-f-") === 0 || id === "pe-tag-input")) { state._dirty = true; scheduleDraftSave(); } });
+			$("pe-f-body")?.addEventListener("input", function () { updateCharCount(); schedulePreview(); onEdit(); });
+			$("pe-editor")?.addEventListener("input", function (e) { var id = e.target && e.target.id; if (id && (id.indexOf("pe-f-") === 0 || id === "pe-tag-input")) { onEdit(); } });
 			$("pe-img-pick")?.addEventListener("click", function () { $("pe-img-file")?.click(); });
 			$("pe-img-file")?.addEventListener("change", handleImgUpload);
 			// Markdown 工具栏（事件委托）
