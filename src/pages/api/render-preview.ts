@@ -4,9 +4,11 @@
 //
 // 调用方式：POST { markdown, frontmatter? } → { html }
 
-// 必须显式声明为 server-rendered，否则 SSG 模式下 Astro 不允许 POST 请求
-export const prerender = false;
-
+// 注意：早期版本曾用 `export const prerender = false` 强制 SSR，但这要求部署平台
+// 配置 Astro SSR adapter（如 @astrojs/vercel）。本项目以静态构建部署（Vercel 静态输出），
+// prod 预览走构建期生成的静态 HTML 副本（public/posts-content/*.html，见 scripts/gen-posts-content.mjs）。
+// 因此这里不再声明 prerender=false —— 默认走静态预渲染，构建即可通过；
+// dev 模式 Astro 仍会动态提供该端点（POST 实时预览照常工作）。
 import { renderMarkdown } from "@/utils/markdown-render.mjs";
 
 export async function GET() {
