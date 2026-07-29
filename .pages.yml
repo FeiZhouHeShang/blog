@@ -260,10 +260,13 @@ content:
             type: rich-text
 
       # 友情链接
+      # 注：实际友链数据由 src/config/friendsConfig.ts 维护（见下方「友链数据」条目），
+      # friends.md 仅承载 title/description 元数据（被 src/pages/friends.astro 读取），
+      # body 字段保留为富文本以便 PagesCMS 后台补一段说明。
       - name: friends
         label: 🔗 友情链接
         type: file
-        path: src/content/spec/friends.mdx
+        path: src/content/spec/friends.md
         format: yaml-frontmatter
         fields:
           - name: title
@@ -275,10 +278,8 @@ content:
             type: string
           - name: body
             label: 正文
-            type: code
-            options:
-              format: mdx
-            description: MDX 格式（包含 JSX 组件），使用代码模式编辑
+            type: rich-text
+            description: 友链页正文说明（可选）。实际友链数据请在「友链数据」条目里编辑。
 
       # 留言板
       - name: guestbook

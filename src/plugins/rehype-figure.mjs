@@ -7,7 +7,7 @@ import { shouldAddNoReferrer } from "../utils/image-utils.ts";
  *
  * @returns {Function} A transformer function for the rehype plugin
  */
-export default function rehypeFigure() {
+function rehypeFigure() {
 	return (tree) => {
 		visit(tree, "element", (node, index, parent) => {
 			// 只处理 img 元素
@@ -62,3 +62,7 @@ export default function rehypeFigure() {
 		});
 	};
 }
+
+// 同时提供默认导出（向后兼容旧 import 写法）和命名导出（新风格，统一三个插件）
+export default rehypeFigure;
+export { rehypeFigure };
