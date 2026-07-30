@@ -1,174 +1,112 @@
 /* ============================================
-   友链卡片 — Premium Hand-drawn 风格
-   - 干净圆角纸张 + 笔记本横线纹理
-   - 顶部胶带标签 + 两个克制的涂鸦（黄星 + 薄荷闪光）
-   - 头像装饰虚线圆环 + 珊瑚色偏移阴影
-   - 底部薄荷胶囊 + 实心 3D 黑色硬阴影
-   - 悬停：弹性上移 + 微旋转，阴影加深
+   友链卡片 — 与博客 x.ai 单色极简风格严格对齐
+   - 严格遵循博客"极简中性灰阶、强制无饱和色块"原则
+   - 直接复用博客 token：--float-panel-bg / --line-divider / --deep-text /
+     --content-meta / --btn-card-bg-hover / --inline-code-bg / --radius-large
+   - 干净面板 + 1px 描边 + 微抬升 hover
+   - 描述 3 行 clamp、深色字、合适行高，可读
+   - 头像：干净圆形 + 首字母 monogram 兜底（无诡异涂鸦脸）
+   - 顶部：类型标签（BLOG/DOCS）+ 外链箭头
+   - 底部：细分隔线 + 域名 + 额外 tags
    ============================================ */
 
 .friend-card-link {
-	/* Cute Doodle Palette — 来自 variables.styl，亮暗主题共用 */
-	--fc-surface: var(--fc-paper-bg);
-	--fc-line: var(--fc-paper-line);
-	--fc-coral: var(--fc-accent-coral);
-	--fc-mint: var(--fc-accent-mint);
-	--fc-yellow: var(--fc-accent-yellow);
-	--fc-tape: var(--fc-tape-color);
-
 	position: relative;
 	display: flex;
 	flex-direction: column;
-	align-items: center;
+	align-items: stretch;
 	gap: 0.875rem;
 	width: 100%;
-	padding: 2.25rem 1.25rem 1.5rem;
+	padding: 1.125rem 1.125rem 1rem;
 	text-decoration: none;
-	/* 原型图纸张背景：顶部纯色区 + 下方稿纸横线 */
-	background:
-		linear-gradient(var(--fc-surface) 1.5em, transparent 1.5em) 0 0 / 100% 1.6em,
-		linear-gradient(var(--fc-line) 0.08em, transparent 0.08em) 0 1.5em / 100% 1.6em var(--fc-surface);
-	border: 2px solid var(--fc-ink);
-	/* 干净的大圆角（不规则感留给头像和胶带） */
-	border-radius: 1.25rem;
-	/* 原型图阴影：偏移硬阴影 + 内发光 */
-	box-shadow:
-		0.5rem 0.5rem 0 var(--fc-ink),
-		inset 0 0 1.5rem rgba(0, 0, 0, 0.04);
+	color: inherit;
+	background: var(--float-panel-bg);
+	border: 1px solid var(--line-divider);
+	border-radius: var(--radius-large);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
 	transition:
-		transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1),
-		box-shadow 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+		transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+		border-color 280ms cubic-bezier(0.16, 1, 0.3, 1),
+		box-shadow 280ms cubic-bezier(0.16, 1, 0.3, 1),
+		background-color 280ms cubic-bezier(0.16, 1, 0.3, 1);
+	overflow: hidden;
 }
 
-/* 悬停：弹性上移 + 微旋转 + 阴影加深 */
+/* Hover：微抬升 + 边框变深 + 背景微妙偏移 + 阴影变深 */
 .friend-card-link:hover {
-	transform: translateY(-0.5rem) rotate(-1.2deg);
-	box-shadow:
-		0.75rem 0.75rem 0 var(--fc-ink),
-		inset 0 0 1.5rem rgba(0, 0, 0, 0.04);
+	transform: translateY(-3px);
+	border-color: var(--deep-text);
+	background: var(--btn-card-bg-hover);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
 }
 
-/* 键盘焦点 */
 .friend-card-link:focus-visible {
-	outline: 2px dashed var(--fc-ink);
-	outline-offset: 4px;
+	outline: 2px solid var(--deep-text);
+	outline-offset: 2px;
+	border-radius: var(--radius-large);
 }
 
 /* ============================================
-   涂鸦装饰（仅保留黄星 + 薄荷闪光，移除旋涡）
+   顶部 — 类型标签 + 外链箭头
    ============================================ */
-.friend-card-doodle {
-	position: absolute;
-	z-index: 0;
-	pointer-events: none;
+.friend-card-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	min-height: 1.125rem;
 }
 
-/* 黄星 — 右上角，脉动呼吸 */
-.friend-card-doodle--star {
-	width: 1.6em;
-	height: 1.6em;
-	top: 1em;
-	right: 1em;
-	fill: var(--fc-yellow);
-	filter: drop-shadow(1px 1px 0 var(--fc-ink));
-	animation: fcPulseSparkle 3s infinite alternate ease-in-out;
-}
-
-/* 薄荷闪光 — 中左侧，反向脉动 */
-.friend-card-doodle--sparkle {
-	width: 1.3em;
-	height: 1.3em;
-	top: 3.2em;
-	left: 0.9em;
-	fill: var(--fc-mint);
-	filter: drop-shadow(1px 1px 0 var(--fc-ink));
-	animation: fcPulseSparkle 2.5s infinite alternate-reverse ease-in-out;
-}
-
-@keyframes fcPulseSparkle {
-	0% { transform: scale(0.85) rotate(0deg); opacity: 0.75; }
-	100% { transform: scale(1.15) rotate(15deg); opacity: 1; }
-}
-
-/* ============================================
-   顶部胶带标签（温暖半透明 + 微旋转）
-   ============================================ */
-.friend-card-tab {
-	position: absolute;
-	top: -0.85em;
-	left: 50%;
-	transform: translateX(-50%) rotate(-3deg);
-	padding: 0.25em 1.1em;
+.friend-card-tag {
 	font-size: 0.6875rem;
-	font-weight: 800;
-	letter-spacing: 0.1em;
-	color: var(--fc-ink);
-	background: var(--fc-tape);
-	border: 1.5px solid var(--fc-ink);
-	border-radius: 4px 8px 4px 8px;
-	box-shadow:
-		0 2px 4px rgba(0, 0, 0, 0.08),
-		inset 0 0 0 1px rgba(255, 255, 255, 0.15);
-	z-index: 3;
-	white-space: nowrap;
-	transition: transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+	font-weight: 700;
+	letter-spacing: 0.14em;
+	text-transform: uppercase;
+	color: var(--content-meta);
 }
 
-.friend-card-link:hover .friend-card-tab {
-	transform: translateX(-50%) rotate(-1deg);
+.friend-card-arrow {
+	width: 0.875rem;
+	height: 0.875rem;
+	color: var(--content-meta);
+	transition:
+		transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+		color 280ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.friend-card-link:hover .friend-card-arrow {
+	transform: translate(2px, -2px);
+	color: var(--deep-text);
 }
 
 /* ============================================
-   头像 — 干净圆形 + 装饰虚线圆环 + 珊瑚偏移阴影
+   头像 — 干净圆形 + 首字母 monogram 兜底
    ============================================ */
+.friend-card-avatar-wrap {
+	display: flex;
+	justify-content: center;
+	padding: 0.25rem 0 0.125rem;
+}
+
 .friend-card-avatar {
 	position: relative;
-	width: 5rem;
-	height: 5rem;
+	width: 4.25rem;
+	height: 4.25rem;
 	flex-shrink: 0;
 	border-radius: 50%;
-	border: 2px solid var(--fc-ink);
-	box-shadow:
-		0.25rem 0.25rem 0 var(--fc-coral),
-		0 0 0 6px var(--fc-surface),
-		0 0 0 7px var(--fc-ink);
+	border: 1px solid var(--line-divider);
 	overflow: hidden;
-	background: var(--fc-surface);
-	z-index: 1;
-	transition: box-shadow 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* 装饰虚线圆环（绕头像一圈） */
-.friend-card-avatar::before {
-	content: "";
-	position: absolute;
-	inset: -10px;
-	border: 1.5px dashed var(--fc-ink);
-	border-radius: 50%;
-	opacity: 0.5;
-	animation: fcRotateRing 20s linear infinite;
-	pointer-events: none;
-	z-index: 2;
+	background: var(--inline-code-bg);
+	transition:
+		transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+		border-color 280ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .friend-card-link:hover .friend-card-avatar {
-	box-shadow:
-		0.35rem 0.35rem 0 var(--fc-coral),
-		0 0 0 6px var(--fc-surface),
-		0 0 0 7px var(--fc-ink);
+	transform: scale(1.04);
+	border-color: var(--deep-text);
 }
 
-@keyframes fcRotateRing {
-	from { transform: rotate(0deg); }
-	to { transform: rotate(360deg); }
-}
-
-/* 手绘涂鸦脸：彻底隐藏（不需要 — 真实头像失败时显示一个柔和的灰色色块即可） */
-.friend-card-avatar__face {
-	display: none;
-}
-
-/* 真实头像 */
+/* 真实头像（懒加载：默认透明，加载成功后由脚本加 .is-loaded 淡入） */
 .friend-card-avatar__img {
 	position: absolute;
 	inset: 0;
@@ -176,103 +114,108 @@
 	height: 100%;
 	object-fit: cover;
 	opacity: 0;
-	z-index: 1;
-	transition: opacity 500ms ease, transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
+	transition: opacity 400ms ease;
 }
 
 .friend-card-avatar.is-loaded .friend-card-avatar__img {
 	opacity: 1;
 }
 
-.friend-card-link:hover .friend-card-avatar.is-loaded .friend-card-avatar__img {
-	transform: scale(1.08);
-}
-
-/* 加载失败/超时：保持空头像框（没有诡异的手绘脸） */
+/* 加载失败 / 超时：显示首字母 monogram（兜底，没有诡异涂鸦） */
 .friend-card-avatar.is-error .friend-card-avatar__img {
 	display: none;
 }
 
 .friend-card-avatar.is-error::after {
-	content: "?";
+	content: attr(data-initial);
 	position: absolute;
 	inset: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 2rem;
+	font-size: 1.625rem;
 	font-weight: 700;
-	color: var(--fc-ink);
-	opacity: 0.4;
+	color: var(--content-meta);
+	background: var(--inline-code-bg);
+	line-height: 1;
 }
 
 /* ============================================
-   名字 — 干净粗体
+   名字 — 大字、深色、单行省略
    ============================================ */
 .friend-card-name {
 	margin: 0;
 	max-width: 100%;
 	font-size: 1.0625rem;
-	font-weight: 800;
-	color: var(--fc-ink);
+	font-weight: 700;
+	color: var(--deep-text);
 	text-align: center;
 	line-height: 1.3;
+	letter-spacing: -0.01em;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	letter-spacing: -0.01em;
-	z-index: 1;
 }
 
 /* ============================================
-   介绍胶囊 — 薄荷绿胶囊 + 干净圆角 + 描边阴影
+   描述 — 3 行 clamp，可读字号 + 合适行高
    ============================================ */
-.friend-card-intro {
-	width: 100%;
-	padding: 0.55rem 0.85rem;
-	background: var(--fc-mint);
-	border: 2px solid var(--fc-ink);
-	border-radius: 999px;
-	box-shadow: 0.2rem 0.2rem 0 var(--fc-ink);
-	overflow: hidden;
-	height: 2.3rem;
-	transition: box-shadow 500ms cubic-bezier(0.34, 1.56, 0.64, 1), transform 500ms cubic-bezier(0.34, 1.56, 0.64, 1);
-	z-index: 1;
-}
-
-.friend-card-intro__text {
+.friend-card-desc {
 	margin: 0;
-	font-size: 0.8125rem;
-	font-weight: 600;
-	line-height: 1.4;
-	color: var(--fc-ink);
+	/* 锁定 3 行高度，避免某些卡片描述短时整体塌陷 */
+	min-height: 3.6em;
+	font-size: 0.9375rem;
+	font-weight: 400;
+	line-height: 1.6;
+	color: var(--deep-text);
+	opacity: 0.78;
 	text-align: center;
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
-	-webkit-line-clamp: 1;
-	line-clamp: 1;
+	-webkit-line-clamp: 3;
+	line-clamp: 3;
 	overflow: hidden;
 }
 
-.friend-card-link:hover .friend-card-intro {
-	box-shadow: 0.3rem 0.3rem 0 var(--fc-ink);
-	transform: translateY(-1px);
+/* ============================================
+   底部 — 细分隔线 + 域名 + 额外 tags
+   ============================================ */
+.friend-card-foot {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.5rem;
+	padding-top: 0.625rem;
+	border-top: 1px solid var(--line-divider);
+	font-size: 0.75rem;
+	color: var(--content-meta);
+}
+
+.friend-card-url {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+
+.friend-card-tags {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	flex-shrink: 0;
+	font-weight: 600;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
 }
 
 /* ============================================
-   尊重减少动画偏好
+   减少动画偏好
    ============================================ */
 @media (prefers-reduced-motion: reduce) {
-	.friend-card-doodle--star,
-	.friend-card-doodle--sparkle,
-	.friend-card-avatar::before {
-		animation: none;
-	}
 	.friend-card-link,
-	.friend-card-tab,
+	.friend-card-arrow,
 	.friend-card-avatar,
-	.friend-card-avatar__img,
-	.friend-card-intro {
+	.friend-card-avatar__img {
 		transition: none;
 	}
 }

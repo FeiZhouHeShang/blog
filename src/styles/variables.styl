@@ -157,25 +157,9 @@
 
   --color-selection-bar: linear-gradient(to right, oklch(0.85 0 0), oklch(0.55 0 0), oklch(0.25 0 0))
 
-/* ===== 友链卡片彩色调色板（Cute Doodle Palette）—— 亮暗主题共用 ===== */
-:root
-  --fc-ink: #2c2c2c
-  --fc-accent-coral: #ff8ba7
-  --fc-accent-mint: #c6e377
-  --fc-accent-lavender: #c0bbfe
-  --fc-accent-yellow: #ffdf6c
-  --fc-tape-color: rgba(255, 221, 161, 0.85)
-  --fc-paper-bg: #f5edd6
-  --fc-paper-line: #ddd2b8
-
-:root.dark
-  --fc-ink: #f5edd6
-  --fc-accent-coral: #ff8ba7
-  --fc-accent-mint: #c6e377
-  --fc-accent-yellow: #ffdf6c
-  --fc-tape-color: rgba(255, 221, 161, 0.18)
-  --fc-paper-bg: #2c2820
-  --fc-paper-line: #3d382f
+/* ===== 友链卡片 — 直接复用博客单色 token，删除独立的糖果色调色板 =====
+   博客设计原则（variables.styl 第 15-17 行）：极简中性灰阶，强制无饱和色块。
+   --primary 色度为 0，友链卡片也应严格遵循，不另设饱和色变量。 */
 
 /* ===== 阴影变量（仅保留实际使用的） ===== */
 :root
