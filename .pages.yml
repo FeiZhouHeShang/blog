@@ -67,12 +67,6 @@ media:
     output: /assets/images/friends
     categories: [image]
 
-  - name: media-guestbook
-    label: 留言板图片
-    input: public/assets/images/guestbook
-    output: /assets/images/guestbook
-    categories: [image]
-
   - name: media-sponsor
     label: 打赏二维码
     input: public/assets/images/sponsor
@@ -257,10 +251,9 @@ content:
             label: 正文
             type: rich-text
 
-      # 友情链接
-      # 注：实际友链数据由 src/config/friendsConfig.ts 维护（见下方「友链数据」条目），
-      # friends.md 仅承载 title/description 元数据（被 src/pages/friends.astro 读取），
-      # body 字段保留为富文本以便 PagesCMS 后台补一段说明。
+      # 友情链接（页面正文说明）
+      # 注：friends.md 仅承载标题/描述/正文说明（被 src/pages/friends.astro 读取作页面头部），
+      # 真正的友链列表已迁到后台集合「🔗 友链数据」（见 feature-settings 分组）。
       - name: friends
         label: 🔗 友情链接
         type: file
@@ -277,22 +270,7 @@ content:
           - name: body
             label: 正文
             type: rich-text
-            description: 友链页正文说明（可选）。实际友链数据请在「友链数据」条目里编辑。
-
-      # 留言板
-      - name: guestbook
-        label: 📬 留言板
-        type: file
-        path: src/content/spec/guestbook.md
-        format: yaml-frontmatter
-        fields:
-          - name: title
-            label: 页面标题
-            type: string
-            default: 留言板
-          - name: body
-            label: 正文
-            type: rich-text
+            description: 友链页正文说明（可选）。真正的友链列表请在「🔗 友链数据」集合里编辑。
 
       # 隐私政策
       - name: privacy
@@ -469,17 +447,60 @@ content:
 
       - name: friends-data
         label: 🔗 友链数据
-        type: file
-        path: src/config/friendsConfig.ts
-        format: code
-        description: 友链列表（站点名、头像、描述、链接、标签、权重）
-
-      - name: guestbook-config
-        label: 📬 留言板配置
-        type: file
-        path: src/config/guestbookConfig.ts
-        format: code
-        description: 留言板规则公告等配置
+        type: collection
+        path: src/content/friends
+        format: yaml-frontmatter
+        # 排除「功能说明书」等文档文件，防止后台把维护手册当可编辑友链
+        exclude: ["**/*功能说明书*.md", "**/README.md", "**/_*.md"]
+        filename:
+          field: create
+        view:
+          primary: title
+          fields: [title, siteurl, tags, weight, enabled]
+          sort: ["weight desc", "title asc"]
+          search: [title, desc, siteurl, tags]
+          default:
+            sort: weight
+            order: desc
+        fields:
+          - name: title
+            label: 站点名称
+            type: string
+            required: true
+            description: 友链显示名称
+          - name: imgurl
+            label: 头像/Logo
+            type: image
+            required: true
+            description: 站点头像或 Logo 图片 URL（也可在「站点资源→友链头像」上传后选）
+          - name: desc
+            label: 描述
+            type: text
+            required: true
+            description: 一句话描述该站点
+          - name: siteurl
+            label: 站点链接
+            type: string
+            required: true
+            description: 点击跳转的站点地址（https://...）
+          - name: tags
+            label: 标签
+            type: list
+            description: 分类标签，用于页面筛选；每行一个
+            fields:
+              - name: tag
+                label: 标签
+                type: string
+          - name: weight
+            label: 权重
+            type: number
+            default: 5
+            description: 数字越大越靠前（默认 5）
+          - name: enabled
+            label: 启用
+            type: boolean
+            default: true
+            description: 取消勾选可临时隐藏该友链（不删除）
 
       - name: effects-config
         label: 🌸 樱花特效

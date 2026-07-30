@@ -102,8 +102,43 @@ const momentsCollection = defineCollection({
 	}),
 });
 
+/**
+ * [关键词: friends-collection] 友链 内容集合（后台可管理，对齐 moments 模式）
+ * --------------------------------------------------------------------------
+ * 数据来源：src/content/friends/*.md（每个友链一个文件）
+ * 编辑方式：后台 PagesCMS「🔗 友链」集合（见仓库根 .pages.yml）
+ *   —— 在后台增删改即可，提交后 Vercel 自动重建上线（无需改代码）。
+ * 字段说明（均为可选，最少只需 title + siteurl + imgurl + desc）：
+ *  - title    站点名称（必填显示）
+ *  - imgurl   站点头像/Logo URL（必填显示）
+ *  - desc     一句话描述（必填显示）
+ *  - siteurl  站点链接（必填，点击跳转）
+ *  - tags     分类标签数组（可选），用于筛选
+ *  - weight   权重数字（可选，默认 5，越大越靠前）
+ *  - enabled  是否启用（可选，默认 true；false 可临时隐藏）
+ *
+ * 注意：与 moments/posts 一样，本集合用 DOC_EXCLUDE 排除「*功能说明书*.md」等文档，
+ * 文档不会被渲染、也不会进后台编辑列表。
+ */
+const friendsCollection = defineCollection({
+	loader: glob({
+		pattern: ["**/*.{md,mdx}", ...DOC_EXCLUDE],
+		base: "./src/content/friends",
+	}),
+	schema: z.object({
+		title: z.string().optional().default(""),
+		imgurl: z.string().optional().default(""),
+		desc: z.string().optional().default(""),
+		siteurl: z.string().optional().default(""),
+		tags: z.array(z.string()).optional().default([]),
+		weight: z.number().optional().default(5),
+		enabled: z.boolean().optional().default(true),
+	}),
+});
+
 export const collections = {
 	posts: postsCollection,
 	spec: specCollection,
 	moments: momentsCollection,
+	friends: friendsCollection,
 };

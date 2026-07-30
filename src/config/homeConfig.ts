@@ -89,7 +89,7 @@ export const homeConfig: HomeConfig = {
 							speaker: "host",
 							text: "一群热爱魔兽的朋友，一起打游戏、一起成长。",
 						},
-						{ speaker: "host", text: "有兴趣的话可以在留言板交流～" },
+						{ speaker: "host", text: "有兴趣的话可以通过友链找我们交流～" },
 					],
 				},
 			],
@@ -222,9 +222,9 @@ export const homeConfig: HomeConfig = {
 			showName: false,
 		},
 		{
-			name: "站内留言",
-			icon: "material-symbols:chat-rounded",
-			url: "/guestbook/",
+			name: "联系我",
+			icon: "material-symbols:edit-note-rounded",
+			url: "/contact/",
 			showName: false,
 		},
 		{

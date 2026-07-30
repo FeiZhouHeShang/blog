@@ -2,7 +2,9 @@ import type { CommentConfig } from "../types/config";
 
 export const commentConfig: CommentConfig = {
 	// 评论系统类型: none, twikoo, waline, giscus, disqus, artalk，默认为none，即不启用评论系统
-	type: "waline",
+	// [关键词: comment-disabled] 评论/留言板已整体移除：原 Waline serverURL 是博客源码原作者私人服务器，
+	// 访客数据会泄露到陌生人处，且用户无管理员权限。故评论系统彻底关闭，type 固定为 none。
+	type: "none",
 
 	//twikoo评论系统配置，版本1.7.4
 	twikoo: {
@@ -15,8 +17,8 @@ export const commentConfig: CommentConfig = {
 
 	//waline评论系统配置
 	waline: {
-		// waline 后端服务地址
-		serverURL: "https://waline.mmzhiku.xyz/",
+		// waline 后端服务地址（已清空：原 mmzhiku.xyz 是源码原作者私人服务器，禁用评论后不再使用）
+		serverURL: "",
 		// 设置 Waline 评论系统语言
 		lang: "zh-CN",
 		// 设置 Waline 评论系统表情地址

@@ -33,11 +33,6 @@ export const LinkPresets: { [key in LinkPreset]: NavBarLink } = {
 		url: "/sponsor/",
 		icon: "material-symbols:favorite",
 	},
-	[LinkPreset.Guestbook]: {
-		name: i18n(I18nKey.guestbook),
-		url: "/guestbook/",
-		icon: "material-symbols:chat",
-	},
 	[LinkPreset.Bangumi]: {
 		name: i18n(I18nKey.bangumi),
 		url: "/bangumi/",
@@ -72,12 +67,6 @@ export const LinkPresets: { [key in LinkPreset]: NavBarLink } = {
 		name: i18n(I18nKey.tags),
 		url: "/tags/",
 		icon: "material-symbols:label",
-	},
-	[LinkPreset.Feibichi]: {
-		name: i18n(I18nKey.feibichi),
-		url: "https://www.mmzhiku.xyz/",
-		icon: "material-symbols:link",
-		external: true,
 	},
 	[LinkPreset.ContactMe]: {
 		name: i18n(I18nKey.contactMe),

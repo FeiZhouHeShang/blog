@@ -105,14 +105,7 @@ Firefly 项目中所有可复用组件的集中管理。组件按照功能和职
 
 ### 💬 comment/ - 评论系统组件
 
-第三方评论系统集成组件。
-
-- `index.astro` - 评论主组件
-- `Artalk.astro` - Artalk 评论集成
-- `Disqus.astro` - Disqus 评论集成
-- `Giscus.astro` - Giscus 评论集成（GitHub 讨论）
-- `Twikoo.astro` - Twikoo 评论集成
-- `Waline.astro` - Waline 评论集成
+第三方评论系统集成组件。（**已于 2026-07-30 整体移除**：原 Waline 服务是源码原作者私人服务器，评论/留言板功能不再启用；`commentConfig.ts` 保留为 `type: "none"` 以备自行部署。）
 
 ### 📊 analytics/ - 数据统计组件
 

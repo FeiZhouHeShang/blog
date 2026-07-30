@@ -1,4 +1,4 @@
-import type { FriendLink, FriendsPageConfig } from "../types/config";
+import type { FriendsPageConfig } from "../types/config";
 
 /**
  * ============================================================================
@@ -7,13 +7,13 @@ import type { FriendLink, FriendsPageConfig } from "../types/config";
  *
  * 【关键词: friends-config】友链配置主文件
  *
- * 【友链申请审核流程】
+ * 【友链申请审核流程】（评论系统已移除，改为表单/邮箱申请 + 后台集合）
  * 1. 访客在友链页面点击"如何申请友链"按钮 → 查看申请指南弹窗
- * 2. 访客复制申请模板 → 在评论区提交友链申请
- * 3. 你（站长）在评论系统后台审核评论
- *    - 审核通过：将下方 friendsConfig 添加对应友链条目
- *    - 审核拒绝：在评论区回复拒绝理由
- * 4. 审核通过后，编辑本文件的 friendsConfig 数组添加新友链
+ * 2. 访客按弹窗里的模板，通过 applyLink 表单（或邮箱）提交友链申请
+ *    - applyLink 在下方 friendsPageConfig.applyLink 配置（如腾讯文档/飞书表单）
+ * 3. 你（站长）收到申请后审核；通过则在后台「🔗 友链」集合添加新友链
+ *    - 友链列表已不在本文件，改存 src/content/friends/*.md（见 content.config.ts）
+ * 4. 添加后 Vercel 自动重建，友链即在页面上线；拒绝则无需操作
  *
  * 【关键词: friends-site-info】本站信息配置（用于申请弹窗展示）
  * - name:   站点名称（会显示在申请指南弹窗中供申请人复制）
@@ -51,9 +51,9 @@ import type { FriendLink, FriendsPageConfig } from "../types/config";
  * - 默认按 weight 降序，同 weight 时后添加的靠前
  * - randomizeSort 设为 true 时会忽略 weight，每次构建随机排序
  *
- * 【关键词: friends-comment】评论开关
- * - showComment: true/false 控制友链页面是否显示评论区
- * - 需要 commentConfig.ts 中启用了评论系统才生效
+ * 【关键词: friends-comment】评论区（已移除）
+ * - 评论系统已于 2026-07-30 整体移除（原 Waline 是源码原作者私人服务器），
+ *   本 showComment 字段保留仅为兼容性占位，不再控制任何 UI。
  * ============================================================================
  */
 
@@ -109,32 +109,8 @@ export const friendsPageConfig: FriendsPageConfig = {
 	],
 };
 
-// [关键词: friends-list] 友链列表（在此添加/管理所有友链）
-// 使用说明见上方文档，搜索【关键词: friends-add】查看添加格式
-export const friendsConfig: FriendLink[] = [
-	// 示例（请删除后添加自己的友链）：
-	// {
-	//   title: "示例博客",
-	//   imgurl: "https://example.com/logo.png",
-	//   desc: "这是一个示例博客描述",
-	//   siteurl: "https://example.com",
-	//   tags: ["Blog"],
-	//   weight: 5,
-	//   enabled: true,
-	// },
-];
-
-// 获取启用的友链并进行排序
-export const getEnabledFriends = (): FriendLink[] => {
-	const friends = friendsConfig.filter((friend) => friend.enabled);
-
-	if (friendsPageConfig.randomizeSort) {
-		return friends.sort(() => Math.random() - 0.5);
-	}
-
-	// 权重降序；同权重时按配置倒序（后添加的友链靠前）
-	return friends
-		.map((friend, index) => ({ friend, index }))
-		.sort((a, b) => b.friend.weight - a.friend.weight || b.index - a.index)
-		.map(({ friend }) => friend);
-};
+// [关键词: friends-list-moved] 友链列表已迁至后台内容集合
+// 自 2026-07-30 起，友链不再写在此配置文件，而是放在 src/content/friends/*.md，
+// 由 PagesCMS 后台「🔗 友链」集合管理（萌新零代码增删改）。
+// 编辑/添加友链请走后台；本文件仅保留 friendsPageConfig（本站信息 / 注意事项 / 申请入口）。
+// 渲染读取见 src/content.config.ts 的 friendsCollection + src/pages/friends.astro。

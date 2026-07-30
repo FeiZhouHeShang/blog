@@ -11,6 +11,12 @@ draft: false
 
 # 博客功能全解析 | 配置指南与二次开发手册
 
+> [!warning] 当前状态（2026-07-30 更新）
+> 自 2026-07-30 起，**留言板与文章评论功能已整体移除**：原 `Waline` 服务（`waline.mmzhiku.xyz`）是博客源码原作者的私人服务器，访客数据会发往第三方，且站长无审核/管理权限，故已断开。
+> 现评论相关配置（`commentConfig.ts`）保留为 `type: "none"`，如需自行部署评论系统可重新启用。
+> **友链**已改造为后台可管理的内容集合（PagesCMS `friends` 集合），访客通过「友链自助申请」表单提交，站长后台审核发布。
+> 本文中凡涉及「留言板」「评论系统」的描述，均为模板原始能力说明，不代表本站当前已启用。
+
 > [!info] 概述
 > 本文档全面总结了本博客（Firefly-Mod）的功能特性、技术架构、配置选项和二次开发方法。无论你是想了解博客的完整能力，还是准备进行个性化定制，都能在这里找到答案。
 >
@@ -84,8 +90,7 @@ draft: false
 | 相册页 | `/gallery` | 图片相册展示 |
 | 日历页 | `/calendar` | 日历视图（与右仪表盘同步数据） |
 | 收藏页 | `/collections` | 收藏 API 展示 |
-| 友链页 | `/friends` | 友情链接 |
-| 留言板 | `/guestbook` | 访客留言（QQ 群聊风格） |
+| 友链页 | `/friends` | 友情链接（后台集合管理） |
 | 赞助页 | `/sponsor` | 赞助信息 |
 | 关于页 | `/about` | 个人介绍 |
 | 音乐页 | `/music` | 音乐可视化（Three.js） |
@@ -102,7 +107,6 @@ draft: false
 pages: {
   friends: true,    // 友链页面
   sponsor: true,    // 赞助页面
-  guestbook: true,  // 留言板
   gallery: true,    // 相册页面
   collections: true,// 收藏页面
   calendar: true,   // 日历页面
@@ -118,7 +122,6 @@ pages: {
 > [!note] 布局说明
 > 除首页/文章页外，大多数内容页（关于、友链、归档、相册、赞助、收藏、搜索、RSS 等）都用 **三栏布局**：左 `LeftSidebar` + 中内容 + 右 `RightSidebar`。
 >
-> **例外**：`/guestbook/` 留言板页面**不接入左右侧栏**（详见 guestbook.astro 文件头注释）——留言板本身是仿聊天面板的紧凑布局，自带"访客信息""今日一言"等浮卡，叠加三栏 grid 会导致组件相互重叠。处理方法：直接不传 `sidebar-left`/`sidebar-right` 插槽即可，`MainGridLayout` 会自动 `data-sidebar-position="none"`，CSS 切单栏布局，0 JS/CSS 改动。
 > **文章页（列表页 `/list/` 与文章详情页）是参考站风格**：左栏 `<Categories>`（分类导航）+ 右栏 `<SidebarTOC>`（文章目录），不走下方通用侧栏。
 > 侧栏显隐：≤1280px 隐藏右栏，≤1024px 隐藏全部。
 
@@ -217,7 +220,7 @@ var GEO_FIXED = null;
   // 基本信息
   title: "非洲和尚的个人博客",
   subtitle: "非洲和尚",
-  site_url: "https://tblog.mmzhiku.xyz",
+  site_url: "https://tblog.example.com",
   description: "非洲和尚的个人博客，记录魔兽争霸、技术学习、生活感悟",
   
   // 主题
@@ -342,7 +345,7 @@ const links = [
 analytics: {
   umamiAnalytics: {
     websiteId: "5907656e-d254-4c9e-ad73-5ce40bf184bb",
-    scriptUrl: "https://stats.mmzhiku.xyz/script.js",
+    scriptUrl: "https://stats.example.com/script.js",
     pageviews: { enabled: true },
   },
 }
@@ -791,4 +794,4 @@ src/
 ---
 
 > [!info] 持续更新
-> 本文档将随博客功能迭代持续更新。如有疑问或建议，欢迎在 [留言板](/guestbook/) 交流！
+> 本文档将随博客功能迭代持续更新。如有疑问或建议，欢迎通过 [友链自助申请](/friends/) 或邮件 **5563000@qq.com** 与我联系。

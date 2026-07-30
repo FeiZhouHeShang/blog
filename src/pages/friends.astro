@@ -1,14 +1,11 @@
 ---
-import { getEntry } from "astro:content";
-import Comment from "@components/comment/index.astro";
+import { getEntry, getCollection } from "astro:content";
 import Icon from "@components/common/Icon.astro";
 import FriendCard from "@components/features/FriendCard.astro";
 import FriendRulesModal from "@components/features/FriendRulesModal.astro";
 import PageTitle from "@/components/common/PageTitle.astro";
 import {
-	commentConfig,
 	friendsPageConfig,
-	getEnabledFriends,
 	siteConfig,
 } from "@/config";
 import I18nKey from "@/i18n/i18nKey";
@@ -30,14 +27,13 @@ if (!friendsPost) {
 	throw new Error("friends page content not found");
 }
 
-// 检查评论系统是否启用
-const isCommentEnabled =
-	commentConfig?.type &&
-	commentConfig.type !== "none" &&
-	friendsPageConfig.showComment !== false;
-
-// 使用配置文件中的友链数据，按权重排序
-const items = getEnabledFriends();
+// 友链数据来自后台内容集合 src/content/friends/（见 content.config.ts 的 friendsCollection）
+// 过滤 enabled 并按 weight 降序，与原 getEnabledFriends 行为一致
+const friendsEntries = (await getCollection("friends"))
+	.map((e) => ({ ...e.data, weight: e.data.weight ?? 5 }))
+	.filter((item) => item.enabled !== false);
+friendsEntries.sort((a, b) => (b.weight ?? 5) - (a.weight ?? 5));
+const items = friendsEntries;
 const allTags = [...new Set(items.flatMap((item) => item.tags || []))].sort();
 
 // 页面标题和描述
@@ -124,15 +120,8 @@ const description =
     </div>
   </div>
 
-  <!-- 评论区 -->
-  {isCommentEnabled && (
-    <div class="mt-4">
-      <Comment post={friendsPost} customPath="/friends/" />
-    </div>
-  )}
-
   <!-- 友链申请指南弹窗 -->
-  <FriendRulesModal applyLink={friendsPageConfig.applyLink} commentEnabled={isCommentEnabled} />
+  <FriendRulesModal applyLink={friendsPageConfig.applyLink} />
 
   <!-- 样式已迁移至 src/styles/pages/friends.css -->
 

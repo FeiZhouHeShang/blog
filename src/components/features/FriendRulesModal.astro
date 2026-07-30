@@ -4,11 +4,9 @@ import { friendsPageConfig } from "@/config";
 
 interface Props {
 	applyLink?: string;
-	commentEnabled?: boolean;
 }
 
-const { applyLink = friendsPageConfig.applyLink, commentEnabled = false } =
-	Astro.props;
+const { applyLink = friendsPageConfig.applyLink } = Astro.props;
 const site = friendsPageConfig.siteInfo;
 const notes = friendsPageConfig.notes;
 ---
@@ -81,10 +79,10 @@ const notes = friendsPageConfig.notes;
           <div class="fr-step">
             <div class="fr-step-num">2</div>
             <div class="fr-step-line"></div>
-            <div class="fr-step-content">
-              <p class="fr-step-title">在下方评论区提交申请</p>
-              <p class="fr-step-desc">将下方模板内容复制修改后，前往本页评论区发送</p>
-              <div class="fr-template">
+			<div class="fr-step-content">
+			  <p class="fr-step-title">填写自助申请表单</p>
+			  <p class="fr-step-desc">点击页面底部「自助申请友链」按钮，在表单中填写上方本站信息并提交</p>
+			  <div class="fr-template">
                 <button
                   class="fr-copy-btn fr-template-copy"
                   onclick={`navigator.clipboard.writeText('站点名称：您的站点名称\\n站点描述：您的站点描述\\n站点链接：您的站点链接\\n头像链接：您的站点头像');this.classList.add('copied');setTimeout(()=>this.classList.remove('copied'),1500)`}
@@ -128,26 +126,20 @@ const notes = friendsPageConfig.notes;
       )}
     </div>
 
-    <!-- 底部按钮 -->
-    <div class="fr-footer">
-      {applyLink && (
-        <a
-          href={applyLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          class="fr-btn fr-btn-primary"
-        >
-          <Icon name="material-symbols:edit-square-outline" class="text-base" />
-          自助申请友链（推荐）
-        </a>
-      )}
-      {commentEnabled && (
-        <button class="fr-btn fr-btn-secondary" data-scroll-to-friend-comments>
-          <Icon name="mingcute:comment-line" class="text-base" />
-          前往评论区
-        </button>
-      )}
-    </div>
+	<!-- 底部按钮 -->
+	<div class="fr-footer">
+	  {applyLink && (
+		<a
+		  href={applyLink}
+		  target="_blank"
+		  rel="noopener noreferrer"
+		  class="fr-btn fr-btn-primary"
+		>
+		  <Icon name="material-symbols:edit-square-outline" class="text-base" />
+		  自助申请友链（推荐）
+		</a>
+	  )}
+	</div>
   </div>
 </dialog>
 
@@ -174,15 +166,7 @@ const notes = friendsPageConfig.notes;
       });
     });
 
-    modal.querySelectorAll('[data-scroll-to-friend-comments]').forEach(el => {
-      el.addEventListener('click', () => {
-        modal.close();
-        document.body.style.overflow = '';
-        document.getElementById('post-comments')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      });
-    });
-
-    modal.addEventListener('click', (e) => {
+	modal.addEventListener('click', (e) => {
       if (e.target === modal) {
         modal.close();
         document.body.style.overflow = '';

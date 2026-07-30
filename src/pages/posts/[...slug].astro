@@ -1,7 +1,6 @@
 ---
 import { render } from "astro:content";
 import * as path from "node:path";
-import Comment from "@components/comment/index.astro";
 import Icon from "@components/common/Icon.astro";
 import Markdown from "@components/common/Markdown.astro";
 import VisitorCount from "@components/common/VisitorCount.astro";
@@ -391,6 +390,4 @@ const serializedJsonLd = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
     </a>
   </div>
 
-  <!-- 评论 -->
-  {entry.data.comment && !entry.data.password && <Comment post={entry} />}
 </MainGridLayout>

@@ -32,9 +32,6 @@ const buildNavBarConfig = (): NavBarConfig => {
 	if (siteConfig.pages.friends) {
 		contactChildren.push(LinkPreset.Friends);
 	}
-	if (siteConfig.pages.guestbook) {
-		contactChildren.push(LinkPreset.Guestbook);
-	}
 	// [关键词: nav-qq-link] QQ联系方式（原QQ群已改为个人QQ）
 	contactChildren.push(LinkPreset.QQGroup);
 	// [关键词: nav-movies-games] 影视游戏收藏墙（从顶部独立项移入「记录」子菜单）

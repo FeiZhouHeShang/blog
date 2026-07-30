@@ -116,8 +116,8 @@ export const siteConfig: SiteConfig = {
 		friends: true,
 		// 赞助页面开关
 		sponsor: true,
-		// 留言板页面开关，需要配置评论系统
-		guestbook: true,
+		// 留言板页面开关（已移除：留言板页面与组件整体删除，Waline 是原作者私人服务器）
+		guestbook: false,
 		// 相册页面开关
 		gallery: true,
 		// 收藏API页面开关

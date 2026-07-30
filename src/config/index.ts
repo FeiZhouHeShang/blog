@@ -21,8 +21,6 @@ export type {
 	FriendSiteInfo,
 	GalleryAlbum,
 	GalleryConfig,
-	GuestbookAnnouncementItem,
-	GuestbookConfig,
 	HolidayItem,
 	HomeConfig,
 	HomeDisplayLayerConfig,
@@ -59,9 +57,9 @@ export { effectsConfig } from "./effectsConfig"; // 樱花特效配置
 export { backgroundWallpaperConfig } from "./backgroundWallpaper"; // 背景壁纸配置
 export { fontConfig } from "./fontConfig"; // 字体配置
 export { footerConfig } from "./footerConfig"; // 页脚配置
-export { friendsPageConfig, getEnabledFriends } from "./friendsConfig"; // 友链配置
+export { friendsPageConfig } from "./friendsConfig"; // 友链配置（友链列表已迁 content 集合，见 content.config.ts 的 friendsCollection）
 export { galleryConfig } from "./galleryConfig"; // 相册配置
-export { guestbookConfig } from "./guestbookConfig"; // 留言板配置
+// [已移除] 留言板配置 guestbookConfig（留言板页面与组件已整体删除，详见 2026-07-30 工作日志）
 export { homeConfig } from "./homeConfig"; // 首页与用户资料配置
 export { licenseConfig } from "./licenseConfig"; // 许可证配置
 // 组件配置
