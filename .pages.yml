@@ -240,6 +240,69 @@ content:
             type: rich-text
             required: true
 
+      # 日常吐槽 / 说说（参考 blog.tsh520.cn/moments 1:1 复刻）
+      # 数据：src/content/moments/*.md，每条说说一个文件
+      # 前端「我要吐槽」编辑器已移除（2026-07-30），编辑统一走后台，更省心也更可控
+      - name: moments
+        label: 💬 日常吐槽（说说）
+        type: collection
+        path: src/content/moments
+        format: yaml-frontmatter
+        filename:
+          # 新建时让你自己填一个英文短文件名（不用带 .md），作为这条说说的锚点 id，请保持唯一
+          field: create
+        view:
+          primary: date
+          fields: [date, pinned, tags]
+          sort: ["date desc"]
+          search: [body, date, tags]
+          default:
+            sort: date
+            order: desc
+        fields:
+          - name: body
+            label: 正文
+            type: markdown
+            required: true
+            description: >
+              说点什么～支持 Markdown。这是这条说说的主要内容。
+              回车换行即分段；加粗 **文字**、链接 [文字](地址)、行内代码 `code` 都支持。
+          - name: date
+            label: 发布时间
+            type: string
+            description: >
+              格式：YYYY-MM-DD HH:mm（24 小时制，用空格分隔日期和时间）。
+              示例：2026-07-30 21:30。留空则页面按保存时间展示为「刚刚」。
+              置顶与信息流排序都依据这个时间倒序。
+          - name: location
+            label: 地点
+            type: string
+            description: 可选。如「杭州」「中国」，会显示在时间旁边。
+          - name: tags
+            label: 标签
+            type: list
+            description: 可选。每条一个，回车添加。例如「测试」「吐槽」。页面上以 #标签 形式展示。
+            fields:
+              - name: tag
+                label: 标签
+                type: string
+          - name: pinned
+            label: 置顶
+            type: boolean
+            default: false
+            description: 勾选后这条会固定在信息流顶部的「📌 置顶」区。
+          - name: images
+            label: 图片
+            type: list
+            description: >
+              可选，每行一张。可填图床外链（https://...）；
+              也可在后台左侧「站点资源 → 日常吐槽图片」上传后，复制路径填这里（如 /assets/images/moments/xxx.png）。
+              最多 9 张，页面自动排成 1/2/3 列网格。
+            fields:
+              - name: url
+                label: 图片地址
+                type: string
+
       # 关于页面
       - name: about
         label: 📄 关于页面

@@ -477,6 +477,21 @@ const siteLang = lang.replace("_", "-");
   // 修复「SPA 跳转后左右仪表盘不显示」等因 swup 钩子未注册而失效的问题。
   document.addEventListener("astro:page-load", syncPageDependentState);
   document.addEventListener("astro:page-load", scheduleContentOverflowEnhancements);
+
+  // [关键词: sidebar-position-sync-observer] 兜底：侧栏内容是 SSR 渲染，但个别 widget
+  // 可能异步挂载（或软导航后节点被替换）。若子节点变化导致「有内容却被判定为空」，
+  // 会错误地隐藏侧栏（表现为「首次/软导航后仪表盘不显示，刷新才出」）。
+  // 这里用 MutationObserver 监听侧栏容器子节点变化，一旦变化就重算 data-sidebar-position。
+  // 仅设置属性、不改被观察节点结构 → 不会触发自身回调，无死循环。挂一次即可（#main-grid 在 Swup 容器外，节点持久）。
+  (function observeSidebarPosition() {
+    const left = document.getElementById("left-sidebar-dynamic");
+    const right = document.getElementById("right-sidebar-dynamic");
+    const targets = [left, right].filter(Boolean);
+    if (!targets.length) return;
+    const mo = new MutationObserver(() => syncSidebarPosition());
+    targets.forEach((el) => mo.observe(el, { childList: true, subtree: false }));
+    syncSidebarPosition(); // 首次立即同步（防首屏早于 widget 挂载）
+  })();
   document.addEventListener("password:decrypted", () => {
     setTimeout(scheduleContentOverflowEnhancements, 200);
   });
@@ -498,9 +513,6 @@ const siteLang = lang.replace("_", "-");
 		import("@/scripts/postEditor")
 			.then((m) => m.bootPostEditor())
 			.catch((e) => console.error("[bootPostEditor]", e));
-		import("@/scripts/dailyGrumble")
-			.then((m) => m.bootDailyGrumble())
-			.catch((e) => console.error("[bootDailyGrumble]", e));
 		// 全局上传中心（悬浮按钮 + 抽屉）：任何页面都注入，统一把本地草稿合并为 1 次提交
 		import("@/scripts/uploadCenter")
 			.then((m) => m.bootUploadCenter())

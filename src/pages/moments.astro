@@ -2,271 +2,374 @@
 import MainGridLayout from "@/layouts/MainGridLayout.astro";
 import LeftSidebar from "@/components/layout/LeftSidebar.astro";
 import RightSidebar from "@/components/layout/RightSidebar.astro";
-import { dailyGrumbles, type DailyGrumble } from "@/data/daily-grumble";
-import { editorSecrets } from "@/config/editorSecrets";
+import { getCollection } from "astro:content";
+import { homeConfig } from "@/config";
 import { marked } from "marked";
-// 构建期注入完整源文件，供编辑器本地序列化草稿（无需先「加载远端」）
-import dailyGrumbleSource from "@/data/daily-grumble.ts?raw";
 
-// 日常吐槽（Daily Grumble）
-// 数据：src/data/daily-grumble.ts
-// 编辑：页面顶部「我要吐槽」→ 前端编辑器（GitHub Contents API 保存 + 图床图片直传）
+// 日常吐槽 / 说说（参考 blog.tsh520.cn/moments 的「说说」信息流 1:1 复刻）
+// 数据：src/content/moments/*.md（每条说说一个文件）
+// 编辑：后台 PagesCMS「💬 日常吐槽（说说）」集合（见仓库根 .pages.yml）
+//       —— 在后台增删改即可，提交后 Vercel 自动重建上线，无需改代码。
+// 前端「我要吐槽」编辑器已移除（2026-07-30）：编辑统一走后台，更省心也更安全。
 const title = "日常吐槽";
 const description = "随手记录生活里想吐槽的事儿";
 
-// 排序：置顶优先，其次按时间倒序
+// 头像 / 昵称 / 签名 —— 与全站个人信息一致（改这里 = 全站一起变）
+const avatarSrc = "/gallery/mxdl-2026/QQ.png";
+const nickname = homeConfig.displayName || homeConfig.name;
+const bioLines = Array.isArray(homeConfig.bio) ? homeConfig.bio : [homeConfig.bio || ""];
+
+// 读取所有说说
+const allMoments = await getCollection("moments");
+
+// 拍平 tags / images：兼容 PagesCMS 序列化的「标量数组」与「对象数组」两种形态
+function normList(v: unknown): string[] {
+	if (!v) return [];
+	return (Array.isArray(v) ? v : [v])
+		.map((x) => {
+			if (typeof x === "string") return x;
+			if (x && typeof x === "object") {
+				const vals = Object.values(x as Record<string, unknown>).filter((s) => typeof s === "string") as string[];
+				return vals[0] || "";
+			}
+			return String(x);
+		})
+		.filter(Boolean);
+}
+
 function parseDate(s?: string): number {
 	if (!s) return 0;
 	const t = Date.parse((s || "").replace(" ", "T"));
 	return isNaN(t) ? 0 : t;
 }
-const sorted: DailyGrumble[] = [...dailyGrumbles].sort((a, b) => {
-	if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
-	return parseDate(b.date) - parseDate(a.date);
+
+// 排序：置顶优先，其次按时间倒序
+const sorted = [...allMoments].sort((a, b) => {
+	const pa = !!a.data.pinned, pb = !!b.data.pinned;
+	if (pa !== pb) return pa ? -1 : 1;
+	return parseDate(b.data.date) - parseDate(a.data.date);
 });
+
+const pinned = sorted.filter((m) => m.data.pinned);
 
 // 正文渲染（支持 Markdown）
 function renderMarkdown(md: string): string {
 	if (!md) return "";
-	const html = marked.parse(md, { async: false, breaks: true, gfm: true }) as string;
-	return html;
+	return marked.parse(md, { async: false, breaks: true, gfm: true }) as string;
 }
 
-// GitHub 编辑回链 / Contents API（与 git remote 对齐：FeiZhouHeShang/blog @ main）
-const EDIT_URL =
-	"https://github.com/FeiZhouHeShang/blog/edit/main/src/data/daily-grumble.ts";
-const API_FILE_URL =
-	"https://api.github.com/repos/FeiZhouHeShang/blog/contents/src/data/daily-grumble.ts?ref=main";
-const COMMIT_URL_BASE =
-	"https://github.com/FeiZhouHeShang/blog/commits/main/src/data/daily-grumble.ts";
-const PAT_HELP_URL =
-	"https://github.com/settings/personal-access-tokens/new?description=daily-grumble-editor&contents=write";
-// 数据数组在源文件里的变量名（findArrayRange 据此定位）
-const DATA_VAR = "dailyGrumbles";
+// 图片网格列数（参考说说：1/2/3 列自适应；单图不铺满更像朋友圈）
+function imgGridClass(n: number): string {
+	if (n <= 1) return "ss-imgs ss-imgs--1";
+	if (n <= 4) return "ss-imgs ss-imgs--2";
+	return "ss-imgs ss-imgs--3";
+}
 ---
 
 <MainGridLayout title={title} description={description}>
 	<LeftSidebar slot="sidebar-left" />
 	<RightSidebar slot="sidebar-right" />
 
-	<div class="dg-page-wrapper w-full rounded-(--radius-large) overflow-hidden relative min-h-32" id="dg-root">
-		<!-- 头部：标题 + 编辑按钮 -->
-		<div class="dg-header relative w-full mb-8 flex flex-wrap items-end justify-between gap-4">
-			<div>
-				<h1 class="text-2xl font-bold tracking-tight text-[var(--deep-text)]">日常吐槽</h1>
-				<p class="mt-1 text-sm text-[var(--content-meta)]">
-					共 {sorted.length} 条 · 生活里那些想吐槽的事儿，都记这儿
-				</p>
+	<div class="shuoshuo">
+		<!-- 封面 + 个人信息 -->
+		<section class="ss-cover">
+			<div class="ss-cover-img"></div>
+			<div class="ss-profile">
+				<img class="ss-avatar" src={avatarSrc} alt={nickname} loading="lazy" />
+				<div class="ss-meta">
+					<h1 class="ss-name">{nickname}</h1>
+					<p class="ss-bio">{bioLines.join(" · ")}</p>
+				</div>
 			</div>
-			<div class="flex items-center gap-2">
-				<button
-					type="button"
-					id="dg-open-editor"
-					class="btn-card inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-medium bg-(--primary) text-white hover:opacity-90 shadow-sm hover:shadow-md transition-all duration-150"
-					title="在网页上直接增删改吐槽，输入 GitHub PAT 即可保存到 GitHub"
-				>
-					<svg width="1.1em" height="1.1em" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-						<path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"></path>
-					</svg>
-					我要吐槽
-				</button>
-				<a
-					href={EDIT_URL}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="btn-card inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium text-[var(--primary)] hover:bg-[var(--btn-card-bg-hover)] transition-all duration-150"
-					title="GitHub 网页编辑器（不熟 API 时用）"
-				>
-					<svg width="1.05em" height="1.05em" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true">
-						<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
-					</svg>
-				</a>
-			</div>
-		</div>
+		</section>
 
-		<!-- 吐槽列表 -->
-		<div class="dg-list flex flex-col gap-4" data-dg-list="">
+		<!-- 置顶区 -->
+		{
+			pinned.length > 0 && (
+				<section class="ss-pinned">
+					<div class="ss-pinned-head">📌 置顶</div>
+					<div class="ss-pinned-list">
+						{pinned.map((m) => {
+							const pimgs = normList(m.data.images);
+							return (
+								<a class="ss-pinned-item" href={`#${m.id}`}>
+									<div class="ss-pinned-text" set:html={renderMarkdown(m.body)} />
+									{pimgs.length > 0 && (
+										<div class={imgGridClass(pimgs.length)}>
+											{pimgs.slice(0, 9).map((src) => (
+												<img src={src} alt="" loading="lazy" onerror="this.style.display='none'" />
+											))}
+										</div>
+									)}
+								</a>
+							);
+						})}
+					</div>
+				</section>
+			)
+		}
+
+		<!-- 信息流 -->
+		<div class="ss-feed">
 			{
-				sorted.map((item) => (
-					<article class="dg-item" id={item.id}>
-						<div class="dg-meta">
-							{item.pinned && <span class="dg-pinned">📌 置顶</span>}
-							{item.date && <span class="dg-date">🕒 {item.date}</span>}
-							{item.location && <span class="dg-loc">📍 {item.location}</span>}
-						</div>
-						<div
-							class="dg-content prose dark:prose-invert max-w-none text-[var(--deep-text)]"
-							set:html={renderMarkdown(item.content)}
-						/>
-						{item.images && item.images.length > 0 && (
-							<div class="dg-images">
-								{item.images.map((src) => (
-									<a href={src} target="_blank" rel="noopener noreferrer" class="dg-img">
-										<img src={src} alt="" loading="lazy" onerror="this.style.display='none'" />
-									</a>
-								))}
-							</div>
-						)}
-						{item.tags && item.tags.length > 0 && (
-							<div class="dg-tags">
-								{item.tags.map((t) => (
-									<span class="dg-tag">#{t}</span>
-								))}
-							</div>
-						)}
-					</article>
-				))
+				sorted.map((m) => {
+					const imgs = normList(m.data.images);
+					const tags = normList(m.data.tags);
+					const iso = m.data.date ? new Date(m.data.date.replace(" ", "T")).toISOString() : "";
+					return (
+						<article class="ss-card" id={m.id}>
+							<span class="ss-accent"></span>
+							<header class="ss-card-head">
+								<img class="ss-card-avatar" src={avatarSrc} alt={nickname} loading="lazy" />
+								<div class="ss-card-user">
+									<span class="ss-card-name">{nickname}</span>
+									<time class="ss-card-time" datetime={iso} data-iso={iso}>
+										{m.data.date || "刚刚"}
+									</time>
+								</div>
+								{m.data.pinned && <span class="ss-pin-flag">📌 置顶</span>}
+							</header>
+							<div
+								class="ss-card-content prose dark:prose-invert max-w-none"
+								set:html={renderMarkdown(m.body)}
+							/>
+							{imgs.length > 0 && (
+								<div class={imgGridClass(imgs.length)}>
+									{imgs.map((src) => (
+										<a href={src} target="_blank" rel="noopener noreferrer" class="ss-img">
+											<img src={src} alt="" loading="lazy" onerror="this.style.display='none'" />
+										</a>
+									))}
+								</div>
+							)}
+							{tags.length > 0 && (
+								<div class="ss-card-tags">
+									{tags.map((t) => (
+										<span class="ss-tag">#{t}</span>
+									))}
+								</div>
+							)}
+						</article>
+					);
+				})
 			}
 		</div>
 
 		<!-- 空状态 -->
-		<div class="dg-empty py-16 text-center text-[var(--content-meta)]" data-dg-empty="" style="display:none;">
-			还没有吐槽，点右上角「我要吐槽」开始吧～
-		</div>
-
-		<!-- ========== 前端编辑器模态框 ========== -->
-		<dialog
-			id="dg-editor"
-			data-dg-editor=""
-			class="dg-editor-dialog"
-			data-imgbed-url={editorSecrets.imageBedUrl}
-			data-imgbed-auth={import.meta.env.PUBLIC_IMGBED_UPLOAD_CODE ?? ""}
-			data-imgbed-folder={editorSecrets.imageBedFolder}
-			data-imgbed-token={import.meta.env.PUBLIC_IMG_UPLOAD_TOKEN ?? ""}
-		>
-			<div class="dg-editor-panel">
-				<header class="dg-editor-head">
-					<div>
-						<h2 class="dg-editor-title">编辑日常吐槽</h2>
-						<p class="dg-editor-sub">编辑实时存入本地草稿；最后在右下角「上传中心」统一推送（所有改动合并为 1 次提交）。图片可选择直传图床或上传到仓库本地</p>
-					</div>
-					<button type="button" id="dg-editor-close" class="dg-editor-close" aria-label="关闭">×</button>
-				</header>
-
-				<section class="dg-editor-token">
-					<label class="dg-editor-label">
-						<span>GitHub Personal Access Token</span>
-						<span class="dg-editor-label-tip">
-							本次浏览会话有效（关闭浏览器需重输）
-							· <a href={PAT_HELP_URL} target="_blank" rel="noopener noreferrer" class="dg-editor-link">生成 fine-grained PAT</a>
-						</span>
-					</label>
-					<div class="dg-editor-token-row">
-						<input
-							type="password"
-							id="dg-editor-pat"
-							placeholder="github_pat_xxxxxxxxxxxxxx"
-							autocomplete="off"
-							spellcheck="false"
-							class="dg-editor-input"
-						/>
-						<button type="button" id="dg-editor-pat-toggle" class="dg-editor-mini" title="显示/隐藏">👁</button>
-						<button type="button" id="dg-editor-pat-validate" class="dg-editor-btn dg-editor-btn-secondary" title="校验并记住到本次浏览会话">✅ 验证令牌</button>
-						<button type="button" id="dg-editor-pat-clear" class="dg-editor-mini dg-editor-mini-danger" title="退出本次会话（清除令牌）">🗑</button>
-						<button type="button" id="dg-editor-load" class="dg-editor-btn dg-editor-btn-secondary">🔄 加载远端</button>
-					</div>
-					<div class="dg-editor-token-meta">
-						<span id="dg-session-chip" class="dg-session-chip is-lock">🔒 未验证</span>
-						<span class="dg-editor-label-tip">验证后，本次浏览内保存/删除均无需再次输入</span>
-					</div>
-					<p id="dg-editor-status" class="dg-editor-status">未验证令牌</p>
-					<p id="dg-imgbed-status" class="dg-editor-status" data-imgbed-status></p>
-				</section>
-
-				<section class="dg-editor-toolbar">
-					<button type="button" id="dg-editor-add" class="dg-editor-btn dg-editor-btn-primary">+ 新增吐槽</button>
-					<span class="dg-editor-count">共 <span id="dg-editor-count">0</span> 条</span>
-				</section>
-
-				<section id="dg-editor-list" class="dg-editor-list"></section>
-
-				<footer class="dg-editor-foot">
-					<p id="dg-editor-foot-status" class="dg-editor-foot-status">准备就绪</p>
-					<div class="dg-editor-foot-actions">
-						<a id="dg-editor-commits" href={COMMIT_URL_BASE} target="_blank" rel="noopener noreferrer" class="dg-editor-link" style="display:none;">查看提交历史</a>
-						<button type="button" id="dg-editor-cancel" class="dg-editor-btn">关闭</button>
-						<button type="button" id="dg-editor-save" class="dg-editor-btn dg-editor-btn-primary">💾 存本地</button>
-					</div>
-				</footer>
-			</div>
-		</dialog>
-		<!-- ========== /前端编辑器模态框 ========== -->
-
-		<!-- 初始数据（供编辑器直接展示，无需先「加载远端」） -->
-		<script type="application/json" id="dg-seed" set:html={JSON.stringify(dailyGrumbles)}></script>
-		<!-- 完整源文件（供本地序列化草稿生成 .ts 内容，无需先「加载远端」） -->
-		<script type="application/json" id="dg-source-seed" set:html={JSON.stringify(dailyGrumbleSource)}></script>
+		{
+			sorted.length === 0 && (
+				<div class="ss-empty">
+					还没有吐槽，去后台「💬 日常吐槽（说说）」集合发第一条吧～
+					<br />
+					不会用？看 <code>docs/日常吐槽后台编辑说明.md</code>
+				</div>
+			)
+		}
 	</div>
 </MainGridLayout>
 
 <style>
-	/* 列表卡片（SSR 渲染，scoped 生效） */
-	.dg-item {
+	/* ===== 说说页整体（居中单栏信息流，复刻 blog.tsh520.cn/moments 观感） ===== */
+	.shuoshuo {
+		width: 100%;
+	}
+
+	/* 封面 + 个人信息 */
+	.ss-cover {
 		position: relative;
-		padding: 1rem 1.15rem;
-		border-radius: 0.85rem;
+		border-radius: 1rem;
+		overflow: hidden;
+		margin-bottom: 1.25rem;
+		background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 55%, var(--deep-text) 100%);
+	}
+	.ss-cover-img {
+		display: block;
+		height: 150px;
+		background:
+			radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.18), transparent 40%),
+			radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.12), transparent 35%);
+	}
+	.ss-profile {
+		display: flex;
+		align-items: flex-end;
+		gap: 1rem;
+		padding: 0 1.25rem 1.1rem;
+		margin-top: -42px;
+	}
+	.ss-avatar {
+		width: 84px;
+		height: 84px;
+		border-radius: 50%;
+		object-fit: cover;
+		border: 3px solid var(--float-panel-bg);
+		background: var(--float-panel-bg);
+		box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+		flex-shrink: 0;
+	}
+	.ss-meta {
+		padding-bottom: 0.35rem;
+	}
+	.ss-name {
+		font-size: 1.3rem;
+		font-weight: 800;
+		color: var(--deep-text);
+		margin: 0;
+	}
+	.ss-bio {
+		font-size: 0.85rem;
+		color: var(--content-meta);
+		margin: 0.25rem 0 0;
+	}
+
+	/* 置顶区 */
+	.ss-pinned {
 		background: var(--float-panel-bg);
 		border: 1px solid var(--line-divider);
+		border-radius: 1rem;
+		padding: 0.9rem 1.1rem;
+		margin-bottom: 1.25rem;
+	}
+	.ss-pinned-head {
+		font-size: 0.8rem;
+		font-weight: 700;
+		color: #b45309;
+		margin-bottom: 0.6rem;
+	}
+	.ss-pinned-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+	.ss-pinned-item {
+		text-decoration: none;
+		color: inherit;
+	}
+	.ss-pinned-text {
+		font-size: 0.9rem;
+		color: var(--deep-text);
+	}
+	.ss-pinned-text :global(p) {
+		margin: 0 0 0.3rem;
+	}
+
+	/* 信息流 */
+	.ss-feed {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
+	.ss-card {
+		position: relative;
+		background: var(--float-panel-bg);
+		border: 1px solid var(--line-divider);
+		border-radius: 1rem;
+		padding: 1rem 1.15rem 1.1rem 1.4rem;
+		overflow: hidden;
 		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 		transition: transform 0.2s ease, box-shadow 0.2s ease;
 	}
-	.dg-item:hover {
+	.ss-card:hover {
 		transform: translateY(-2px);
 		box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 	}
-	.dg-meta {
+	/* 左侧彩色 accent 条（说说卡片标志性元素，参考站同款） */
+	.ss-accent {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		width: 4px;
+		background: linear-gradient(180deg, var(--primary), #7c3aed);
+	}
+	.ss-card-head {
 		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
 		align-items: center;
-		margin-bottom: 0.4rem;
+		gap: 0.65rem;
+		margin-bottom: 0.5rem;
+	}
+	.ss-card-avatar {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		object-fit: cover;
+		flex-shrink: 0;
+		border: 2px solid var(--line-divider);
+	}
+	.ss-card-user {
+		display: flex;
+		flex-direction: column;
+		line-height: 1.25;
+	}
+	.ss-card-name {
+		font-size: 0.95rem;
+		font-weight: 700;
+		color: var(--deep-text);
+	}
+	.ss-card-time {
 		font-size: 0.72rem;
 		color: var(--content-meta);
 	}
-	.dg-pinned {
+	.ss-pin-flag {
+		margin-left: auto;
+		font-size: 0.7rem;
 		color: #b45309;
-		font-weight: 600;
+		background: rgba(245, 158, 11, 0.12);
+		border: 1px solid rgba(245, 158, 11, 0.35);
+		padding: 0.1rem 0.45rem;
+		border-radius: 0.4rem;
 	}
-	.dg-content {
+
+	.ss-card-content {
 		font-size: 0.95rem;
 		line-height: 1.65;
+		color: var(--deep-text);
 	}
-	.dg-content :where(p):first-child {
+	.ss-card-content :global(p):first-child {
 		margin-top: 0;
 	}
-	.dg-content :where(p):last-child {
+	.ss-card-content :global(p):last-child {
 		margin-bottom: 0;
 	}
-	.dg-images {
+
+	/* 图片网格（1/2/3 列自适应，最多 9 宫格观感） */
+	.ss-imgs {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
 		gap: 0.5rem;
 		margin-top: 0.7rem;
 	}
-	.dg-img {
-		display: block;
-		aspect-ratio: 4 / 3;
-		overflow: hidden;
-		border-radius: 0.5rem;
-		border: 1px solid var(--line-divider);
-		background: linear-gradient(135deg, var(--primary) 0%, var(--deep-text) 100%);
+	.ss-imgs--1 {
+		grid-template-columns: minmax(0, 60%);
 	}
-	.dg-img img {
+	.ss-imgs--2 {
+		grid-template-columns: repeat(2, 1fr);
+	}
+	.ss-imgs--3 {
+		grid-template-columns: repeat(3, 1fr);
+	}
+	.ss-img {
+		display: block;
+		aspect-ratio: 1 / 1;
+		overflow: hidden;
+		border-radius: 0.6rem;
+		border: 1px solid var(--line-divider);
+	}
+	.ss-img img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		transition: transform 0.3s ease;
 	}
-	.dg-img:hover img {
+	.ss-img:hover img {
 		transform: scale(1.05);
 	}
-	.dg-tags {
+
+	.ss-card-tags {
 		display: flex;
 		flex-wrap: wrap;
-		gap: 0.35rem;
+		gap: 0.4rem;
 		margin-top: 0.6rem;
 	}
-	.dg-tag {
+	.ss-tag {
 		font-size: 0.72rem;
 		padding: 0.1rem 0.5rem;
 		border-radius: 0.4rem;
@@ -274,207 +377,50 @@ const DATA_VAR = "dailyGrumbles";
 		background: var(--btn-card-bg-hover);
 		font-weight: 500;
 	}
+
+	.ss-empty {
+		padding: 3rem 1rem;
+		text-align: center;
+		color: var(--content-meta);
+		line-height: 1.8;
+	}
+	.ss-empty code {
+		font-family: ui-monospace, "Cascadia Code", Menlo, monospace;
+		font-size: 0.9em;
+		padding: 0.05rem 0.35rem;
+		border-radius: 0.3rem;
+		background: var(--btn-card-bg-hover);
+		color: var(--primary);
+	}
+
 	@media (prefers-color-scheme: dark) {
-		.dg-item {
+		.ss-card {
 			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 		}
 	}
 </style>
 
-<style is:global>
-	/* ===== 前端编辑器模态框（[data-dg-editor] 限定作用域，动态 innerHTML 也能命中） ===== */
-	[data-dg-editor].dg-editor-dialog {
-		border: none;
-		padding: 0;
-		background: transparent;
-		max-width: 100vw;
-		max-height: 100vh;
-		width: 100%;
-		height: 100%;
-		margin: 0;
-		inset: 0;
+<script>
+	// 相对时间：把每条说说的 <time data-iso> 渲染成「X 分钟前 / X 小时前 / X 天前」
+	// 在每次导航（含首屏）后执行，软导航也能刷新。
+	function refreshRelativeTimes() {
+		const now = Date.now();
+		document.querySelectorAll(".ss-card-time[data-iso]").forEach((el) => {
+			const iso = el.getAttribute("data-iso");
+			if (!iso) return;
+			const t = Date.parse(iso);
+			if (isNaN(t)) return;
+			const diff = now - t;
+			const min = Math.floor(diff / 60000);
+			let label;
+			if (min < 1) label = "刚刚";
+			else if (min < 60) label = min + " 分钟前";
+			else if (min < 1440) label = Math.floor(min / 60) + " 小时前";
+			else if (min < 43200) label = Math.floor(min / 1440) + " 天前";
+			else label = new Date(t).toLocaleDateString("zh-CN");
+			el.textContent = label;
+		});
 	}
-	[data-dg-editor].dg-editor-dialog::backdrop {
-		background: rgba(0, 0, 0, 0.55);
-		backdrop-filter: blur(4px);
-	}
-	[data-dg-editor] .dg-editor-panel {
-		position: absolute;
-		top: 50%;
-		left: 50%;
-		transform: translate(-50%, -50%);
-		width: min(860px, 96vw);
-		max-height: 92vh;
-		background: var(--float-panel-bg, #fff);
-		color: var(--deep-text, #222);
-		border-radius: 1rem;
-		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-		display: flex;
-		flex-direction: column;
-		overflow: hidden;
-	}
-	[data-dg-editor] .dg-editor-head {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 1rem 1.25rem;
-		border-bottom: 1px solid var(--line-divider, #e5e7eb);
-	}
-	[data-dg-editor] .dg-editor-title { font-size: 1.05rem; font-weight: 700; margin: 0; }
-	[data-dg-editor] .dg-editor-sub { font-size: 0.75rem; color: var(--content-meta, #6b7280); margin: 0.15rem 0 0; }
-	[data-dg-editor] .dg-editor-close {
-		background: transparent; border: none; font-size: 1.6rem; line-height: 1;
-		cursor: pointer; color: var(--content-meta, #6b7280); padding: 0.25rem 0.5rem; border-radius: 0.4rem;
-		transition: background 0.15s;
-	}
-	[data-dg-editor] .dg-editor-close:hover { background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05)); }
-
-	[data-dg-editor] .dg-editor-token,
-	[data-dg-editor] .dg-editor-toolbar,
-	[data-dg-editor] .dg-editor-foot { padding: 0.75rem 1.25rem; }
-	[data-dg-editor] .dg-editor-token { background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.02)); border-bottom: 1px solid var(--line-divider, #e5e7eb); }
-	[data-dg-editor] .dg-editor-label { display: flex; flex-direction: column; gap: 0.15rem; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.4rem; }
-	[data-dg-editor] .dg-editor-label-tip { font-size: 0.7rem; font-weight: 400; color: var(--content-meta, #6b7280); }
-	[data-dg-editor] .dg-editor-link { color: var(--primary, #6366f1); text-decoration: underline; text-underline-offset: 2px; }
-	[data-dg-editor] .dg-editor-token-row { display: flex; gap: 0.4rem; align-items: center; flex-wrap: wrap; }
-	[data-dg-editor] .dg-editor-input,
-	[data-dg-editor] .dg-editor-input-sm,
-	[data-dg-editor] .dg-editor-textarea,
-	[data-dg-editor] .dg-editor-select {
-		width: 100%; font: inherit; font-size: 0.85rem; padding: 0.45rem 0.6rem;
-		border-radius: 0.5rem; border: 1px solid var(--line-divider, #e5e7eb);
-		background: var(--card-bg, #fff); color: var(--deep-text, #222);
-		outline: none; transition: border-color 0.15s; box-sizing: border-box;
-	}
-	[data-dg-editor] .dg-editor-input:focus,
-	[data-dg-editor] .dg-editor-input-sm:focus,
-	[data-dg-editor] .dg-editor-textarea:focus,
-	[data-dg-editor] .dg-editor-select:focus { border-color: var(--primary, #6366f1); }
-	[data-dg-editor] .dg-editor-input { flex: 1 1 280px; min-width: 200px; font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace; }
-	[data-dg-editor] .dg-editor-mini {
-		font-size: 0.9rem; padding: 0.4rem 0.6rem; border-radius: 0.5rem;
-		border: 1px solid var(--line-divider, #e5e7eb); background: var(--card-bg, #fff);
-		cursor: pointer; transition: all 0.15s;
-	}
-	[data-dg-editor] .dg-editor-mini:hover { background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05)); }
-	[data-dg-editor] .dg-editor-mini-danger:hover { background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.4); }
-
-	[data-dg-editor] .dg-editor-btn {
-		font-size: 0.85rem; font-weight: 500; padding: 0.5rem 0.9rem; border-radius: 0.5rem;
-		border: 1px solid var(--line-divider, #e5e7eb); background: var(--card-bg, #fff);
-		color: var(--deep-text, #222); cursor: pointer; transition: all 0.15s;
-	}
-	[data-dg-editor] .dg-editor-btn:hover { background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05)); }
-	[data-dg-editor] .dg-editor-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-	[data-dg-editor] .dg-editor-btn-primary {
-		background: #4f46e5; color: #fff; border-color: transparent;
-		box-shadow: 0 1px 2px rgba(79, 70, 229, 0.25);
-	}
-	[data-dg-editor] .dg-editor-btn-primary:hover { background: #4338ca; box-shadow: 0 2px 6px rgba(79, 70, 229, 0.35); }
-	[data-dg-editor] .dg-editor-btn-primary:active { background: #3730a3; }
-	[data-dg-editor] .dg-editor-btn-secondary { background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05)); }
-
-	[data-dg-editor] .dg-editor-status { font-size: 0.72rem; margin: 0.5rem 0 0; color: var(--content-meta, #6b7280); }
-	[data-dg-editor] .dg-editor-status.is-error { color: #f43f5e; }
-	[data-dg-editor] .dg-editor-status.is-ok { color: #10b981; }
-	[data-dg-editor] .dg-editor-token-meta { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; flex-wrap: wrap; }
-	[data-dg-editor] .dg-session-chip { font-size: 0.72rem; padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid transparent; font-weight: 500; }
-	[data-dg-editor] .dg-session-chip.is-ok { color: #047857; background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.35); }
-	[data-dg-editor] .dg-session-chip.is-lock { color: #b45309; background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.35); }
-
-	[data-dg-editor] .dg-editor-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; border-bottom: 1px solid var(--line-divider, #e5e7eb); }
-	[data-dg-editor] .dg-editor-count { font-size: 0.78rem; color: var(--content-meta, #6b7280); }
-
-	[data-dg-editor] .dg-editor-list { flex: 1 1 auto; overflow-y: auto; padding: 0.5rem 1.25rem 1rem; }
-	[data-dg-editor] .dg-editor-empty { padding: 2rem 1rem; text-align: center; color: var(--content-meta, #6b7280); font-size: 0.85rem; }
-
-	/* 单条卡片 */
-	[data-dg-editor] .dg-row {
-		display: flex; gap: 0.5rem; padding: 0.5rem; margin-bottom: 0.5rem;
-		border: 1px solid var(--line-divider, #e5e7eb); border-radius: 0.6rem;
-		background: var(--card-bg, #fff); transition: border-color 0.15s;
-	}
-	[data-dg-editor] .dg-row:hover { border-color: var(--primary, #6366f1); }
-	[data-dg-editor] .dg-row.is-editing { flex-direction: column; border-color: var(--primary, #6366f1); background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.02)); }
-	[data-dg-editor] .dg-row-info { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
-	[data-dg-editor] .dg-row-title { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-	[data-dg-editor] .dg-row-meta { font-size: 0.7rem; color: var(--content-meta, #6b7280); display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
-	[data-dg-editor] .dg-row-badge { padding: 0.05rem 0.4rem; border-radius: 0.3rem; font-size: 0.65rem; color: #fff; }
-	[data-dg-editor] .dg-row-actions { display: flex; gap: 0.3rem; align-items: flex-start; flex-shrink: 0; }
-	[data-dg-editor] .dg-row-act {
-		font-size: 0.72rem; padding: 0.3rem 0.55rem; border-radius: 0.4rem;
-		border: 1px solid var(--line-divider, #e5e7eb); background: var(--card-bg, #fff);
-		cursor: pointer; color: var(--deep-text, #222); transition: all 0.15s;
-	}
-	[data-dg-editor] .dg-row-act:hover { background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.05)); }
-	[data-dg-editor] .dg-row-act-danger:hover { background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.4); color: #f43f5e; }
-
-	/* 表单 */
-	[data-dg-editor] .dg-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 0.7rem; }
-	[data-dg-editor] .dg-form-grid .dg-form-full { grid-column: 1 / -1; }
-	[data-dg-editor] .dg-form-field { display: flex; flex-direction: column; gap: 0.2rem; }
-	[data-dg-editor] .dg-form-field label { font-size: 0.7rem; font-weight: 600; color: var(--content-meta, #6b7280); }
-	[data-dg-editor] .dg-form-field .dg-editor-input-sm { font-size: 0.82rem; padding: 0.35rem 0.5rem; }
-	[data-dg-editor] .dg-form-field .dg-editor-textarea { font-size: 0.82rem; padding: 0.4rem 0.5rem; resize: vertical; }
-	[data-dg-editor] .dg-form-field.dg-form-check label { flex-direction: row; align-items: center; gap: 0.35rem; font-size: 0.78rem; }
-	[data-dg-editor] .dg-form-actions { grid-column: 1 / -1; display: flex; gap: 0.4rem; justify-content: flex-end; margin-top: 0.25rem; }
-
-	/* 图片上传 */
-	[data-dg-editor] .dg-img-preview { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.4rem; min-height: 0; }
-	[data-dg-editor] .dg-img-empty { font-size: 0.72rem; color: var(--content-meta, #6b7280); }
-	[data-dg-editor] .dg-thumb { position: relative; width: 64px; height: 64px; border-radius: 0.45rem; overflow: hidden; border: 1px solid var(--line-divider, #e5e7eb); background: linear-gradient(135deg, var(--primary, #6366f1), var(--deep-text, #222)); }
-	[data-dg-editor] .dg-thumb img { width: 100%; height: 100%; object-fit: cover; }
-	[data-dg-editor] .dg-thumb-x {
-		position: absolute; top: 1px; right: 1px; width: 18px; height: 18px; line-height: 16px;
-		text-align: center; font-size: 0.9rem; border: none; border-radius: 50%;
-		background: rgba(0, 0, 0, 0.6); color: #fff; cursor: pointer; padding: 0;
-	}
-	[data-dg-editor] .dg-thumb-x:hover { background: #f43f5e; }
-	[data-dg-editor] .dg-img-actions { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-	[data-dg-editor] .dg-form-upload-btn {
-		background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: #fff;
-		border: 1px solid transparent; box-shadow: 0 1px 2px rgba(99, 102, 241, 0.25);
-	}
-	[data-dg-editor] .dg-form-upload-btn:hover { background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); box-shadow: 0 2px 6px rgba(99, 102, 241, 0.4); }
-	[data-dg-editor] .dg-form-upload-btn:disabled { opacity: 0.6; cursor: wait; }
-	[data-dg-editor] .dg-editor-label-tip.is-error { color: #f43f5e; }
-
-	/* 方案 A：上传目标切换（图床 / 仓库本地） */
-	[data-dg-editor] .dg-channel-seg { display: inline-flex; border: 1px solid var(--line-divider, #e5e7eb); border-radius: 0.5rem; overflow: hidden; flex-shrink: 0; }
-	[data-dg-editor] .dg-channel-opt {
-		display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.78rem;
-		padding: 0.4rem 0.65rem; cursor: pointer; color: var(--content-meta, #6b7280);
-		user-select: none; background: var(--card-bg, #fff); transition: all 0.15s;
-	}
-	[data-dg-editor] .dg-channel-opt:not(:last-child) { border-right: 1px solid var(--line-divider, #e5e7eb); }
-	[data-dg-editor] .dg-channel-opt:has(input:checked) { background: var(--primary, #6366f1); color: #fff; }
-	[data-dg-editor] .dg-channel-opt input { accent-color: currentColor; margin: 0; width: 0.9rem; height: 0.9rem; }
-	[data-dg-editor] .dg-channel-desc { margin: 0.45rem 0 0; line-height: 1.55; }
-	[data-dg-editor] .dg-channel-desc code {
-		font-family: ui-monospace, "Cascadia Code", Menlo, monospace; font-size: 0.92em;
-		padding: 0.04rem 0.3rem; border-radius: 0.3rem;
-		background: rgba(99, 102, 241, 0.12); color: var(--primary, #6366f1);
-	}
-
-	[data-dg-editor] .dg-editor-foot {
-		display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;
-		border-top: 1px solid var(--line-divider, #e5e7eb); background: var(--btn-card-bg-hover, rgba(0, 0, 0, 0.02)); flex-wrap: wrap;
-	}
-	[data-dg-editor] .dg-editor-foot-status { font-size: 0.78rem; margin: 0; color: var(--content-meta, #6b7280); flex: 1 1 200px; }
-	[data-dg-editor] .dg-editor-foot-status.is-error { color: #f43f5e; }
-	[data-dg-editor] .dg-editor-foot-status.is-ok { color: #10b981; }
-	[data-dg-editor] .dg-editor-foot-actions { display: flex; gap: 0.4rem; align-items: center; }
-
-	@media (prefers-color-scheme: dark) {
-		[data-dg-editor] .dg-editor-input,
-		[data-dg-editor] .dg-editor-input-sm,
-		[data-dg-editor] .dg-editor-textarea,
-		[data-dg-editor] .dg-editor-select,
-		[data-dg-editor] .dg-editor-mini,
-		[data-dg-editor] .dg-editor-btn,
-		[data-dg-editor] .dg-row,
-		[data-dg-editor] .dg-row-act { background: rgba(255, 255, 255, 0.04); }
-	}
-</style>
-
-
+	document.addEventListener("astro:page-load", refreshRelativeTimes);
+	if (document.readyState !== "loading") refreshRelativeTimes();
+</script>
