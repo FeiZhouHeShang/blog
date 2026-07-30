@@ -51,8 +51,9 @@ const specCollection = defineCollection({
  *  - tags     标签数组（可选），如 ["测试","吐槽"]。
  *  - pinned   是否置顶（可选，默认 false）。
  *  - images   图片地址数组（可选）。可填图床外链，或后台「站点资源→日常吐槽图片」上传后的本地路径。
+ *  - videos   视频地址数组（可选）。mp4/webm 等直链，页面上以 ▶ 缩略图呈现，点击进入灯箱加载播放（不预加载，省流量）。
  *
- * 注意：images/tags 在后台以「列表」形式编辑，PagesCMS 可能序列化为
+ * 注意：images/tags/videos 在后台以「列表」形式编辑，PagesCMS 可能序列化为
  *   标量数组（["a","b"]）或对象数组（[{url:"a"},{tag:"b"}]）。
  *   下方 schema 用 z.union 兼容两种形态；页面渲染时统一用 normList() 拍平为字符串数组。
  */
@@ -67,6 +68,10 @@ const momentsCollection = defineCollection({
 			.default([]),
 		pinned: z.boolean().optional().default(false),
 		images: z
+			.array(z.union([z.string(), z.object({ url: z.string() }).passthrough()]))
+			.optional()
+			.default([]),
+		videos: z
 			.array(z.union([z.string(), z.object({ url: z.string() }).passthrough()]))
 			.optional()
 			.default([]),

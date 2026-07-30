@@ -297,10 +297,21 @@ content:
             description: >
               可选，每行一张。可填图床外链（https://...）；
               也可在后台左侧「站点资源 → 日常吐槽图片」上传后，复制路径填这里（如 /assets/images/moments/xxx.png）。
-              最多 9 张，页面自动排成 1/2/3 列网格。
+              最多 9 张，页面自动排成小缩略图网格（点击进入灯箱放大看）。
             fields:
               - name: url
                 label: 图片地址
+                type: string
+          - name: videos
+            label: 视频
+            type: list
+            description: >
+              可选，每行一个 mp4/webm 直链。页面上以 ▶ 深色缩略图呈现，
+              点击后在灯箱里加载播放（不预加载，省流量）。
+              视频会与图片混排在同一个网格里。
+            fields:
+              - name: url
+                label: 视频地址
                 type: string
 
       # 关于页面
