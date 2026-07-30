@@ -3,12 +3,10 @@
 // dev: 由 Astro dev server 直接运行；prod: 若配了 SSR adapter 也能用，否则 prod 走静态 HTML 副本。
 //
 // 调用方式：POST { markdown, frontmatter? } → { html }
-
-// 注意：早期版本曾用 `export const prerender = false` 强制 SSR，但这要求部署平台
-// 配置 Astro SSR adapter（如 @astrojs/vercel）。本项目以静态构建部署（Vercel 静态输出），
-// prod 预览走构建期生成的静态 HTML 副本（public/posts-content/*.html，见 scripts/gen-posts-content.mjs）。
-// 因此这里不再声明 prerender=false —— 默认走静态预渲染，构建即可通过；
-// dev 模式 Astro 仍会动态提供该端点（POST 实时预览照常工作）。
+//
+// 注意：Astro 6.4 dev server 在某些场景下 POST body 会被 Vite 中间件吞掉（content-type/length header
+// 在 handler 内为 null）。前端 /posts-editor/ 目前统一走客户端 mini-markdown 兜底渲染，
+// 本端点保留供构建期 scripts/gen-posts-content.mjs 使用 + 未来 SSR 部署时启用。
 import { renderMarkdown } from "@/utils/markdown-render.mjs";
 
 export async function GET() {

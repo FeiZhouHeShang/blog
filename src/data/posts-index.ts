@@ -29,7 +29,7 @@ export const postsIndex: PostIndexItem[] = [
 			"萌新"
 		],
 		"published": "2026-07-28",
-		"updated": "2026-07-28",
+		"updated": "2026-07-29",
 		"pinned": true,
 		"draft": false
 	},

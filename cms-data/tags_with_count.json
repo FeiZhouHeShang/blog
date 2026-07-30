@@ -1,0 +1,222 @@
+[
+  {
+    "value": "AI",
+    "label": "AI",
+    "count": 6
+  },
+  {
+    "value": "认证",
+    "label": "认证",
+    "count": 5
+  },
+  {
+    "value": "安全",
+    "label": "安全",
+    "count": 4
+  },
+  {
+    "value": "博客",
+    "label": "博客",
+    "count": 3
+  },
+  {
+    "value": "登录",
+    "label": "登录",
+    "count": 3
+  },
+  {
+    "value": "并发编程",
+    "label": "并发编程",
+    "count": 2
+  },
+  {
+    "value": "部署",
+    "label": "部署",
+    "count": 2
+  },
+  {
+    "value": "二开",
+    "label": "二开",
+    "count": 2
+  },
+  {
+    "value": "性能优化",
+    "label": "性能优化",
+    "count": 2
+  },
+  {
+    "value": "Bitmap",
+    "label": "Bitmap",
+    "count": 2
+  },
+  {
+    "value": "Java",
+    "label": "Java",
+    "count": 2
+  },
+  {
+    "value": "Redis",
+    "label": "Redis",
+    "count": 2
+  },
+  {
+    "value": "Skill",
+    "label": "Skill",
+    "count": 2
+  },
+  {
+    "value": "博客教程",
+    "label": "博客教程",
+    "count": 1
+  },
+  {
+    "value": "对象存储",
+    "label": "对象存储",
+    "count": 1
+  },
+  {
+    "value": "分布式",
+    "label": "分布式",
+    "count": 1
+  },
+  {
+    "value": "高性能",
+    "label": "高性能",
+    "count": 1
+  },
+  {
+    "value": "工作流",
+    "label": "工作流",
+    "count": 1
+  },
+  {
+    "value": "缓存设计",
+    "label": "缓存设计",
+    "count": 1
+  },
+  {
+    "value": "萌新",
+    "label": "萌新",
+    "count": 1
+  },
+  {
+    "value": "配置指南",
+    "label": "配置指南",
+    "count": 1
+  },
+  {
+    "value": "前端",
+    "label": "前端",
+    "count": 1
+  },
+  {
+    "value": "扫码登录",
+    "label": "扫码登录",
+    "count": 1
+  },
+  {
+    "value": "数据库",
+    "label": "数据库",
+    "count": 1
+  },
+  {
+    "value": "图床",
+    "label": "图床",
+    "count": 1
+  },
+  {
+    "value": "线程池",
+    "label": "线程池",
+    "count": 1
+  },
+  {
+    "value": "虚拟线程",
+    "label": "虚拟线程",
+    "count": 1
+  },
+  {
+    "value": "转载",
+    "label": "转载",
+    "count": 1
+  },
+  {
+    "value": "Agent",
+    "label": "Agent",
+    "count": 1
+  },
+  {
+    "value": "Astro",
+    "label": "Astro",
+    "count": 1
+  },
+  {
+    "value": "Bot",
+    "label": "Bot",
+    "count": 1
+  },
+  {
+    "value": "Cloudflare",
+    "label": "Cloudflare",
+    "count": 1
+  },
+  {
+    "value": "CloudFlare ImgBed",
+    "label": "CloudFlare ImgBed",
+    "count": 1
+  },
+  {
+    "value": "firefly",
+    "label": "firefly",
+    "count": 1
+  },
+  {
+    "value": "Firefly",
+    "label": "Firefly",
+    "count": 1
+  },
+  {
+    "value": "JWT",
+    "label": "JWT",
+    "count": 1
+  },
+  {
+    "value": "MinIO",
+    "label": "MinIO",
+    "count": 1
+  },
+  {
+    "value": "OAuth2",
+    "label": "OAuth2",
+    "count": 1
+  },
+  {
+    "value": "Oracle",
+    "label": "Oracle",
+    "count": 1
+  },
+  {
+    "value": "Prompt",
+    "label": "Prompt",
+    "count": 1
+  },
+  {
+    "value": "RAG",
+    "label": "RAG",
+    "count": 1
+  },
+  {
+    "value": "Umami",
+    "label": "Umami",
+    "count": 1
+  },
+  {
+    "value": "Vercel",
+    "label": "Vercel",
+    "count": 1
+  },
+  {
+    "value": "WebSocket",
+    "label": "WebSocket",
+    "count": 1
+  }
+]

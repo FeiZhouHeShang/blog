@@ -5,8 +5,11 @@ import RightSidebar from "@/components/layout/RightSidebar.astro";
 import { editorSecrets } from "@/config/editorSecrets";
 
 // 文章前端编辑器（写 / 改）
-// UI 完全照 fqzlr /write/ 1:1 复刻：WRITE 标题 + 6 按钮工具栏 + 双栏（主区编辑 + 侧栏表单）
-// 仅保留我们的标签三连框；后台走 PAT(导入密钥) + draftStore(本地草稿) + uploadCenter(统一推送) + ImgBed(图片上传) + server preview
+// 三连常驻布局：编辑 | 预览 | 属性 —— 去掉预览按钮，预览常驻显示
+// 左右两侧为全局仪表盘（MainGridLayout slot），编辑时「往外同步移动」= 中间 .pe-editor 满宽
+// 后台：PAT(导入密钥) + draftStore(本地草稿) + uploadCenter(统一推送) + ImgBed(图片上传)
+// 实时预览：dev 调 /api/render-preview/（完整 markdown-render.mjs 管线 = 发布页），
+//           prod 走客户端 src/scripts/mini-markdown.mjs 兜底（基础 markdown + callout/mermaid/plantuml/katex 占位）
 const title = "写文章";
 const description = "支持 Markdown 语法，编辑后通过 GitHub API 提交到仓库。";
 
@@ -39,11 +42,12 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 			<p data-pe-catalog-empty class="pe-empty" hidden>暂无文章，点右上角「写新文章」开始。</p>
 		</div>
 
-		<!-- ========== 编辑器视图（fqzlr 1:1：WRITE 标题 + 工具栏 + 双栏） ========== -->
+		<!-- ========== 编辑器视图（编辑 | 预览 | 属性 三连常驻） ========== -->
 		<div
 			id="pe-editor"
 			class="pe-page pe-editor"
 			data-pe-editor=""
+			data-pe-mode={import.meta.env.DEV ? "dev" : "prod"}
 			data-imgbed-url={editorSecrets.imageBedUrl}
 			data-imgbed-auth={import.meta.env.PUBLIC_IMGBED_UPLOAD_CODE ?? ""}
 			data-imgbed-token={import.meta.env.PUBLIC_IMG_UPLOAD_TOKEN ?? ""}
@@ -54,11 +58,11 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 				<div class="pe-page-head-left">
 					<span class="pe-page-eyebrow">WRITE</span>
 					<h1 class="pe-page-title" id="pe-editor-title">写文章</h1>
-					<p class="pe-page-sub">支持 Markdown 语法，编辑后通过 GitHub API 提交到仓库。</p>
+					<p class="pe-page-sub">支持 Markdown 语法，编辑后通过 GitHub API 提交到仓库。左侧编辑、右侧预览，最右侧填写标题/标签/封面等属性。</p>
 				</div>
 			</div>
 
-			<!-- 工具栏（fqzlr 6 按钮：← 返回列表 / 导入MD / 预览 / 保存草稿 / 导入密钥 / 发表呀） -->
+			<!-- 工具栏（5 按钮：← 返回列表 / 导入MD / 保存草稿 / 导入密钥 / 发表呀；预览已常驻不再需要按钮） -->
 			<div class="pe-toolbar" role="toolbar" aria-label="编辑器工具栏">
 				<button type="button" id="pe-toolbar-back" class="pe-toolbar-btn" title="返回文章列表">
 					<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
@@ -66,15 +70,36 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 				</button>
 				<span class="pe-toolbar-divider"></span>
 				<button type="button" id="pe-toolbar-import-md" class="pe-toolbar-btn" title="导入本地 .md 文件">📥 导入MD</button>
-				<button type="button" id="pe-toolbar-preview" class="pe-toolbar-btn" title="预览 Markdown 渲染效果">👁 预览</button>
 				<button type="button" id="pe-toolbar-save" class="pe-toolbar-btn pe-btn-save" title="保存到本地草稿（无需令牌）">💾 保存草稿</button>
-				<button type="button" id="pe-toolbar-key" class="pe-toolbar-btn pe-btn-key" title="导入 GitHub PAT 才能推到仓库">🔑 导入密钥</button>
+				<button type="button" id="pe-toolbar-key" class="pe-toolbar-btn pe-btn-key" title="点击选择密钥文件（.txt / .pem）一键导入">🔑 导入密钥</button>
 				<button type="button" id="pe-toolbar-publish" class="pe-toolbar-btn pe-btn-publish" title="保存到本地草稿 + 打开上传中心统一推送">🚀 发表呀</button>
+				<button type="button" id="pe-toolbar-fullscreen" class="pe-toolbar-btn pe-btn-fs" title="切换全屏编辑模式（隐藏左右侧栏）">⤢ 全屏</button>
+				<button type="button" id="pe-toolbar-side" class="pe-toolbar-btn pe-btn-side is-active" title="显示/隐藏右侧属性栏（收起后编辑 + 预览区域翻倍）">⚙ 属性</button>
+				<button type="button" id="pe-toolbar-img" class="pe-toolbar-btn pe-btn-img" title="插入图片：上传文件或粘贴图片 URL">🖼 插入图片</button>
+				<button type="button" id="pe-toolbar-sync" class="pe-toolbar-btn pe-btn-sync" title="滚动同步：未锁定（左右独立滚动；先把两边滚到对齐位置，再点此锁定联动）">🔗 锁同步</button>
+				<span class="pe-toolbar-spacer"></span>
+				<span id="pe-preview-mode-chip" class="pe-preview-mode-chip" title="客户端 mini-markdown.mjs 兜底渲染">预览：客户端兜底</span>
 			</div>
 
-			<!-- 主体两栏：主区(标题+MD工具栏+正文) + 侧栏(Slug/封面/封面预览/描述/标签/分类/日期/草稿/置顶) -->
-			<div class="pe-editor-main">
-				<div class="pe-editor-col">
+			<!-- 插入图片弹层（顶部「🖼 插入图片」触发）：文件上传 / 粘贴 URL 两种方式 -->
+			<div id="pe-img-popover" class="pe-img-popover" hidden>
+				<div class="pe-img-pop-head">插入图片</div>
+				<button type="button" id="pe-img-upload-btn" class="pe-img-pop-btn">📁 上传图片文件</button>
+				<div class="pe-img-pop-or">— 或 粘贴图片 URL —</div>
+				<label class="pe-img-pop-field">
+					<span>图片 URL</span>
+					<input type="url" id="pe-img-url-input" class="pe-input" placeholder="https://example.com/pic.jpg" />
+				</label>
+				<div class="pe-img-pop-actions">
+					<button type="button" id="pe-img-url-insert" class="pe-toolbar-btn pe-btn-save">插入</button>
+					<button type="button" id="pe-img-pop-close" class="pe-toolbar-btn">取消</button>
+				</div>
+			</div>
+
+			<!-- 三连：编辑 | 预览 | 属性（属性栏默认收起，让编辑 + 预览区域翻倍；点工具栏「⚙ 属性」展开） -->
+			<div class="pe-editor-main" id="pe-editor-main" data-side="collapsed">
+				<!-- 左：编辑列 -->
+				<section class="pe-editor-col pe-editor-col-edit" aria-label="编辑区">
 					<textarea id="pe-f-title" class="pe-title-input" rows="1" placeholder="输入文章标题..." aria-label="文章标题"></textarea>
 
 					<!-- Markdown 工具栏 -->
@@ -97,10 +122,24 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 					</div>
 
 					<textarea id="pe-f-body" class="pe-body-input" placeholder="开始写作...  支持 Markdown 语法 快捷键: Ctrl+B 加粗 / Ctrl+I 斜体 / Ctrl+K 链接 / Ctrl+S 保存草稿" aria-label="文章正文 Markdown"></textarea>
-					<div id="pe-preview" class="prose dark:prose-invert prose-base max-w-none! custom-md markdown-bordered pe-preview" hidden></div>
-				</div>
+				</section>
 
-				<aside class="pe-editor-side">
+				<!-- 中：预览列（常驻） -->
+				<section class="pe-editor-col pe-editor-col-preview" aria-label="实时预览">
+					<div class="pe-preview-head">
+						<span class="pe-preview-head-title">👁 实时预览</span>
+						<span id="pe-preview-status" class="pe-preview-status"></span>
+					</div>
+					<div id="pe-preview" class="prose dark:prose-invert prose-base max-w-none! custom-md pe-preview" data-empty="true">
+						<div class="pe-preview-empty">
+							<div class="pe-preview-empty-icon">✨</div>
+							<div class="pe-preview-empty-text">在左侧开始写作<br />预览将在这里实时出现</div>
+						</div>
+					</div>
+				</section>
+
+				<!-- 右：属性列 -->
+				<aside class="pe-editor-col pe-editor-col-side" aria-label="文章属性">
 					<!-- 密钥提示（无密钥时显示橙色框） -->
 					<div id="pe-key-notice" class="pe-key-notice">🔑 请点击工具栏「导入密钥」按钮，选择存有密钥的 <code>.txt</code> / <code>.pem</code> 文件一键导入（无需手动粘贴）。<a href="#" id="pe-pat-manual-link" class="pe-link">或手动粘贴</a></div>
 
@@ -205,8 +244,14 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 </MainGridLayout>
 
 <style>
-	/* 页面容器 */
-	.pe-page-wrapper { padding: 0; max-width: 1280px; margin: 0 auto; }
+	/* 页面容器 —— 满宽，不限 max-width；编辑器专用把左右侧栏收到 200px，让中间三列尽可能宽 */
+	.pe-page-wrapper { padding: 0; max-width: none; width: 100%; --sidebar-width: 200px; }
+	/* 全屏编辑模式：完全收起外侧栏（点工具栏「⤢ 全屏」切换）*/
+	:global(body.pe-fullscreen) { --sidebar-width: 0px; }
+	:global(body.pe-fullscreen) [data-sidebar-position="both"] > :first-child,
+	:global(body.pe-fullscreen) [data-sidebar-position="both"] > :last-child,
+	:global(body.pe-fullscreen) [data-sidebar-position="left"] > :first-child,
+	:global(body.pe-fullscreen) [data-sidebar-position="right"] > :last-child { display: none !important; }
 	.pe-page { padding: 1.4rem 1.6rem; }
 
 	/* 页头（WRITE + 大标题 + 副标） */
@@ -219,6 +264,7 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 	/* 工具栏按钮（fqzlr 风格：圆形胶囊） */
 	.pe-toolbar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; padding: 0.6rem 0; border-bottom: 1px solid var(--line-divider, #e5e7eb); margin-bottom: 1rem; }
 	.pe-toolbar-divider { width: 1px; height: 18px; background: var(--line-divider, #e5e7eb); margin: 0 0.25rem; }
+	.pe-toolbar-spacer { flex: 1; }
 	.pe-toolbar-btn { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.5rem 1rem; min-height: 38px; border-radius: 999px; cursor: pointer; font-size: 0.85rem; font-weight: 500; border: 1px solid transparent; background: var(--btn-card-bg-hover, #f5f5f7); color: var(--deep-text, #111); transition: all 0.15s ease; }
 	.pe-toolbar-btn:hover { background: var(--btn-card-bg-active, #ececf1); }
 	.pe-btn-save { background: rgba(59,130,246,0.1); color: #2563eb; border-color: rgba(59,130,246,0.3); }
@@ -235,28 +281,91 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 	.pe-btn-publish.is-disabled:hover, .pe-btn-publish:disabled:hover { filter: grayscale(0.35); }
 	.pe-btn-danger { color: #e11d48; border-color: rgba(225,29,72,0.25); background: transparent; }
 	.pe-btn-danger:hover { background: rgba(225,29,72,0.08); }
+	.pe-btn-fs { background: rgba(139,92,246,0.1); color: #6d28d9; border-color: rgba(139,92,246,0.3); }
+	.pe-btn-fs:hover { background: rgba(139,92,246,0.18); }
+	.pe-btn-fs.is-active { background: var(--primary); color: var(--page-bg, #fff); border-color: var(--primary); }
+	:root.dark .pe-btn-fs { background: rgba(139,92,246,0.18); color: #c4b5fd; }
+	.pe-btn-side { background: rgba(16,185,129,0.1); color: #047857; border-color: rgba(16,185,129,0.3); }
+	.pe-btn-side:hover { background: rgba(16,185,129,0.18); }
+	.pe-btn-side.is-active { background: var(--primary); color: var(--page-bg, #fff); border-color: var(--primary); }
+	:root.dark .pe-btn-side { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+	.pe-btn-img { background: rgba(245,158,11,0.12); color: #b45309; border-color: rgba(245,158,11,0.35); }
+	.pe-btn-img:hover { background: rgba(245,158,11,0.2); }
+	:root.dark .pe-btn-img { background: rgba(245,158,11,0.18); color: #fcd34d; }
+	.pe-btn-sync { background: rgba(16,185,129,0.1); color: #047857; border-color: rgba(16,185,129,0.3); }
+	.pe-btn-sync:hover { background: rgba(16,185,129,0.18); }
+	.pe-btn-sync:not(.is-active) { background: var(--btn-card-bg-hover, #f3f4f6); color: var(--content-meta, #9ca3af); border-color: var(--line-divider, #e5e7eb); }
+	:root.dark .pe-btn-sync { background: rgba(16,185,129,0.18); color: #6ee7b7; }
+	:root.dark .pe-btn-sync:not(.is-active) { background: rgba(255,255,255,0.05); color: #6b7280; }
+
+	/* 插入图片弹层 */
+	.pe-img-popover { position: absolute; z-index: 40; top: 4.6rem; left: 1.2rem; width: min(340px, calc(100% - 3rem)); background: var(--card-bg, #fff); border: 1px solid var(--line-divider, #e5e7eb); border-radius: 12px; box-shadow: 0 12px 40px rgba(15,23,42,0.18); padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
+	:root.dark .pe-img-popover { background: #1e293b; box-shadow: 0 12px 40px rgba(0,0,0,0.5); }
+	.pe-img-pop-head { font-size: 0.9rem; font-weight: 700; color: var(--deep-text, #111); }
+	.pe-img-pop-btn { width: 100%; padding: 0.6rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; border: 1px solid var(--line-divider, #e5e7eb); background: var(--btn-card-bg-hover, #f5f5f7); color: var(--deep-text, #111); }
+	.pe-img-pop-btn:hover { background: var(--btn-card-bg-active, #ececf1); }
+	.pe-img-pop-or { text-align: center; font-size: 0.7rem; color: var(--content-meta, #9ca3af); }
+	.pe-img-pop-field { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.75rem; color: var(--content-meta, #6b7280); }
+	.pe-img-pop-field .pe-input { width: 100%; }
+	.pe-img-pop-actions { display: flex; gap: 0.5rem; justify-content: flex-end; }
+
+	/* 预览模式指示器（统一客户端兜底渲染） */
+	.pe-preview-mode-chip { font-size: 0.7rem; padding: 0.25rem 0.7rem; border-radius: 999px; background: var(--btn-card-bg-hover, #f5f5f7); color: var(--content-meta, #6b7280); border: 1px solid var(--line-divider, #e5e7eb); font-weight: 500; }
+	.pe-preview-mode-chip[data-mode="client"] { background: rgba(99,102,241,0.1); color: #4f46e5; border-color: rgba(99,102,241,0.3); }
+	.pe-preview-mode-chip[data-mode="dev"] { background: rgba(16,185,129,0.1); color: #047857; border-color: rgba(16,185,129,0.3); }
+	.pe-preview-mode-chip[data-mode="prod"] { background: rgba(245,158,11,0.1); color: #b45309; border-color: rgba(245,158,11,0.3); }
 
 	/* 列表页 */
 	.pe-list-page { max-width: 900px; margin: 0 auto; }
 	.pe-catalog { display: flex; flex-direction: column; gap: 1.5rem; }
 	.pe-empty { text-align: center; color: var(--content-meta, #6b7280); padding: 2rem 0; }
 
-	/* 编辑器主体 */
-	.pe-editor { padding: 1.4rem 1.6rem; }
-	.pe-editor-main { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 0; border: 1px solid var(--line-divider, #e5e7eb); border-radius: 12px; overflow: hidden; background: var(--card-bg, #fff); }
-	.pe-editor-col { display: flex; flex-direction: column; min-width: 0; min-height: 600px; }
+	/* ============ 编辑器主体：3 列 grid（编辑 | 预览 | 属性） ============ */
+	.pe-editor { padding: 1rem 1.2rem; position: relative; }
+	.pe-editor-main {
+		display: grid;
+		grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.3fr) 320px;
+		gap: 0;
+		border: 1px solid var(--line-divider, #e5e7eb);
+		border-radius: 12px;
+		overflow: hidden;
+		background: var(--card-bg, #fff);
+		/* 固定高度而非 min-height：textarea 和 preview 必须限制在可视区域才能内部滚动；
+		   min-height 会让 grid 被超长内容撑高，textarea 不需要滚 → 同步逻辑空转 */
+		height: 75vh;
+		min-height: 560px;
+	}
+	/* 属性栏收起：编辑 + 预览平分满宽（约翻倍） */
+	.pe-editor-main[data-side="collapsed"] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+	.pe-editor-main[data-side="collapsed"] .pe-editor-col-side { display: none; }
+	/* 列高 100% 填满 grid 行高（不再单独 min-height，避免和父级 height 冲突导致又可撑高） */
+	.pe-editor-col { display: flex; flex-direction: column; min-width: 0; min-height: 0; height: 100%; }
+	.pe-editor-col-edit { border-right: 1px solid var(--line-divider, #e5e7eb); }
+	.pe-editor-col-preview { border-right: 1px solid var(--line-divider, #e5e7eb); background: var(--btn-card-bg-hover, #fafafa); }
+	.pe-editor-col-side { padding: 1rem 1.2rem; overflow-y: auto; gap: 0.7rem; background: var(--card-bg, #fff); }
+
+	/* 标题 input */
 	.pe-title-input { width: 100%; box-sizing: border-box; padding: 1.2rem 1.4rem 0.6rem; border: none; outline: none; resize: none; background: transparent; font-size: 1.6rem; font-weight: 700; color: var(--deep-text, #111); font-family: inherit; line-height: 1.4; min-height: 60px; overflow: hidden; }
 	.pe-title-input::placeholder { color: var(--content-meta, #9ca3af); font-weight: 500; }
 
+	/* MD 工具栏 */
 	.pe-md-toolbar { display: flex; align-items: center; gap: 0.15rem; padding: 0.4rem 1.4rem; border-top: 1px solid var(--line-divider, #e5e7eb); border-bottom: 1px solid var(--line-divider, #e5e7eb); background: var(--card-bg, #fff); flex-shrink: 0; }
 	.pe-md-tb { min-width: 32px; min-height: 32px; padding: 0 0.5rem; border: none; background: transparent; border-radius: 6px; cursor: pointer; color: var(--content-meta, #6b7280); font-size: 0.85rem; }
 	.pe-md-tb:hover { background: var(--btn-card-bg-active, #ececf1); color: var(--primary, #4f46e5); }
 	.pe-md-tb-divider { width: 1px; height: 16px; background: var(--line-divider, #e5e7eb); margin: 0 0.25rem; }
 
+	/* body textarea */
 	.pe-body-input { flex: 1 1 auto; min-height: 0; padding: 1rem 1.4rem; border: none; outline: none; resize: none; background: transparent; font-size: 0.95rem; line-height: 1.7; color: var(--deep-text, #111); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
 
-	/* 右侧栏 */
-	.pe-editor-side { border-left: 1px solid var(--line-divider, #e5e7eb); padding: 1rem 1.2rem; overflow-y: auto; display: flex; flex-direction: column; gap: 0.7rem; background: var(--card-bg, #fff); }
+	/* 预览列 */
+	.pe-preview-head { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 1.4rem; border-bottom: 1px solid var(--line-divider, #e5e7eb); background: var(--card-bg, #fff); flex-shrink: 0; }
+	.pe-preview-head-title { font-size: 0.78rem; font-weight: 600; color: var(--deep-text, #111); letter-spacing: 0.05em; }
+	.pe-preview-status { font-size: 0.7rem; color: var(--content-meta, #6b7280); font-variant-numeric: tabular-nums; }
+	.pe-preview-status.is-loading { color: #2563eb; }
+	.pe-preview-status.is-error { color: #e11d48; }
+	.pe-preview { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 1rem 1.4rem; }
+
+	/* 右侧属性栏（沿用 .pe-field 等） */
 	.pe-key-notice { padding: 0.7rem 0.9rem; border-radius: 8px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: #b45309; font-size: 0.78rem; line-height: 1.55; }
 	.pe-key-notice.is-hidden { display: none; }
 
@@ -291,20 +400,31 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 	.pe-pat-row .pe-input { flex: 1; min-width: 200px; }
 	.pe-pat-tip { font-size: 0.72rem; color: var(--content-meta, #6b7280); margin: 0.5rem 0 0; }
 
-	/* 预览 */
-	.pe-preview { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 1rem 1.4rem; background: var(--card-bg, #fff); }
-
-	/* 响应式 */
+	/* ============ 响应式 ============ */
+	/* 默认（>1400px）：3 列 1.6:1.3:340，编辑/预览尽量宽 */
+	/* < 1400px：属性列收窄到 300px */
+	@media (max-width: 1400px) {
+		.pe-editor-main { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1.3fr) 300px; }
+	}
+	/* < 1200px：去掉属性列，让编辑+预览占满 */
+	@media (max-width: 1200px) {
+		.pe-editor-main { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+		.pe-editor-col-side { display: none; }
+	}
+	/* < 900px：去掉预览列，只剩编辑（属性栏仍可点折叠按钮呼出） */
 	@media (max-width: 900px) {
 		.pe-editor-main { grid-template-columns: 1fr; }
-		.pe-editor-side { border-left: none; border-top: 1px solid var(--line-divider, #e5e7eb); }
+		.pe-editor-col-preview { display: none; }
+		.pe-editor-col-edit { border-right: none; }
 		.pe-kbd-hint { display: none; }
 		.pe-page-title { font-size: 1.7rem; }
 	}
+	/* 移动端：工具栏隐藏文字 */
 	@media (max-width: 640px) {
 		.pe-toolbar { gap: 0.3rem; }
 		.pe-toolbar-btn span { display: none; }
 		.pe-toolbar-btn { padding: 0.5rem 0.7rem; }
+		.pe-preview-mode-chip { display: none; }
 	}
 </style>
 
@@ -341,4 +461,35 @@ const IMGBED_POST_DIR_PREFIX = "文章";
 	.pe-tags3-selected-item { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.3rem 0.45rem 0.3rem 0.75rem; background: rgba(99,102,241,0.12); color: var(--primary, #4f46e5); border: 1px solid rgba(99,102,241,0.3); border-radius: 999px; font-size: 0.8rem; font-weight: 500; min-height: 32px; }
 	.pe-tags3-remove-btn { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex-shrink: 0; background: #ef4444; color: #fff; border: none; border-radius: 50%; cursor: pointer; font-size: 0.95rem; line-height: 1; font-weight: 700; }
 	.pe-tags3-remove-btn:hover { background: #dc2626; }
+
+	/* ===== 编辑器实时预览（innerHTML 动态内容，必须 global 才生效） ===== */
+	.pe-preview-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; min-height: 320px; color: var(--content-meta, #6b7280); gap: 0.5rem; }
+	.pe-preview-empty-icon { font-size: 2.6rem; opacity: 0.6; }
+	.pe-preview-empty-text { font-size: 0.95rem; text-align: center; line-height: 1.7; }
+
+	/* 代码块：深色 + 语言角标（not-prose 避免被 typography 覆盖） */
+	.md-pre { position: relative; background: #0f172a; color: #e2e8f0; border-radius: 8px; padding: 1rem 1.1rem; overflow-x: auto; font-size: 0.85rem; line-height: 1.6; margin: 0.8rem 0; }
+	:root.dark .md-pre { background: #0b1120; }
+	.md-pre code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre; }
+	.md-pre[data-lang]::before { content: attr(data-lang); position: absolute; top: 0.35rem; right: 0.7rem; font-size: 0.62rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; }
+
+	/* callout（与发布页 rehype-callouts 观感一致） */
+	.md-callout { border-left: 4px solid #3b82f6; background: rgba(59,130,246,0.08); border-radius: 0 8px 8px 0; padding: 0.7rem 1rem; margin: 0.8rem 0; }
+	.md-callout[data-callout="note"], .md-callout[data-callout="info"] { border-color: #3b82f6; background: rgba(59,130,246,0.08); }
+	.md-callout[data-callout="tip"] { border-color: #10b981; background: rgba(16,185,129,0.08); }
+	.md-callout[data-callout="important"] { border-color: #8b5cf6; background: rgba(139,92,246,0.08); }
+	.md-callout[data-callout="warning"] { border-color: #f59e0b; background: rgba(245,158,11,0.08); }
+	.md-callout[data-callout="caution"] { border-color: #ef4444; background: rgba(239,68,68,0.08); }
+	.md-callout-title { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; opacity: 0.85; margin-bottom: 0.3rem; }
+	.md-callout-body { font-size: 0.88rem; line-height: 1.6; }
+	.md-callout-body > :first-child { margin-top: 0; }
+	.md-callout-body > :last-child { margin-bottom: 0; }
+
+	/* 占位（mermaid / plantuml / katex） */
+	.md-placeholder { display: flex; align-items: center; gap: 0.6rem; padding: 0.8rem 1rem; border: 1px dashed #cbd5e1; border-radius: 8px; background: #f8fafc; color: #64748b; font-size: 0.82rem; margin: 0.6rem 0; }
+	:root.dark .md-placeholder { background: rgba(255,255,255,0.04); border-color: #334155; color: #94a3b8; }
+
+	/* 任务列表 */
+	.md-task { display: inline-flex; align-items: center; gap: 0.4em; }
+	.md-task input[type="checkbox"] { margin: 0; vertical-align: middle; }
 </style>

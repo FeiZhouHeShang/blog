@@ -91,3 +91,51 @@ const ts =
 fs.mkdirSync(path.dirname(OUT_FILE), { recursive: true });
 fs.writeFileSync(OUT_FILE, ts, "utf-8");
 console.log(`✓ 生成 ${items.length} 篇文章索引 -> ${path.relative(process.cwd(), OUT_FILE)}`);
+
+// ========================================================================
+// 同步给 PagesCMS 后台使用的「标签/分类候选集合」
+// 目的：让 PagesCMS 后台的下拉选项 = 实际文章里出现过的标签/分类，
+//       而不是 .pages.yml 里硬编码的几条过时的样例。
+// 文件：cms-data/tags.json / cms-data/categories.json
+// PagesCMS 引用：options.values: data://cms-data/tags.json
+// ========================================================================
+const CMS_DATA_DIR = path.resolve("cms-data");
+const TAGS_OUT = path.join(CMS_DATA_DIR, "tags.json");
+const CATS_OUT = path.join(CMS_DATA_DIR, "categories.json");
+
+// 聚合所有 tags（去重 + 排序 + 含每标签的文章数）
+const tagCounts = {};
+const catCounts = {};
+for (const it of items) {
+	for (const t of (it.tags || [])) {
+		if (typeof t !== "string" || !t.trim()) continue;
+		tagCounts[t.trim()] = (tagCounts[t.trim()] || 0) + 1;
+	}
+	if (it.category && it.category.trim()) {
+		catCounts[it.category.trim()] = (catCounts[it.category.trim()] || 0) + 1;
+	}
+}
+// PagesCMS 接受两种结构：纯字符串数组 或 {value,label} 对象数组。
+// 用字符串数组最兼容（PagesCMS 2.x 自动用 value 当 label，count 字段会被忽略）；
+// 实际我们额外生成 *_with_count.json 给前端自定义下拉用。
+const tagList = Object.entries(tagCounts)
+	.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh"))
+	.map(([value]) => value);
+const catList = Object.entries(catCounts)
+	.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh"))
+	.map(([value]) => value);
+// 计数版本（前端可视化用，不被 PagesCMS 引用）
+const tagListRich = Object.entries(tagCounts)
+	.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh"))
+	.map(([value, count]) => ({ value, label: value, count }));
+const catListRich = Object.entries(catCounts)
+	.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "zh"))
+	.map(([value, count]) => ({ value, label: value, count }));
+
+fs.mkdirSync(CMS_DATA_DIR, { recursive: true });
+fs.writeFileSync(TAGS_OUT, JSON.stringify(tagList, null, 2) + "\n", "utf-8");
+fs.writeFileSync(CATS_OUT, JSON.stringify(catList, null, 2) + "\n", "utf-8");
+fs.writeFileSync(path.join(CMS_DATA_DIR, "tags_with_count.json"), JSON.stringify(tagListRich, null, 2) + "\n", "utf-8");
+fs.writeFileSync(path.join(CMS_DATA_DIR, "categories_with_count.json"), JSON.stringify(catListRich, null, 2) + "\n", "utf-8");
+console.log(`✓ 聚合 ${tagList.length} 个标签 -> ${path.relative(process.cwd(), TAGS_OUT)}`);
+console.log(`✓ 聚合 ${catList.length} 个分类 -> ${path.relative(process.cwd(), CATS_OUT)}`);

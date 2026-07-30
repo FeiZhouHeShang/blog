@@ -170,24 +170,20 @@ content:
           - name: tags
             label: 标签
             type: select
+            description: 标签候选来自 src/content/posts 下所有文章的 frontmatter.tags 聚合（构建期由 scripts/gen-posts-index.mjs 自动同步到 cms-data/tags.json）。可新建：选中「+ 新建标签」即可，输入后回车确认。
             options:
               multiple: true
               creatable: true
-              values:
-                - { label: 演示, value: 演示 }
-                - { label: 示例, value: 示例 }
-                - { label: Markdown, value: Markdown }
-                - { label: Firefly, value: Firefly }
-                - { label: 博客, value: 博客 }
-                - { label: 主题, value: 主题 }
-                - { label: 教程, value: 教程 }
-                - { label: JavaScript, value: JavaScript }
-                - { label: Astro, value: Astro }
+              # 引用构建期聚合的真实标签集，PagesCMS 后台下拉 = 前台编辑器下拉 = 实际文章标签
+              values: data://cms-data/tags.json
 
           - name: category
             label: 分类
-            type: string
-            description: 文章分类（如"文章示例"、"技术笔记"）
+            type: select
+            description: 分类候选来自 src/content/posts 下所有文章的 frontmatter.category 聚合（构建期同步到 cms-data/categories.json）。可新建。
+            options:
+              creatable: true
+              values: data://cms-data/categories.json
 
           - name: lang
             label: 语言

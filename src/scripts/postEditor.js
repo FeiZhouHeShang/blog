@@ -4,6 +4,7 @@
 // 删掉的旧逻辑：分类 combo-box、目录派生、单一「修改保存」按钮 + 脏检测、channel 切换(图床/仓库本地)。
 
 import { putDraft, getDraft, getDrafts, deleteDraft } from "@/scripts/draftStore";
+import { renderMiniMarkdown } from "@/scripts/mini-markdown.mjs";
 
 var IMGBED_URL = "";
 var IMGBED_AUTH = "";
@@ -28,6 +29,43 @@ var state = {
 	_tagPool: [],
 	_tagCounts: {},
 };
+
+// 滚动同步相关全局（必须顶层声明：renderPreviewFallback 等顶层函数需访问，init 函数内仅做赋值）
+// 滚动同步：锚点锁定式（默认关，左右各自独立；用户手动对齐后点「同步」锁死相对位置）
+// 与「强制按顶部比例对齐」的区别：开启时记录当前两边 scrollTop 为锚点，
+// 之后以「锚点相对位移 × 实时比例因子」联动，绝不再把预览拉回顶部比例，避免「本来对齐了点同步又异步」。
+var _syncEnabled = false;
+var _syncAnchor = null;   // { srcTop: 编辑区 scrollTop, dstTop: 预览区 scrollTop } 锁定时快照
+var _syncGuardSrc = null; // 刚被程序化设置 scrollTop 的元素，其回弹事件需吞掉防循环
+var _peBodyEl = null;
+var _pePreviewEl = null;
+
+// 编辑区→预览区的实时比例因子 k = tMax/sMax（随内容增长实时变化）
+function _syncFactor() {
+	if (!_peBodyEl || !_pePreviewEl) return null;
+	var sMax = _peBodyEl.scrollHeight - _peBodyEl.clientHeight;
+	var tMax = _pePreviewEl.scrollHeight - _pePreviewEl.clientHeight;
+	if (sMax <= 0 || tMax <= 0) return null;
+	return tMax / sMax;
+}
+// 由编辑区当前位置推出预览区位置（锚点相对，绝不跳回顶部）
+function _syncPreviewFromBody() {
+	if (!_syncEnabled || !_syncAnchor) return;
+	var k = _syncFactor();
+	if (k === null) return;
+	_syncGuardSrc = _pePreviewEl;
+	_pePreviewEl.scrollTop = _syncAnchor.dstTop + (_peBodyEl.scrollTop - _syncAnchor.srcTop) * k;
+	requestAnimationFrame(function () { if (_syncGuardSrc === _pePreviewEl) _syncGuardSrc = null; });
+}
+// 由预览区当前位置推编辑区位置（锚点相对）
+function _syncBodyFromPreview() {
+	if (!_syncEnabled || !_syncAnchor) return;
+	var k = _syncFactor();
+	if (k === null) return;
+	_syncGuardSrc = _peBodyEl;
+	_peBodyEl.scrollTop = _syncAnchor.srcTop + (_pePreviewEl.scrollTop - _syncAnchor.dstTop) / k;
+	requestAnimationFrame(function () { if (_syncGuardSrc === _peBodyEl) _syncGuardSrc = null; });
+}
 
 // 工具
 function setStatus(el, msg, kind) {
@@ -62,30 +100,70 @@ function updateCharCount() {
 	el.textContent = (ta.value || "").length + " 字";
 }
 
-// 预览（POST /api/render-preview/，保证预览 == 发布页）
+// 实时预览：常驻渲染（去掉预览按钮，三连布局下预览永远显示）
+// 渲染策略：Astro 6.4 dev server 的 POST body 会被 Vite 中间件吞掉，所以 dev/prod 都走客户端
+// mini-markdown.mjs 兜底渲染。基础 markdown + callout/任务列表/表格都正确；
+// mermaid/plantuml/katex 显示为语义化占位（提示用户「发布页将自动渲染」）。
+// `/api/render-preview/` 端点保留供构建期 scripts/gen-posts-content.mjs 使用 + 未来 SSR 部署。
 var _previewTimer = null;
-function renderPreview() {
+var _previewMode = "client"; // 客户端统一渲染
+var _previewApiOk = false; // dev API 暂不可用（见上注释）
+function getPreviewMode() { return _previewMode; }
+function setPreviewModeChip() {
+	var chip = $("pe-preview-mode-chip");
+	if (!chip) return;
+	chip.textContent = "预览：客户端兜底渲染";
+	chip.setAttribute("data-mode", "client");
+	chip.title = "Astro 6.4 dev server POST body 会被 Vite 中间件吞掉，dev/prod 都走客户端 mini-markdown.mjs 兜底；mermaid/plantuml/katex 显示为占位，发布页会正常渲染";
+}
+async function renderPreview() {
 	var ta = $("pe-f-body"); var box = $("pe-preview");
-	if (!ta || !box || box.hidden) return;
-	fetch("/api/render-preview/", {
-		method: "POST",
-		headers: { "Content-Type": "application/json" },
-		body: JSON.stringify({ markdown: ta.value || "" }),
-	})
-		.then(function (r) { return r.ok ? r.text() : Promise.reject(); })
-		.then(function (html) { box.innerHTML = html; })
-		.catch(function () {});
+	if (!ta || !box) return;
+	var md = ta.value || "";
+
+	// 首次：chip 设置（提示用户当前是客户端渲染）
+	if (!$("pe-preview-mode-chip").getAttribute("data-mode")) setPreviewModeChip();
+
+	// 空 markdown → 显示占位
+	if (!md.trim()) {
+		box.setAttribute("data-empty", "true");
+		box.innerHTML = '<div class="pe-preview-empty">'
+			+ '<div class="pe-preview-empty-icon">✨</div>'
+			+ '<div class="pe-preview-empty-text">在左侧开始写作<br />预览将在这里实时出现</div>'
+			+ "</div>";
+		setPreviewStatus("");
+		return;
+	}
+	box.removeAttribute("data-empty");
+	setPreviewStatus("渲染中…", "is-loading");
+
+	// 客户端兜底渲染（统一走 mini-markdown）
+	renderPreviewFallback(md);
+}
+function renderPreviewFallback(md) {
+	var box = $("pe-preview");
+	if (!box) return;
+	try {
+		var html = renderMiniMarkdown(md);
+		box.innerHTML = html;
+		// 渲染后把预览滚动对齐到编辑区当前位置（同步开启时，按锚点相对联动，绝不跳回顶部）
+		if (_syncEnabled) _syncPreviewFromBody();
+		setPreviewStatus("✓ 客户端兜底 " + (new Date()).toLocaleTimeString("zh-CN", { hour12: false }), "");
+	} catch (err) {
+		box.innerHTML = '<div class="pe-md-placeholder"><span class="pe-md-placeholder-icon">⚠️</span><span>渲染失败：' + escHtml(err.message || String(err)) + "</span></div>";
+		setPreviewStatus("渲染失败", "is-error");
+	}
+}
+function setPreviewStatus(msg, kind) {
+	var el = $("pe-preview-status");
+	if (!el) return;
+	el.textContent = msg || "";
+	el.classList.remove("is-loading", "is-error");
+	if (kind) el.classList.add(kind);
 }
 function schedulePreview() {
 	if (_previewTimer) clearTimeout(_previewTimer);
 	_previewTimer = setTimeout(renderPreview, 400);
-}
-function togglePreview() {
-	var box = $("pe-preview"); var ta = $("pe-f-body");
-	if (!box || !ta) return;
-	box.hidden = !box.hidden;
-	if (!box.hidden) { ta.style.display = "none"; renderPreview(); }
-	else { ta.style.display = ""; }
 }
 
 // Markdown 工具栏
@@ -106,7 +184,12 @@ function mdAction(act) {
 		case "code": { var v = "`" + (sel || "代码") + "`"; set(v, start + 1, start + 1 + (sel || "代码").length); break; }
 		case "codeblock": { var v = "```\n" + (sel || "代码块") + "\n```"; set(v, start + 4, start + 4 + (sel || "代码块").length); break; }
 		case "link": { var v = "[" + (sel || "链接文字") + "](url)"; set(v, start, start + v.length); break; }
-		case "image": { var v = "![" + (sel || "图片描述") + "](url)"; set(v, start, start + v.length); break; }
+		case "image": {
+			// 直接打开文件选择器 → 走图床上传流程（与右侧「上传图片」按钮复用 pe-img-file）
+			var fileInput = $("pe-img-file");
+			if (fileInput) fileInput.click();
+			break;
+		}
 		case "quote": { var lines = (sel || "引用").split("\n").map(function (l) { return "> " + l; }).join("\n"); set(lines, start, start + lines.length); break; }
 		case "ul": { var lines = (sel || "项目").split("\n").map(function (l) { return "- " + l; }).join("\n"); set(lines, start, start + lines.length); break; }
 		case "ol": { var lines = (sel || "项目").split("\n").map(function (l, i) { return (i + 1) + ". " + l; }).join("\n"); set(lines, start, start + lines.length); break; }
@@ -185,8 +268,7 @@ async function handleImgUpload() {
 	var fileInput = $("pe-img-file");
 	if (!fileInput || !fileInput.files || !fileInput.files.length) return;
 	var title = ($("pe-f-title").value || "").trim();
-	if (!title) { setStatus($("pe-img-tip"), "⚠️ 请先填写标题，图片才能归到 /文章/<标题>/ 目录", "is-error"); return; }
-	var folder = "文章/" + title;
+	var folder = title ? "文章/" + title : "文章";
 	var files = Array.from(fileInput.files);
 	var tip = $("pe-img-tip");
 	var done = 0;
@@ -209,6 +291,16 @@ function insertImageMarkdown(url) {
 	var ta = $("pe-f-body"); if (!ta) return;
 	var md = "\n![](" + url + ")\n";
 	var start = ta.selectionStart || ta.value.length;
+	ta.value = ta.value.slice(0, start) + md + ta.value.slice(start);
+	ta.focus();
+	ta.selectionStart = ta.selectionEnd = start + md.length;
+	updateCharCount(); schedulePreview();
+}
+// 在光标处直接插入图片（用于「粘贴 URL」方式，不强制换行）
+function insertImageAtCursor(url) {
+	var ta = $("pe-f-body"); if (!ta) return;
+	var md = "![](" + url + ")";
+	var start = ta.selectionStart != null ? ta.selectionStart : ta.value.length;
 	ta.value = ta.value.slice(0, start) + md + ta.value.slice(start);
 	ta.focus();
 	ta.selectionStart = ta.selectionEnd = start + md.length;
@@ -535,6 +627,10 @@ function fillForm(fm, body, path) {
 	$("pe-f-draft").checked = fm.draft === true;
 	$("pe-f-body").value = body || "";
 	autoSizeTitle(); updateCharCount();
+	// textarea 设了新 value 后，浏览器不一定会自动滚回顶部，显式归零并触发一次预览同步
+	if (_peBodyEl) _peBodyEl.scrollTop = 0;
+	schedulePreview(); // 新增：内容载入后立刻触发预览（之前只有用户输入才刷新，初次加载看不到预览）
+	// 预览渲染后（renderPreviewFallback 里 _syncPreviewFromBody）会按锚点把 preview.scrollTop 对齐到编辑区当前位置
 }
 function clearForm() {
 	["pe-f-title","pe-f-slug","pe-f-cat","pe-f-desc","pe-f-cover","pe-f-cover-preview","pe-f-body"].forEach(function (id) {
@@ -695,7 +791,7 @@ function bind() {
 	$("pe-toolbar-save")?.addEventListener("click", function () { saveDraftLocal(); });
 	$("pe-toolbar-publish")?.addEventListener("click", function () { publish(); });
 	$("pe-toolbar-import-md")?.addEventListener("click", function () { $("pe-md-import")?.click(); });
-	$("pe-toolbar-preview")?.addEventListener("click", togglePreview);
+	// 预览按钮已删除：预览列常驻（编辑 | 预览 | 属性 三连），由 schedulePreview 实时触发渲染
 
 	// PAT 面板
 	$("pe-editor-pat")?.addEventListener("input", function () {
@@ -727,9 +823,139 @@ function bind() {
 	$("pe-f-title")?.addEventListener("input", autoSizeTitle);
 	$("pe-f-body")?.addEventListener("input", function () { updateCharCount(); schedulePreview(); });
 
+	// 滚动同步（编辑区 ↔ 预览区）：锚点锁定式
+	// 默认关：左右各自独立滚动。用户手动把两边滚到对齐位置后，点「同步」锁死这个相对位置；
+	// 之后以锚点相对位移 × 实时比例联动，不再跳回顶部比例（避免「本来对齐了点同步又异步」）。
+	// 注意：变量已在文件顶层声明，这里只赋值（不重复 var，否则作用域隔离导致顶层函数取不到）
+	_syncEnabled = localStorage.getItem("__pe_sync__") === "1"; // 默认关
+	_syncGuardSrc = null;
+	_syncAnchor = null;
+	_peBodyEl = $("pe-f-body");
+	_pePreviewEl = $("pe-preview");
+	// 若上次是「开」状态，载入时以双方当前位置（多为 0/0）作为锚点，不从顶部强制跳转
+	if (_syncEnabled && _peBodyEl && _pePreviewEl) {
+		_syncAnchor = { srcTop: _peBodyEl.scrollTop, dstTop: _pePreviewEl.scrollTop };
+	}
+	function applySyncBtn() {
+		var b = $("pe-toolbar-sync");
+		if (!b) return;
+		b.classList.toggle("is-active", _syncEnabled);
+		b.title = _syncEnabled
+			? "滚动同步：已锁定（当前位置为锚点，左右按比例联动；再点取消锁定，各自独立）"
+			: "滚动同步：未锁定（左右独立滚动；先把两边滚到对齐位置，再点此锁定联动）";
+	}
+	if (_peBodyEl && _pePreviewEl) {
+		// scroll 事件：仅在锁定后联动，并用 _syncGuardSrc 吞掉程序化滚动的回弹，防死循环
+		_peBodyEl.addEventListener("scroll", function () {
+			if (!_syncEnabled || !_syncAnchor) return;
+			if (_syncGuardSrc === _peBodyEl) { _syncGuardSrc = null; return; }
+			_syncPreviewFromBody();
+		}, { passive: true });
+		_pePreviewEl.addEventListener("scroll", function () {
+			if (!_syncEnabled || !_syncAnchor) return;
+			if (_syncGuardSrc === _pePreviewEl) { _syncGuardSrc = null; return; }
+			_syncBodyFromPreview();
+		}, { passive: true });
+		// 输入时若已锁定，按锚点把预览对齐到编辑区（内容增长后仍保持相对位置）
+		_peBodyEl.addEventListener("input", function () { if (_syncEnabled) _syncPreviewFromBody(); });
+		// 监听两边容器高度变化（图片/字体异步加载、撤销重做、粘贴大段），锁定时重对齐
+		if (typeof ResizeObserver !== "undefined") {
+			try {
+				var _ro = new ResizeObserver(function () { if (_syncEnabled) _syncPreviewFromBody(); });
+				_ro.observe(_peBodyEl);
+				_ro.observe(_pePreviewEl);
+			} catch (_e) { /* 老浏览器降级 */ }
+		}
+	}
+	var _syncBtn = $("pe-toolbar-sync");
+	if (_syncBtn) {
+		applySyncBtn();
+		_syncBtn.addEventListener("click", function () {
+			_syncEnabled = !_syncEnabled;
+			localStorage.setItem("__pe_sync__", _syncEnabled ? "1" : "0");
+			// 开启时记录当前两边位置为锚点，不跳不动；关闭时保留锚点备用，仅停止联动
+			if (_syncEnabled && _peBodyEl && _pePreviewEl) {
+				_syncAnchor = { srcTop: _peBodyEl.scrollTop, dstTop: _pePreviewEl.scrollTop };
+			}
+			applySyncBtn();
+		});
+	}
+
 	// 图片上传
 	$("pe-img-pick")?.addEventListener("click", function () { $("pe-img-file")?.click(); });
 	$("pe-img-file")?.addEventListener("change", handleImgUpload);
+
+	// 全屏编辑模式（隐藏外侧栏）—— 默认开启（最大化编辑区），localStorage 记忆用户偏好
+	var fsBtn = $("pe-toolbar-fullscreen");
+	if (fsBtn) {
+		var savedFs = localStorage.getItem("__pe_fullscreen__");
+		var fsOn = savedFs === null ? true : savedFs === "1"; // 默认开启
+		if (fsOn) document.body.classList.add("pe-fullscreen");
+		var syncBtn = function () {
+			var on = document.body.classList.contains("pe-fullscreen");
+			fsBtn.classList.toggle("is-active", on);
+			fsBtn.innerHTML = on ? "⤡ 收起" : "⤢ 全屏";
+			fsBtn.title = on ? "恢复左右侧栏" : "隐藏左右侧栏，最大化编辑区";
+		};
+		syncBtn();
+		fsBtn.addEventListener("click", function () {
+			document.body.classList.toggle("pe-fullscreen");
+			localStorage.setItem("__pe_fullscreen__", document.body.classList.contains("pe-fullscreen") ? "1" : "0");
+			syncBtn();
+			// 触发一次预览重排（侧栏宽度变化后容器宽度变了）
+			setTimeout(schedulePreview, 60);
+		});
+	}
+
+	// 属性栏折叠（默认收起，让编辑 + 预览区域翻倍）
+	var sideBtn = $("pe-toolbar-side");
+	if (sideBtn) {
+		var main = $("pe-editor-main");
+		var savedSide = localStorage.getItem("__pe_side__");
+		var collapsed = savedSide ? savedSide === "collapsed" : true; // 默认收起
+		if (main) main.setAttribute("data-side", collapsed ? "collapsed" : "expanded");
+		var syncSide = function () {
+			var c = main && main.getAttribute("data-side") === "collapsed";
+			sideBtn.classList.toggle("is-active", !c);
+		};
+		syncSide();
+		sideBtn.addEventListener("click", function () {
+			if (!main) return;
+			var nowCollapsed = main.getAttribute("data-side") === "collapsed";
+			main.setAttribute("data-side", nowCollapsed ? "expanded" : "collapsed");
+			localStorage.setItem("__pe_side__", nowCollapsed ? "expanded" : "collapsed");
+			syncSide();
+			setTimeout(schedulePreview, 60); // 容器宽度变化后重排预览
+		});
+	}
+
+	// 插入图片弹层（顶部「🖼 插入图片」触发）
+	var imgBtn = $("pe-toolbar-img");
+	var imgPop = $("pe-img-popover");
+	function closeImgPop() { if (imgPop) imgPop.hidden = true; }
+	if (imgBtn && imgPop) {
+		imgBtn.addEventListener("click", function (e) {
+			e.stopPropagation();
+			imgPop.hidden = !imgPop.hidden;
+			if (!imgPop.hidden) { var u = $("pe-img-url-input"); if (u) u.focus(); }
+		});
+		imgPop.addEventListener("click", function (e) { e.stopPropagation(); });
+		$("pe-img-upload-btn")?.addEventListener("click", function () { closeImgPop(); $("pe-img-file")?.click(); });
+		$("pe-img-pop-close")?.addEventListener("click", closeImgPop);
+		$("pe-img-url-insert")?.addEventListener("click", function () {
+			var u = $("pe-img-url-input");
+			var url = u && u.value.trim();
+			if (!url) { if (u) u.focus(); return; }
+			insertImageAtCursor(url);
+			if (u) u.value = "";
+			closeImgPop();
+		});
+		document.addEventListener("click", function (e) {
+			if (imgPop.hidden) return;
+			if (!imgPop.contains(e.target) && e.target !== imgBtn) closeImgPop();
+		});
+		document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !imgPop.hidden) closeImgPop(); });
+	}
 
 	// Markdown 工具栏
 	var mdTb = document.querySelector(".pe-md-toolbar");
