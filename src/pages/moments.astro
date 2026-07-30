@@ -638,24 +638,36 @@ function imgGridClass(n: number): string {
 		return items;
 	}
 
-	function bindLightboxButtons() {
-		const refs = getLb();
-		if (!refs) return;
-		// 重新绑定：每次 Swup 导航后 lb 是新元素，旧监听随旧元素被 GC
-		refs.lb.querySelector(".ss-lb-close")!.addEventListener("click", closeLightbox);
-		refs.prevBtn.addEventListener("click", () => nav(-1));
-		refs.nextBtn.addEventListener("click", () => nav(1));
-		refs.lb.addEventListener("click", (e) => {
-			if (e.target === refs.lb || e.target === refs.stage) closeLightbox();
-		});
-	}
-
-	// —— Document 级委托（跨 SPA 持久）——
+	// 灯箱所有交互统一走「document 级事件委托」：
+	//   - 监听挂在 document 上、用 closest() 判定目标，不依赖具体元素实例；
+	//   - 灯箱元素每次 Swup 软导航都会被销毁重建，委托方式因此永远有效，
+	//     无需在 astro:page-load 里重新绑定（旧写法会因元素被替换而失效 → 关不掉/切不了）。
 	document.addEventListener("click", (e) => {
-		if (e.button !== 0) return; // 仅左键
-		if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return; // 修饰键 → 浏览器原生
-		const imgLink = (e.target as Element).closest?.('a.ss-img[data-type="image"]');
-		const vidThumb = (e.target as Element).closest?.('.ss-video-thumb[data-type="video"]');
+		if (e.button !== 0) return; // 仅响应鼠标左键
+		const t = e.target as Element | null;
+		if (!t) return;
+		const lb = document.getElementById("ss-lightbox");
+
+		// —— 灯箱已打开：优先处理控件（关闭 / 上一张 / 下一张 / 背景关闭）——
+		if (lb && !lb.hidden) {
+			if (t.closest(".ss-lb-close")) {
+				if (!(e.ctrlKey || e.metaKey || e.shiftKey || e.altKey)) {
+					e.preventDefault();
+					closeLightbox();
+				}
+				return;
+			}
+			if (t.closest(".ss-lb-prev")) { e.preventDefault(); nav(-1); return; }
+			if (t.closest(".ss-lb-next")) { e.preventDefault(); nav(1); return; }
+			// 点背景（灯箱本身）或舞台空白区 → 关闭；点图片/视频本身不打断
+			const stage = lb.querySelector(".ss-lb-stage");
+			if (t === lb || t === stage) { closeLightbox(); return; }
+		}
+
+		// —— 灯箱未打开：缩略图点击 → 打开灯箱 ——
+		if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey) return; // 修饰键 → 浏览器原生新标签
+		const imgLink = t.closest('a.ss-img[data-type="image"]');
+		const vidThumb = t.closest('.ss-video-thumb[data-type="video"]');
 		if (imgLink) {
 			e.preventDefault();
 			const card = imgLink.closest(".ss-card, .ss-pinned-item");
@@ -693,11 +705,8 @@ function imgGridClass(n: number): string {
 		else if (e.key === "ArrowRight") nav(1);
 	});
 
-	// Swup 软导航前关闭灯箱，避免内容错位
+	// Swup 软导航前关闭灯箱，避免内容错位（监听挂 document 上，跨导航持久）
 	document.addEventListener("astro:before-swap", () => {
 		try { closeLightbox(); } catch (_) {}
 	});
-
-	// 每次页面加载（含首屏 + SPA 软导航后）重新绑定灯箱按钮
-	document.addEventListener("astro:page-load", bindLightboxButtons);
 </script>
