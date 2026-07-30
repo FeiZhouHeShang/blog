@@ -2,8 +2,25 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
+// [关键词: 功能说明书-排除约定]
+// --------------------------------------------------------------------------
+// 每个内容文件夹（posts / spec / moments）里可以放一份「功能说明书.md」
+// （或 README.md、下划线开头文件），给维护者看操作手册。
+// 这些文档【绝不能】被前端当成真实内容渲染，也【不能】出现在后台编辑列表。
+//
+// Astro 的 glob loader 不支持 exclude 参数（它直接把 pattern 丢给 tinyglobby），
+// 所以这里用「否定模式数组」来排除文档文件（先写匹配 .md/.mdx 的正模式，
+// 再写以 ! 开头的否定模式，例如 "!**/功能说明书.md" 这类）：
+//   pattern: ["**/*.md 匹配所有", "!**/功能说明书.md", "!**/README.md", "!**/_*.md"]
+// 已实测：肯定模式在前、否定模式在后，tinyglobby 会正确剔除这些文档。
+// 同时 .pages.yml 的对应集合也要加同样的 exclude，防止后台把文档当可编辑条目。
+const DOC_EXCLUDE = ["!**/功能说明书.md", "!**/README.md", "!**/_*.md"];
+
 const postsCollection = defineCollection({
-	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/posts" }),
+	loader: glob({
+		pattern: ["**/*.{md,mdx}", ...DOC_EXCLUDE],
+		base: "./src/content/posts",
+	}),
 	schema: z.object({
 		title: z.string(),
 		published: z.date(),
@@ -32,7 +49,10 @@ const postsCollection = defineCollection({
 });
 
 const specCollection = defineCollection({
-	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/spec" }),
+	loader: glob({
+		pattern: ["**/*.{md,mdx}", ...DOC_EXCLUDE],
+		base: "./src/content/spec",
+	}),
 	schema: z.object({}),
 });
 
@@ -58,7 +78,10 @@ const specCollection = defineCollection({
  *   下方 schema 用 z.union 兼容两种形态；页面渲染时统一用 normList() 拍平为字符串数组。
  */
 const momentsCollection = defineCollection({
-	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/moments" }),
+	loader: glob({
+		pattern: ["**/*.{md,mdx}", ...DOC_EXCLUDE],
+		base: "./src/content/moments",
+	}),
 	schema: z.object({
 		date: z.string().optional().default(""),
 		location: z.string().optional().default(""),

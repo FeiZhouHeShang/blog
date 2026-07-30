@@ -6,9 +6,9 @@ tags:
   - 新功能
 pinned: false
 images:
-  - https://tc.d15.cc.cd/file/日常吐槽/_YM0Y__NEN9G_DQ_VQ_RTWM(1).png
+  - https://tc.d15.cc.cd/file/日常吐槽/_YM0Y__NEN9G_DQ_VQ_RTWM.png
 videos:
-  - https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4
+  - https://tencentcdn.production.link3.cc/files/upload_video/link3_1721236315623/uploadvideo_1721238922179.mp4
 ---
 
 **测试新说说样式** —— 文字为主，下面会显示一张图片缩略图（点击放大看）和一个视频缩略图（点击后加载播放）。
