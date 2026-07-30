@@ -104,7 +104,7 @@ function imgGridClass(n: number): string {
 							return (
 								<div class="ss-pinned-item">
 									<a class="ss-pinned-go" href={`#${m.id}`}>查看 →</a>
-									<div class="ss-pinned-text" set:html={renderMarkdown(m.body)} />
+									<div class="ss-pinned-text" set:html={renderMarkdown(m.body ?? "")} />
 									{total > 0 && (
 										<div class={imgGridClass(total)}>
 											{pimgs.map((src) => (
@@ -156,7 +156,7 @@ function imgGridClass(n: number): string {
 							</header>
 							<div
 								class="ss-card-content prose dark:prose-invert max-w-none"
-								set:html={renderMarkdown(m.body)}
+								set:html={renderMarkdown(m.body ?? "")}
 							/>
 							{total > 0 && (
 								<div class={imgGridClass(total)}>

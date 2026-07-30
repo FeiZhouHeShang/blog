@@ -2,26 +2,6 @@
   {
     "value": "学习文档",
     "label": "学习文档",
-    "count": 9
-  },
-  {
-    "value": "设计文档",
-    "label": "设计文档",
-    "count": 5
-  },
-  {
-    "value": "实践笔记",
-    "label": "实践笔记",
-    "count": 4
-  },
-  {
-    "value": "部署文档",
-    "label": "部署文档",
-    "count": 2
-  },
-  {
-    "value": "博客指南",
-    "label": "博客指南",
     "count": 1
   }
 ]

@@ -48,7 +48,7 @@ export class TOCManager {
 			document.querySelector("#main-grid > main #swup-container") ||
 			document.querySelector("#main-grid > main") ||
 			document.querySelector("#main-grid > section");
-		const scope: ParentNode = mainCol || document.body;
+		const scope = (mainCol ?? document.body) as ParentNode;
 		return (
 			scope.querySelector(".custom-md") ||
 			scope.querySelector(".prose") ||

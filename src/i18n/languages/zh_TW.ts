@@ -352,6 +352,8 @@ export const zh_TW: Translation = {
 	[Key.qqGroup]: "我的QQ",
 	[Key.navPosts]: "文章",
 	[Key.navMy]: "我的",
+	[Key.navMoments]: "動態",
+	[Key.navMoviesGames]: "影視遊戲",
 	[Key.calendarDescription]: "節日、生日、安排與文章發布的綜合日曆",
 	[Key.calendarToday]: "今日",
 	[Key.calendarTomorrow]: "明日",

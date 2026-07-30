@@ -486,7 +486,7 @@ const siteLang = lang.replace("_", "-");
   (function observeSidebarPosition() {
     const left = document.getElementById("left-sidebar-dynamic");
     const right = document.getElementById("right-sidebar-dynamic");
-    const targets = [left, right].filter(Boolean);
+    const targets = [left, right].filter((x): x is HTMLElement => x !== null);
     if (!targets.length) return;
     const mo = new MutationObserver(() => syncSidebarPosition());
     targets.forEach((el) => mo.observe(el, { childList: true, subtree: false }));

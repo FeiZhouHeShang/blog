@@ -17,7 +17,11 @@ export async function GET() {
 }
 
 export async function POST({ request }) {
-	let body = {};
+	interface PreviewBody {
+		markdown?: string;
+		frontmatter?: Record<string, unknown>;
+	}
+	let body: PreviewBody = {};
 	try {
 		const txt = await request.text();
 		body = txt ? JSON.parse(txt) : {};

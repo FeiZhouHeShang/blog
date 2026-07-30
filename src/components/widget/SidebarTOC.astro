@@ -6,7 +6,9 @@ import I18nKey from "@/i18n/i18nKey";
 import { i18n } from "@/i18n/translation";
 
 interface Props {
-	headings: MarkdownHeading[];
+	// headings 实际由客户端 TOCManager 从 DOM 动态生成，组件模板并不使用，
+	// 故设为可选以兼容仅传 slot 的调用点（list.astro / posts/[...slug].astro）。
+	headings?: MarkdownHeading[];
 	class?: string;
 	style?: string;
 }

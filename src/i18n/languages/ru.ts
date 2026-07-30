@@ -363,6 +363,8 @@ export const ru: Translation = {
 	[Key.qqGroup]: "Мой QQ",
 	[Key.navPosts]: "Статьи",
 	[Key.navMy]: "Моё",
+	[Key.navMoments]: "Моменты",
+	[Key.navMoviesGames]: "Фильмы и игры",
 	[Key.calendarDescription]:
 		"Праздники, дни рождения, события и публикации в одном месте",
 	[Key.calendarToday]: "Сегодня",
