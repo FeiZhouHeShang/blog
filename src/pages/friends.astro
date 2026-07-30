@@ -343,10 +343,14 @@ const description =
             var py = (e.clientY - r.top) / r.height - 0.5;
             inner.style.setProperty("--ry", (px * 9).toFixed(2) + "deg");
             inner.style.setProperty("--rx", (-py * 9).toFixed(2) + "deg");
+            // 虹彩随鼠标方向旋转：从卡片中心指向光标的角度
+            var ang = (Math.atan2(py, px) * 180) / Math.PI + 90;
+            link.style.setProperty("--fc-angle", ang.toFixed(1) + "deg");
           });
           link.addEventListener("pointerleave", function () {
             inner.style.setProperty("--rx", "0deg");
             inner.style.setProperty("--ry", "0deg");
+            link.style.setProperty("--fc-angle", "0deg");
           });
         });
       }

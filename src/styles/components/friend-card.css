@@ -1,11 +1,16 @@
 /* ============================================
-   友链卡片 — 紧凑 + 交互特效（鼠标跟随 3D 倾斜 / 薄荷辉光 /
-   头像光环旋转 / 斜向扫光 / 顶部高亮条 / 标签胶囊点亮）
-   - 严格复用博客单色 token（x.ai 极简灰阶）
-   - 仅引入一个克制的薄荷强调色 --fc-accent（博客历史 hue 165），
-     且只在交互时点亮：保留极简气质的同时"有特色、吸引人"
-   - 底部只展示标签胶囊，不再显示域名
+   友链卡片 — 五彩斑斓的黑（全息虹彩 / oil-slick / aurora）
+   - 黑底磨砂玻璃表面，文字浅色
+   - 流动虹彩：描边光环 / 顶部高亮条 / 头像环 / 辉光 随鼠标方向旋转
+   - 鼠标跟随 3D 倾斜（friends.astro 注入 --rx/--ry）
    ============================================ */
+
+/* 让 --fc-angle 可被 CSS/JS 实时驱动（虹彩旋转的关键） */
+@property --fc-angle {
+	syntax: "<angle>";
+	initial-value: 0deg;
+	inherits: true;
+}
 
 .friend-card-link {
 	position: relative;
@@ -18,12 +23,30 @@
 }
 
 .friend-card-link:focus-visible {
-	outline: 2px solid var(--fc-accent);
+	outline: 2px solid #8a5cff;
 	outline-offset: 3px;
 	border-radius: var(--radius-large);
 }
 
-/* 顶部高亮条：默认收起，hover 从左滑入 */
+/* 辉光晕（虹彩模糊，hover 时点亮）—— 仅作为卡片外部光晕 */
+.friend-card-link::after {
+	content: "";
+	position: absolute;
+	inset: -10px;
+	border-radius: calc(var(--radius-large) + 10px);
+	background: var(--fc-iris-conic);
+	filter: blur(14px) saturate(160%);
+	opacity: 0;
+	transition: opacity 320ms cubic-bezier(0.16, 1, 0.3, 1);
+	z-index: 0;
+	pointer-events: none;
+}
+
+.friend-card-link:hover::after {
+	opacity: 0.5;
+}
+
+/* 顶部高亮条：虹彩渐变，默认收起，hover 从左滑入 */
 .friend-card-link::before {
 	content: "";
 	position: absolute;
@@ -32,7 +55,7 @@
 	right: 0;
 	height: 2px;
 	border-radius: var(--radius-large) var(--radius-large) 0 0;
-	background: linear-gradient(90deg, var(--fc-accent), transparent 82%);
+	background: var(--fc-iris);
 	transform: scaleX(0);
 	transform-origin: left center;
 	transition: transform 360ms cubic-bezier(0.16, 1, 0.3, 1);
@@ -43,28 +66,35 @@
 	transform: scaleX(1);
 }
 
-/* 可见卡片表面：承载 3D 倾斜 + 抬升 + 辉光 */
+/* 可见卡片表面：黑底玻璃 + 虹彩描边 + 3D 倾斜 + 抬升 */
 .friend-card-inner {
 	--rx: 0deg;
 	--ry: 0deg;
 	--ty: 0px;
 	--sc: 1;
 	position: relative;
+	z-index: 1;
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
 	gap: 0.55rem;
 	padding: 0.85rem 0.9rem 0.8rem;
-	background: var(--float-panel-bg);
-	border: 1px solid var(--line-divider);
 	border-radius: var(--radius-large);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+	/* 两层背景：内填黑玻璃，1px 描边走虹彩锥（尊重圆角）*/
+	background:
+		linear-gradient(var(--fc-surface), var(--fc-surface)),
+		var(--fc-iris-conic);
+	background-origin: border-box;
+	background-clip: padding-box, border-box;
+	border: 1px solid transparent;
+	box-shadow:
+		0 1px 2px rgba(0, 0, 0, 0.25),
+		inset 0 1px 0 rgba(255, 255, 255, 0.06);
 	transform: perspective(700px) rotateX(var(--rx)) rotateY(var(--ry))
 		translateY(var(--ty)) scale(var(--sc));
 	transform-style: preserve-3d;
 	transition:
 		transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
-		border-color 240ms ease,
 		box-shadow 240ms ease,
 		background-color 240ms ease;
 	overflow: hidden;
@@ -73,14 +103,12 @@
 .friend-card-link:hover .friend-card-inner {
 	--ty: -6px;
 	--sc: 1.025;
-	border-color: var(--fc-accent);
-	background: var(--btn-card-bg-hover);
 	box-shadow:
-		0 16px 38px var(--fc-accent-glow),
-		0 2px 6px rgba(0, 0, 0, 0.05);
+		0 18px 40px var(--fc-glow),
+		inset 0 1px 0 rgba(255, 255, 255, 0.10);
 }
 
-/* 斜向扫光：hover 时高光掠过一次 */
+/* 斜向扫光：hover 时高光掠过一次（黑底上用冷白） */
 .friend-card-inner::after {
 	content: "";
 	position: absolute;
@@ -91,21 +119,12 @@
 	background: linear-gradient(
 		105deg,
 		transparent 0%,
-		rgba(255, 255, 255, 0.38) 50%,
+		rgba(255, 255, 255, 0.28) 50%,
 		transparent 100%
 	);
 	transform: translateX(-160%) skewX(-12deg);
 	pointer-events: none;
 	z-index: 3;
-}
-
-:root.dark .friend-card-inner::after {
-	background: linear-gradient(
-		105deg,
-		transparent 0%,
-		rgba(255, 255, 255, 0.1) 50%,
-		transparent 100%
-	);
 }
 
 .friend-card-link:hover .friend-card-inner::after {
@@ -122,7 +141,7 @@
 }
 
 /* ============================================
-   顶部 — 类型标签 + 外链箭头
+   顶部 — 类型标签 + 外链箭头（浅色，hover 变虹彩文字）
    ============================================ */
 .friend-card-head {
 	display: flex;
@@ -136,18 +155,21 @@
 	font-weight: 700;
 	letter-spacing: 0.16em;
 	text-transform: uppercase;
-	color: var(--content-meta);
+	color: var(--fc-meta);
 	transition: color 240ms ease;
 }
 
 .friend-card-link:hover .friend-card-tag {
-	color: var(--fc-accent);
+	background: var(--fc-iris);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
 }
 
 .friend-card-arrow {
 	width: 0.8rem;
 	height: 0.8rem;
-	color: var(--content-meta);
+	color: var(--fc-meta);
 	transition:
 		transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
 		color 240ms ease;
@@ -155,11 +177,14 @@
 
 .friend-card-link:hover .friend-card-arrow {
 	transform: translate(3px, -3px);
-	color: var(--fc-accent);
+	background: var(--fc-iris);
+	-webkit-background-clip: text;
+	background-clip: text;
+	color: transparent;
 }
 
 /* ============================================
-   头像 — 干净圆形 + 悬停虚线光环旋转 + 薄荷描边/光晕
+   头像 — 黑底圆形 + 悬停虹彩虚线光环旋转 + 虹彩描边/光晕
    ============================================ */
 .friend-card-avatar-wrap {
 	position: relative;
@@ -176,7 +201,7 @@
 	height: 3.5rem;
 	margin: -1.75rem 0 0 -1.75rem;
 	border-radius: 50%;
-	border: 1.5px dashed var(--fc-accent);
+	border: 1.5px dashed var(--fc-iris-conic);
 	opacity: 0;
 	transform: scale(0.6) rotate(0deg);
 	transition:
@@ -187,7 +212,7 @@
 }
 
 .friend-card-link:hover .friend-card-ring {
-	opacity: 0.9;
+	opacity: 0.95;
 	transform: scale(1) rotate(40deg);
 	animation: fc-ring-spin 7s linear infinite;
 }
@@ -204,9 +229,9 @@
 	height: 3rem;
 	flex-shrink: 0;
 	border-radius: 50%;
-	border: 1px solid var(--line-divider);
+	border: 1px solid var(--fc-line-strong);
 	overflow: hidden;
-	background: var(--inline-code-bg);
+	background: #1c1c24;
 	transition:
 		transform 240ms cubic-bezier(0.16, 1, 0.3, 1),
 		border-color 240ms ease,
@@ -216,8 +241,8 @@
 
 .friend-card-link:hover .friend-card-avatar {
 	transform: scale(1.06);
-	border-color: var(--fc-accent);
-	box-shadow: 0 0 0 3px var(--fc-accent-soft);
+	border-color: #8a5cff;
+	box-shadow: 0 0 0 3px rgba(138, 92, 255, 0.35);
 }
 
 .friend-card-avatar__img {
@@ -247,20 +272,20 @@
 	justify-content: center;
 	font-size: 1.15rem;
 	font-weight: 700;
-	color: var(--content-meta);
-	background: var(--inline-code-bg);
+	color: var(--fc-meta);
+	background: #1c1c24;
 	line-height: 1;
 }
 
 /* ============================================
-   名字 — 小号、深色、单行省略
+   名字 — 浅色、小号、单行省略
    ============================================ */
 .friend-card-name {
 	margin: 0;
 	max-width: 100%;
 	font-size: 0.95rem;
 	font-weight: 700;
-	color: var(--deep-text);
+	color: var(--fc-text);
 	text-align: center;
 	line-height: 1.3;
 	letter-spacing: -0.01em;
@@ -270,7 +295,7 @@
 }
 
 /* ============================================
-   描述 — 2 行 clamp，紧凑可读
+   描述 — 2 行 clamp，浅色可读
    ============================================ */
 .friend-card-desc {
 	margin: 0;
@@ -278,8 +303,8 @@
 	font-size: 0.8rem;
 	font-weight: 400;
 	line-height: 1.5;
-	color: var(--deep-text);
-	opacity: 0.72;
+	color: var(--fc-text);
+	opacity: 0.68;
 	text-align: center;
 	display: -webkit-box;
 	-webkit-box-orient: vertical;
@@ -289,7 +314,7 @@
 }
 
 /* ============================================
-   底部 — 仅标签胶囊（不再显示域名）
+   底部 — 仅标签胶囊（虹彩软底，hover 点亮）
    ============================================ */
 .friend-card-foot {
 	display: flex;
@@ -298,12 +323,12 @@
 	gap: 0.4rem;
 	flex-wrap: wrap;
 	padding-top: 0.5rem;
-	border-top: 1px solid var(--line-divider);
+	border-top: 1px solid var(--fc-line);
 	transition: border-color 240ms ease;
 }
 
 .friend-card-link:hover .friend-card-foot {
-	border-color: var(--fc-accent-soft);
+	border-color: var(--fc-line-strong);
 }
 
 .friend-card-tags {
@@ -317,9 +342,9 @@
 	font-size: 0.6875rem;
 	font-weight: 600;
 	letter-spacing: 0.02em;
-	color: var(--content-meta);
+	color: var(--fc-meta);
 	padding: 0.15rem 0.5rem;
-	border: 1px solid var(--line-divider);
+	border: 1px solid var(--fc-line);
 	border-radius: 999px;
 	transition:
 		color 240ms ease,
@@ -328,13 +353,13 @@
 }
 
 .friend-card-link:hover .friend-card-chip {
-	color: var(--fc-accent);
-	border-color: var(--fc-accent-soft);
-	background: var(--fc-accent-soft);
+	color: var(--fc-text);
+	border-color: transparent;
+	background: var(--fc-iris-soft);
 }
 
 /* ============================================
-   减少动画偏好
+   减少动画偏好 / 触屏
    ============================================ */
 @media (prefers-reduced-motion: reduce) {
 	.friend-card-inner,

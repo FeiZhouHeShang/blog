@@ -157,21 +157,30 @@
 
   --color-selection-bar: linear-gradient(to right, oklch(0.85 0 0), oklch(0.55 0 0), oklch(0.25 0 0))
 
-/* ===== 友链卡片 — 复用博客单色 token + 一个克制的薄荷强调色 =====
-   博客设计原则（variables.styl 第 15-17 行）：极简中性灰阶，强制无饱和色块。
-   卡片底色/描边/文字全部复用博客中性 token；仅引入 --fc-accent
-   （博客历史 hue 165 薄荷绿）作为"交互强调色"，且只在 hover/倾斜等
-   交互时点亮（辉光、光环、高亮条、标签胶囊），静止态仍是纯灰阶——
-   既保留 x.ai 极简气质，又让友链"有特色、能吸引人申请"。 */
+/* ===== 友链卡片 — 五彩斑斓的黑（全息虹彩 / oil-slick / aurora）=====
+   设计意图：实色黑面卡 + 流动的全息彩虹描边与外部辉光。
+   - 表面为深实色黑（双主题各自微调，让卡片从页面背景"浮"出来）
+   - 强调色不再是单色，而是一组虹彩渐变（紫→蓝→青→绿→金→橙→粉）
+   - 虹彩随鼠标方向实时旋转（见 friends.astro bindTilt），呈现"五彩斑斓"
+   - 文字用浅色（黑底上的可读浅灰/白）
+   - 博客"极简中性灰阶"原则由卡片自身承载的虹彩背书打破，
+     这是用户明确要求的视觉语言变更（colorful black）。 */
 :root
-  --fc-accent: #10b981
-  --fc-accent-soft: rgba(16, 185, 129, 0.20)
-  --fc-accent-glow: rgba(16, 185, 129, 0.32)
+  --fc-surface: #15151b
+  --fc-text: #f5f5f7
+  --fc-meta: rgba(245, 245, 247, 0.60)
+  --fc-line: rgba(255, 255, 255, 0.10)
+  --fc-line-strong: rgba(255, 255, 255, 0.22)
+  /* 线性虹彩：用于顶部高亮条、文字剪裁、胶囊软底 */
+  --fc-iris: linear-gradient(120deg, #ff2e97, #8a5cff, #2ec5ff, #22e0a1, #f7d020, #ff7a2e, #ff2e97)
+  /* 锥形虹彩：用于描边光环、辉光（随 --fc-angle 旋转）*/
+  --fc-iris-conic: conic-gradient(from var(--fc-angle, 0deg), #ff2e97, #8a5cff, #2ec5ff, #22e0a1, #f7d020, #ff7a2e, #ff2e97)
+  --fc-iris-soft: linear-gradient(120deg, rgba(255, 46, 151, 0.22), rgba(46, 197, 255, 0.22), rgba(247, 208, 32, 0.20))
+  --fc-glow: rgba(138, 92, 255, 0.40)
 
 :root.dark
-  --fc-accent: #34d399
-  --fc-accent-soft: rgba(52, 211, 153, 0.22)
-  --fc-accent-glow: rgba(52, 211, 153, 0.38)
+  --fc-surface: #1a1a22
+  --fc-glow: rgba(138, 92, 255, 0.48)
 
 /* ===== 阴影变量（仅保留实际使用的） ===== */
 :root
