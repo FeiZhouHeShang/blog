@@ -122,7 +122,7 @@ content:
           template: "{primary}.md"
           field: create
         # 排除「功能说明书.md / README.md / _*.md」等文档文件，防止后台把维护手册当可编辑文章
-        exclude: ["**/images/**", "**/*.avif", "**/*.webp", "**/*.png", "**/*.jpg", "**/功能说明书.md", "**/README.md", "**/_*.md"]
+        exclude: ["**/images/**", "**/*.avif", "**/*.webp", "**/*.png", "**/*.jpg", "**/*功能说明书*.md", "**/README.md", "**/_*.md"]
         view:
           primary: title
           fields: [title, published, tags, category, draft, pinned]
@@ -527,7 +527,7 @@ content:
         path: src/content/moments
         format: yaml-frontmatter
         # 排除「功能说明书.md / README.md / _*.md」等文档文件，防止后台把维护手册当可编辑说说
-        exclude: ["**/功能说明书.md", "**/README.md", "**/_*.md"]
+        exclude: ["**/*功能说明书*.md", "**/README.md", "**/_*.md"]
         filename:
           # 新建时自己填一个英文短文件名（不带 .md），作为锚点 id，保持唯一
           field: create

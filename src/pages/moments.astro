@@ -143,9 +143,14 @@ function imgGridClass(n: number): string {
 								<img class="ss-card-avatar" src={avatarSrc} alt={nickname} loading="lazy" />
 								<div class="ss-card-user">
 									<span class="ss-card-name">{nickname}</span>
-									<time class="ss-card-time" datetime={iso} data-iso={iso}>
-										{m.data.date || "刚刚"}
-									</time>
+							<time class="ss-card-time" datetime={iso} data-iso={iso}>
+								{m.data.date || "刚刚"}
+							</time>
+							{
+								m.data.location && (
+									<span class="ss-card-loc">· {m.data.location}</span>
+								)
+							}
 								</div>
 								{m.data.pinned && <span class="ss-pin-flag">📌 置顶</span>}
 							</header>
@@ -328,6 +333,10 @@ function imgGridClass(n: number): string {
 	}
 	.ss-card-time {
 		font-size: 0.72rem; color: var(--content-meta);
+	}
+	.ss-card-loc {
+		font-size: 0.72rem; color: var(--content-meta);
+		margin-left: 0.4rem;
 	}
 	.ss-pin-flag {
 		margin-left: auto;
