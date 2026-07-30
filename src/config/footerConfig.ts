@@ -23,10 +23,5 @@ export const footerConfig: FooterConfig = {
 	// Powered by 信息
 	poweredBy: [
 		{ label: "框架", name: "Astro", href: "https://astro.build" },
-		{
-			label: "主题",
-			name: "Firefly",
-			href: "https://github.com/CuteLeaf/Firefly",
-		},
 	],
 };

@@ -60,10 +60,6 @@ let drag: DragState = createDragState();
 let tiltX = 0;
 let tiltY = 0;
 
-// ===== 图片 =====
-let ballImg: HTMLImageElement | null = null;
-let imgLoaded = false;
-
 // ===== 链接 =====
 let linkAreas: LinkHitArea[] = [];
 let hoveredLink: string | null = null;
@@ -480,12 +476,8 @@ let visibilityObserver: IntersectionObserver | null = null;
 onMount(() => {
 	onResize();
 
-	ballImg = new Image();
-	ballImg.onload = () => {
-		imgLoaded = true;
-	};
-	ballImg.src = "/assets/images/about.webp";
-
+	// [已修改] 2026-07-30 移除原作者 about.webp 弹球贴图，
+	// 球体回落到下方 render() 中的纯色 fallback（#444 / #ddd）
 	// IntersectionObserver：离开视口时暂停渲染循环
 	if (container) {
 		visibilityObserver = new IntersectionObserver(
@@ -511,7 +503,6 @@ onDestroy(() => {
 	clearCache();
 	paraLayouts = [];
 	paragraphs = [];
-	ballImg = null;
 });
 </script>
 

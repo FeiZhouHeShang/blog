@@ -114,8 +114,8 @@ export const siteConfig: SiteConfig = {
 	pages: {
 		// 友链页面开关
 		friends: true,
-		// 赞助页面开关
-		sponsor: true,
+		// 赞助页面开关（已关闭，2026-07-30）
+		sponsor: false,
 		// 留言板页面开关（已移除：留言板页面与组件整体删除，Waline 是原作者私人服务器）
 		guestbook: false,
 		// 相册页面开关
