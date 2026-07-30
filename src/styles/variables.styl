@@ -157,9 +157,21 @@
 
   --color-selection-bar: linear-gradient(to right, oklch(0.85 0 0), oklch(0.55 0 0), oklch(0.25 0 0))
 
-/* ===== 友链卡片 — 直接复用博客单色 token，删除独立的糖果色调色板 =====
+/* ===== 友链卡片 — 复用博客单色 token + 一个克制的薄荷强调色 =====
    博客设计原则（variables.styl 第 15-17 行）：极简中性灰阶，强制无饱和色块。
-   --primary 色度为 0，友链卡片也应严格遵循，不另设饱和色变量。 */
+   卡片底色/描边/文字全部复用博客中性 token；仅引入 --fc-accent
+   （博客历史 hue 165 薄荷绿）作为"交互强调色"，且只在 hover/倾斜等
+   交互时点亮（辉光、光环、高亮条、标签胶囊），静止态仍是纯灰阶——
+   既保留 x.ai 极简气质，又让友链"有特色、能吸引人申请"。 */
+:root
+  --fc-accent: #10b981
+  --fc-accent-soft: rgba(16, 185, 129, 0.20)
+  --fc-accent-glow: rgba(16, 185, 129, 0.32)
+
+:root.dark
+  --fc-accent: #34d399
+  --fc-accent-soft: rgba(52, 211, 153, 0.22)
+  --fc-accent-glow: rgba(52, 211, 153, 0.38)
 
 /* ===== 阴影变量（仅保留实际使用的） ===== */
 :root

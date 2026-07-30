@@ -282,10 +282,11 @@ const description =
               || container.querySelector('[data-tag="all"]');
             if (activeBtn) updateIndicator(container, activeBtn);
           }
-          if (root.querySelector("[data-friends-grid]")) {
-            render(root);
-          }
-        });
+        if (root.querySelector("[data-friends-grid]")) {
+          render(root);
+        }
+        bindTilt();
+      });
       }
 
       // 头像按需加载：卡片可见时才把 data-src 注入 src 触发请求。
@@ -324,6 +325,30 @@ const description =
           wrap.classList.remove("is-error");
           wrap.classList.add("is-loaded");
         }
+      }
+
+      // 鼠标跟随 3D 倾斜特效（仅精确指针 + 非减弱动画时启用）
+      function bindTilt() {
+        var fine = window.matchMedia && window.matchMedia("(pointer: fine)").matches;
+        var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (!fine || reduce) return;
+        document.querySelectorAll(".friend-card-link").forEach(function (link) {
+          if (link.dataset.tiltBound) return;
+          link.dataset.tiltBound = "1";
+          var inner = link.querySelector(".friend-card-inner");
+          if (!inner) return;
+          link.addEventListener("pointermove", function (e) {
+            var r = link.getBoundingClientRect();
+            var px = (e.clientX - r.left) / r.width - 0.5;
+            var py = (e.clientY - r.top) / r.height - 0.5;
+            inner.style.setProperty("--ry", (px * 9).toFixed(2) + "deg");
+            inner.style.setProperty("--rx", (-py * 9).toFixed(2) + "deg");
+          });
+          link.addEventListener("pointerleave", function () {
+            inner.style.setProperty("--rx", "0deg");
+            inner.style.setProperty("--ry", "0deg");
+          });
+        });
       }
 
       init();

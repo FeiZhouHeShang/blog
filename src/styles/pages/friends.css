@@ -7,10 +7,17 @@
 	grid-template-columns: repeat(3, 1fr);
 	/* 顶部对齐，纸张本体的悬停位移不改变网格轨道 */
 	align-items: start;
-	/* 给上方纸张的阴影和下方卡片胶带留出独立呼吸空间 */
-	gap: 1.75rem 0.75rem;
+	/* 紧凑：缩小卡片间距，让友链以更密的小瓷砖呈现 */
+	gap: 1.25rem 0.75rem;
 	padding-top: 1rem;
 	padding-bottom: 1rem;
+}
+
+/* 超宽屏（两侧栏均隐藏之外仍有富余宽度）时再挤一列，更密 */
+@media (min-width: 1500px) {
+	.friends-grid {
+		grid-template-columns: repeat(4, 1fr);
+	}
 }
 
 /* 首屏防闪烁：JS 渲染分页前，仅展示第一页（前 9 个）。
@@ -19,13 +26,13 @@
 	display: none;
 }
 
-@media (max-width: 1024px) {
+@media (max-width: 900px) {
 	.friends-grid {
 		grid-template-columns: repeat(2, 1fr);
 	}
 }
 
-@media (max-width: 640px) {
+@media (max-width: 520px) {
 	.friends-grid {
 		grid-template-columns: 1fr;
 	}
