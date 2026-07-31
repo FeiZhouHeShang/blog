@@ -1008,6 +1008,17 @@ const STAR_PATH =
 			10759: "动作冒险", 10765: "科幻", 9648: "悬疑", 27: "恐怖",
 			10749: "爱情", 36: "历史", 14: "奇幻", 878: "科幻",
 		};
+		// TMDB genre_id → 中文副标签（用于自动匹配后写入 tags 字段）
+		// 覆盖电影 + 电视剧全部官方 genre，避免漏标。
+		var TMDB_TAG_NAMES = {
+			28: "动作", 12: "冒险", 16: "动画", 35: "喜剧", 80: "犯罪",
+			99: "纪录片", 18: "剧情", 10751: "家庭", 14: "奇幻", 36: "历史",
+			27: "恐怖", 10402: "音乐", 9648: "悬疑", 10749: "爱情",
+			878: "科幻", 10770: "电视电影", 53: "惊悚", 10752: "战争", 37: "西部",
+			10759: "动作冒险", 10762: "儿童", 10763: "新闻", 10764: "真人秀",
+			10765: "科幻奇幻", 10766: "肥皂剧", 10767: "脱口秀", 10768: "战争政治",
+			10750: "游戏节目",
+		};
 
 		// 类型/状态枚举（与 src/data/movies-games.ts 对齐）
 		var SECTIONS = [
@@ -1227,23 +1238,32 @@ const STAR_PATH =
 			if (!r) return;
 			var sec = inferSection(r.media_type, r.genre_ids || []);
 			var title = r.title || r.name || "";
-			var cover = r.poster_path ? TMDB_IMG_BASE + "/w500" + r.poster_path : "";
+			// 封面不自动填：国内 image.tmdb.org 常被墙，且用户习惯自己加封面。
+			// 留空即可，卡片会优雅降级为标题首字占位，绝不会破图。
 			// bangumiUrl 实际是 TMDB 详情页（用户原意"点击跳指定地址"）
 			var tmdbUrl = r.media_type === "movie"
 				? "https://www.themoviedb.org/movie/" + r.id
 				: "https://www.themoviedb.org/tv/" + r.id;
-			// comment: overview 截前 100 字
-			var comment = (r.overview || "").slice(0, 100);
+			// comment(简介)：取 TMDB overview 全文（搜索已按 zh-CN→en-US 回退，非空即写入）
+			var comment = r.overview || "";
+			// tags(副标签)：把 TMDB 的 genre_ids 映射成中文标签（如 悬疑/犯罪/科幻）。
+			// 兼容两种返回：搜索结果给 genre_ids[]；粘贴链接取详情给 genres[{id,name}]。
+			var genreIds = r.genre_ids || (r.genres || []).map(function (g) { return g.id; });
+			var tags = genreIds
+				.map(function (id) { return TMDB_TAG_NAMES[id]; })
+				.filter(function (t) { return !!t; });
 			// 用 data-f 找 input
 			function setVal(name, val) {
 				var inp = rowEl.querySelector('[data-f="' + name + '"]');
 				if (inp) inp.value = val;
 			}
 			setVal("title", title);
-			setVal("cover", cover);
+			// 同步「防误覆盖」快照，避免程序化改写标题后下次失焦又重复搜索
+			rowEl._mgLastQuery = title;
 			setVal("section", sec);
 			setVal("bangumiUrl", tmdbUrl);
 			setVal("comment", comment);
+			setVal("tags", tags.join(", "));
 			// 关闭候选列表
 			var host = rowEl.querySelector("[data-tmdb-host]");
 			if (host) host.style.display = "none";
@@ -1269,7 +1289,7 @@ const STAR_PATH =
 					// 缓存到行元素的 attribute
 					tmdbCache[rowEl.getAttribute("data-row-id")] = results;
 					if (results.length === 1) {
-						// 唯一命中：直接自动填入其余字段（封面仍取 TMDB，国内加载不出用户再手改）
+						// 唯一命中：直接自动填入 类型/简介/外链/标签（封面不自动填，用户自己加）
 						applyTmdbResult(rowEl, results, 0);
 						if (statusEl) statusEl.textContent = "已自动匹配：" + (results[0].title || results[0].name || "");
 					} else {
