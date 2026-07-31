@@ -14,7 +14,7 @@ export interface PostIndexItem {
 }
 export const postsIndex: PostIndexItem[] = [
 	{
-		"path": "src/content/posts/others/blog-features-summary.md",
+		"path": "src/content/posts/others/博客功能全解析.md",
 		"folder": "others",
 		"slug": "blog-features-summary",
 		"title": "博客功能全解析 | 配置指南与二次开发手册",

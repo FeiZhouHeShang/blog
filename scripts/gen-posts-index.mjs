@@ -53,10 +53,12 @@ for (const f of files) {
   const rel = path.relative(POSTS_DIR, f).split(path.sep).join("/");
   const parts = rel.split("/");
   const folder = parts.length > 1 ? parts[0] : "";
-  const slug = parts[parts.length - 1].replace(/\.md$/, "");
+  const fileSlug = parts[parts.length - 1].replace(/\.md$/, "");
   const raw = fs.readFileSync(f, "utf-8");
   const fmMatch = raw.match(/^---\s*\r?\n([\s\S]*?)\r?\n---/);
   const fm = fmMatch ? parseFrontmatter(fmMatch[1]) : {};
+  // slug 优先取 frontmatter（便于自定义干净网址），否则回退文件名
+  const slug = (typeof fm.slug === "string" && fm.slug.trim()) ? fm.slug.trim() : fileSlug;
   items.push({
     path: "src/content/posts/" + rel,
     folder,
