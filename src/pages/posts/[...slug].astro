@@ -34,17 +34,32 @@ import { url } from "@/utils/url-utils";
 
 export async function getStaticPaths() {
 	const blogEntries = await getSortedPosts();
-	return blogEntries.map((entry) => {
+	return blogEntries.map((entry, i) => {
 		// 将 id 转换为 slug（移除扩展名）以匹配路由参数
 		const slug = removeFileExtension(entry.id);
+		// 自动计算相邻篇：排序数组中前一篇=较新(next)、后一篇=较旧(prev)
+		const newer = i > 0 ? blogEntries[i - 1] : null;
+		const older = i < blogEntries.length - 1 ? blogEntries[i + 1] : null;
+		const nextPost = newer
+			? { slug: removeFileExtension(newer.id), title: newer.data.title }
+			: null;
+		const prevPost = older
+			? { slug: removeFileExtension(older.id), title: older.data.title }
+			: null;
 		return {
 			params: { slug },
-			props: { entry },
+			props: { entry, prevPost, nextPost },
 		};
 	});
 }
 
-const { entry } = Astro.props;
+const { entry, prevPost, nextPost } = Astro.props;
+
+// 相邻导航：frontmatter 手动覆盖优先，否则用自动计算的相邻篇
+const nextSlug = entry.data.nextSlug || (nextPost?.slug ?? null);
+const nextTitle = entry.data.nextTitle || (nextPost?.title ?? i18n(I18nKey.home));
+const prevSlug = entry.data.prevSlug || (prevPost?.slug ?? null);
+const prevTitle = entry.data.prevTitle || (prevPost?.title ?? i18n(I18nKey.home));
 const { Content, remarkPluginFrontmatter } = await render(entry);
 
 const bannerPostMeta = {
@@ -174,6 +189,9 @@ const serializedJsonLd = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
      左栏：Categories（"全部文章" + 分类列表 + 文章数徽章 — 可点进对应分类）
      右栏：SidebarTOC（自动从文章 h2/h3 抽取目录，滚动时高亮当前位置）
      中间（默认插槽）：文章正文 */}
+
+  {/* 顶部阅读进度条：随滚动填充，呼应博客品牌粉 */}
+  <div class="reading-progress" id="reading-progress" aria-hidden="true"></div>
 
 <Categories slot="sidebar-left" />
 	<PostEditorCard slot="sidebar-left" currentSlug={entry.id} />
@@ -360,7 +378,7 @@ const serializedJsonLd = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
     class="flex flex-col md:flex-row justify-between mb-4 gap-4 overflow-hidden w-full"
   >
     <a
-      href={entry.data.nextSlug ? getPostUrlBySlug(entry.data.nextSlug) : url("/")}
+      href={nextSlug ? getPostUrlBySlug(nextSlug) : url("/")}
       class="w-full font-bold overflow-hidden active:scale-95"
     >
       <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-start! gap-4">
@@ -369,13 +387,13 @@ const serializedJsonLd = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
           class="text-[2rem] text-(--primary)"
         />
         <div class="overflow-hidden transition text-ellipsis whitespace-nowrap max-w-[calc(100%-3rem)] text-black/75 dark:text-white/75">
-          {entry.data.nextTitle || i18n(I18nKey.home)}
+          {nextTitle}
         </div>
       </div>
     </a>
 
     <a
-      href={entry.data.prevSlug ? getPostUrlBySlug(entry.data.prevSlug) : url("/")}
+      href={prevSlug ? getPostUrlBySlug(prevSlug) : url("/")}
       class="w-full font-bold overflow-hidden active:scale-95"
     >
       <div class="btn-card rounded-2xl w-full h-15 max-w-full px-4 flex items-center justify-end! gap-4">
@@ -389,5 +407,55 @@ const serializedJsonLd = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
       </div>
     </a>
   </div>
+
+  <style>
+    .reading-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: #d44e7d; /* 博客品牌粉，呼应加载页/hero 头像描边 */
+      transform: scaleX(0);
+      transform-origin: left center;
+      z-index: 9999;
+      transition: transform 80ms linear;
+      pointer-events: none;
+      will-change: transform;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .reading-progress {
+        transition: none;
+      }
+    }
+  </style>
+
+  <script>
+    // 阅读进度条：随页面滚动填充；绑定 astro:page-load 以兼容 SPA 软导航
+    function initReadingProgress() {
+      const bar = document.getElementById("reading-progress");
+      if (!bar) return;
+      let ticking = false;
+      const update = () => {
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - doc.clientHeight;
+        const p = max > 0 ? Math.min(1, Math.max(0, doc.scrollTop / max)) : 0;
+        bar.style.transform = `scaleX(${p})`;
+        ticking = false;
+      };
+      const onScroll = () => {
+        if (!ticking) {
+          ticking = true;
+          requestAnimationFrame(update);
+        }
+      };
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onScroll, { passive: true });
+      update();
+    }
+
+    document.addEventListener("astro:page-load", initReadingProgress);
+  </script>
 
 </MainGridLayout>

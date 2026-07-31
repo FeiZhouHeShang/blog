@@ -105,8 +105,9 @@ export const siteConfig: SiteConfig = {
 	// 是否开启分享海报生成功能
 	sharePoster: true,
 
-	// OpenGraph图片功能,注意开启后要渲染很长时间，不建议本地调试的时候开启
-	generateOgImages: false,
+	// OpenGraph图片功能：开启后每篇文章构建时生成带标题的专属分享卡(1200x630 PNG)。
+	// 当前仅 2 篇文章，构建开销可忽略；文章变多后构建会变慢，可在本地调试时临时关。
+	generateOgImages: true,
 
 	defaultOgImage: "/assets/images/aut.webp",
 

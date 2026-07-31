@@ -606,4 +606,6 @@ content:
 
 settings:
   content:
-    merge: false
+    # merge: true 把后台提交的字段合并进现有文件，保留 schema 之外的字段/注释/手写内容。
+    # 之前 merge: false 会按 schema 整文件重写，抹掉所有 schema 外内容（曾导致工作区文件被误删/丢失）。
+    merge: true
