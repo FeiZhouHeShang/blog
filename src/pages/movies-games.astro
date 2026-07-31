@@ -1002,6 +1002,35 @@ const STAR_PATH =
 		var GH_DEFAULT = (mgDialogEl && mgDialogEl.getAttribute("data-gh-default")) || "";
 		var TMDB_API_BASE = "https://api.themoviedb.org/3";
 		var TMDB_IMG_BASE = "https://image.tmdb.org/t/p";
+		// ⚠️ CORS 关键说明（为什么必须走代理）：
+		// TMDB 官方 API（api.themoviedb.org）「不」返回 Access-Control-Allow-Origin 头，
+		// 浏览器里的 fetch 会被同源策略直接拦截（CORS error），拿不到任何数据。
+		// 因此前端无法直连，必须经一个 CORS 代理转发——代理在自家域回源 TMDB、
+		// 把响应带上 CORS 头再返回浏览器，同时把我们的 Authorization 头透传给 TMDB。
+		// 代理链：corsproxy.io（主，稳定转发 Authorization）→ codetabs（备）。
+		// 只读令牌经手第三方风险低、可随时在 TMDB 后台吊销重发。
+		// 若要生产级稳定/不暴露令牌，应自建 Vercel serverless / Cloudflare Worker 代理（见 docs/）。
+		var TMDB_PROXIES = [
+			function (u) { return "https://corsproxy.io/?url=" + encodeURIComponent(u); },
+			function (u) { return "https://api.codetabs.com/v1/proxy/?quest=" + encodeURIComponent(u); },
+		];
+		// 经 CORS 代理链请求 TMDB：任一代理成功即返回 Response；全部失败抛错。
+		async function tmdbFetch(url, key, isV4) {
+			var headers = isV4 ? { Authorization: "Bearer " + key } : {};
+			var lastErr = "";
+			for (var i = 0; i < TMDB_PROXIES.length; i++) {
+				try {
+					var r = await fetch(TMDB_PROXIES[i](url), { headers: headers });
+					if (!r.ok) {
+						var err = await r.json().catch(function () { return {}; });
+						lastErr = "TMDB " + r.status + "：" + (err.status_message || r.statusText);
+						continue;
+					}
+					return r;
+				} catch (e) { lastErr = e && e.message ? e.message : String(e); }
+			}
+			throw new Error(lastErr || "所有 CORS 代理均不可用");
+		}
 		// TMDB genre_id → 中文含义（用于智能匹配 section）
 		var TMDB_GENRE = {
 			16: "动画", 35: "喜剧", 18: "剧情", 80: "犯罪", 99: "纪录片",
@@ -1140,8 +1169,7 @@ const STAR_PATH =
 			if (!isV4) url += "&api_key=" + encodeURIComponent(key);
 			var headers = isV4 ? { Authorization: "Bearer " + key } : {};
 			try {
-				var r = await fetch(url, { headers: headers });
-				if (!r.ok) return null;
+				var r = await tmdbFetch(url, key, isV4);
 				var d = await r.json();
 				d.media_type = type; // search 结果自带，details 不带，补上
 				return d;
@@ -1156,9 +1184,8 @@ const STAR_PATH =
 			// 1) 优先：粘贴了 TMDB 链接就直接取详情
 			var byUrl = await tryTmdbUrl(query, key, isV4);
 			if (byUrl) return [byUrl];
-			// 2) 多语言回退搜索
+			// 2) 多语言回退搜索（每轮经 CORS 代理链请求 TMDB）
 			var langs = ["zh-CN", "en-US", ""];
-			var lastErr = "";
 			var onlyPerson = false;
 			for (var li = 0; li < langs.length; li++) {
 				var lang = langs[li];
@@ -1168,13 +1195,7 @@ const STAR_PATH =
 						"&include_adult=false&page=1";
 					if (lang) url += "&language=" + lang;
 					if (!isV4) url += "&api_key=" + encodeURIComponent(key);
-					var headers = isV4 ? { Authorization: "Bearer " + key } : {};
-					var r = await fetch(url, { headers: headers });
-					if (!r.ok) {
-						var err = await r.json().catch(function () { return {}; });
-						lastErr = "TMDB 搜索失败 " + r.status + "：" + (err.status_message || r.statusText);
-						continue;
-					}
+					var r = await tmdbFetch(url, key, isV4); // 代理链；全失败抛错
 					var data = await r.json();
 					var results = (data.results || []).filter(function (x) {
 						return x.media_type === "movie" || x.media_type === "tv";
@@ -1182,7 +1203,14 @@ const STAR_PATH =
 					if (results.length) return results;
 					// 记录是否只搜到 person（用于更友好的提示）
 					if ((data.results || []).length && !results.length) onlyPerson = true;
-				} catch (e) { lastErr = e.message || String(e); }
+				} catch (e) {
+					// 代理全挂：没必要再试其它语言，直接返回空并提示
+					if (e && /代理/.test(e.message || "")) {
+						console.info("[TMDB] " + e.message);
+						return [];
+					}
+					// 否则是该语言无结果，继续试下一语言
+				}
 			}
 			// 全部语言都 0 结果：返回空，UI 显示「没有匹配」（提示可粘贴 TMDB 链接）
 			if (onlyPerson) console.info("[TMDB] 只匹配到人物，请换作品名或粘贴 TMDB 链接");

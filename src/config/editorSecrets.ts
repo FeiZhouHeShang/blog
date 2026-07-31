@@ -41,6 +41,10 @@ export interface EditorSecrets {
 
 export const editorSecrets: EditorSecrets = {
 	// 用户提供的 TMDB v4 只读令牌（scope: api_read）
+	// ⚠️ 重要：TMDB 官方 API 不返回 CORS 头，浏览器直连会被同源策略拦截，
+	// 因此前端（movies-games.astro）必须「经 CORS 代理」请求 TMDB，代理链见该文件 TMDB_PROXIES。
+	// 令牌经手第三方代理风险低、可在 TMDB 后台随时吊销。若要生产级稳定且不暴露令牌，
+	// 应自建 Vercel serverless / Cloudflare Worker 代理（把令牌移出客户端）。
 	tmdbApiToken:
 		"eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiI5OTU3M2M3ODA5Y2Q4YTVkYzkyZmFjZWFjMmU1ZTQ2NSIsIm5iZiI6MTc4NTIyOTM5MS43MTgwMDAyLCJzdWIiOiI2YTY4NzA0ZjUzZmQ4MGUwNzUwZmZmNmEiLCJzY29wZXMiOlsiYXBpX3JlYWQiXSwidmVyc2lvbiI6MX0.XRo6biktco53_yEs54GvrMmxRt4WY4R4YJDIJxM45D0",
 	// 留空 = 保存时仍需在编辑器里填 GitHub PAT（推荐）。
