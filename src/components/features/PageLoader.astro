@@ -5,8 +5,12 @@ const pathname = Astro.url.pathname;
 const isHome = pathname === "/" || pathname === "";
 const avatar = homeConfig.avatar;
 const siteName = homeConfig.displayName || "非洲和尚";
-// 与 siteConfig.themeColor.hue 保持一致（青绿 165）
-const hue = 165;
+// 复用 hero 同一张全屏背景图 —— 加载页淡出后正是同一个场景，消除割裂感
+const heroBg = homeConfig.hero.backgroundImage;
+// 名字逐字拆开，套用与首页 hero 完全一致的 7 色彩虹字色
+const nameLetters = Array.from(siteName);
+// 与首页 hero 头像描边一致的品牌粉
+const accent = "#D44E7D";
 ---
 
 <div
@@ -16,29 +20,52 @@ const hue = 165;
 	aria-live="polite"
 	aria-label="页面加载中"
 	hidden={!isHome}
-	style={`--loader-hue: ${hue};`}
+	style={`--loader-accent: ${accent};`}
 >
-	<div class="page-loader__stage" aria-hidden="true">
-		<div class="page-loader__halo"></div>
-		<div class="page-loader__orb">
-			<div class="page-loader__orb-core"></div>
-		</div>
-		<div class="page-loader__emblem">
+	<!-- 与 hero 同款全屏背景图（浏览器缓存复用，零额外请求） -->
+	<div class="page-loader__bg" style={`background-image:url(${heroBg})`} aria-hidden="true"></div>
+	<!-- 与 hero 一致的 0.45 暗色遮罩 -->
+	<div class="page-loader__overlay" aria-hidden="true"></div>
+
+	<!-- 四角取景框（首页 hero 标志性元素，加载页同样呈现，形成连续感） -->
+	<div class="page-loader__viewfinder" aria-hidden="true">
+		<span class="page-loader__corner tl"></span>
+		<span class="page-loader__corner tr"></span>
+		<span class="page-loader__corner bl"></span>
+		<span class="page-loader__corner br"></span>
+	</div>
+
+	<!-- 左上角拍摄参数（呼应 hero 的 MNL/1/125/OPEN/3dB） -->
+	<div class="page-loader__params" aria-hidden="true">
+		<span>MNL</span>
+		<span>1/125</span>
+		<span>OPEN</span>
+		<span>3dB</span>
+	</div>
+
+	<!-- 中心：品牌头像（粉色描边）+ 彩虹站名 + 进度条 -->
+	<div class="page-loader__center">
+		<div class="page-loader__avatar-ring">
 			<img
 				src={avatar}
 				alt=""
 				class="page-loader__avatar"
-				width="120"
-				height="120"
+				width="96"
+				height="96"
 				decoding="async"
 			/>
 		</div>
-	</div>
 
-	<div class="page-loader__caption">
-		<span class="page-loader__name">{siteName}</span>
-		<span class="page-loader__dots" aria-hidden="true"><i></i><i></i><i></i></span>
-	</div>
+		<h1 class="page-loader__name page-loader__name--rainbow" aria-label={siteName}>
+			{nameLetters.map((letter) => (
+				<span class="page-loader__name-letter">{letter}</span>
+			))}
+		</h1>
 
-	<span class="page-loader__sr-only">Loading</span>
+		<div class="page-loader__progress" aria-hidden="true">
+			<i></i>
+		</div>
+
+		<p class="page-loader__status">系统启动中…</p>
+	</div>
 </div>
