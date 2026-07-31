@@ -1,10 +1,9 @@
 ---
-// 加载页：还原「居中动效 + 文本」的原版形态，仅做轻量品牌适配。
-// 原版用作者图 feibi-loading.webp（已按需求移除），这里改为纯 CSS 转圈，
-// 文本从 "Loading" 改为博客站名，主题色走博客品牌粉，避免原作者痕迹。
+// 加载页：还原「居中动效 + 文本」形态，做轻量品牌适配。
+// 文本改为打字机效果（循环状态短语，无站名/人名，避免 LOW），
+// 并加均衡器装饰条避免单调。配色沿用博客品牌粉 #D44E7D。
 const pathname = Astro.url.pathname;
 const isHome = pathname === "/" || pathname === "";
-const siteName = "非洲和尚"; // 与 homeConfig.displayName 保持一致
 ---
 <div
 	id="page-loader"
@@ -16,8 +15,48 @@ const siteName = "非洲和尚"; // 与 homeConfig.displayName 保持一致
 >
 	<div class="page-loader__inner">
 		<div class="page-loader__spinner" aria-hidden="true"></div>
-		<div class="page-loader__brand">{siteName}</div>
-		<div class="page-loader__status">正在加载…</div>
+		<div class="page-loader__type" aria-hidden="true">
+			<span id="loader-type"></span><span class="page-loader__caret"></span>
+		</div>
+		<div class="page-loader__eq" aria-hidden="true">
+			<i></i><i></i><i></i><i></i><i></i>
+		</div>
 	</div>
 	<span class="page-loader__sr-only">Loading</span>
 </div>
+
+<script is:inline>
+	(function () {
+		var el = document.getElementById("loader-type");
+		if (!el) return;
+		var phrases = [
+			"正在唤醒博客引擎",
+			"加载主题与配色",
+			"同步最新文章",
+			"校准视觉特效",
+		];
+		var pi = 0,
+			ci = 0,
+			deleting = false;
+		function tick() {
+			var full = phrases[pi];
+			if (!deleting) {
+				ci++;
+				el.textContent = full.slice(0, ci);
+				if (ci === full.length) {
+					deleting = true;
+					return setTimeout(tick, 850);
+				}
+			} else {
+				ci--;
+				el.textContent = full.slice(0, ci);
+				if (ci === 0) {
+					deleting = false;
+					pi = (pi + 1) % phrases.length;
+				}
+			}
+			setTimeout(tick, deleting ? 34 : 78);
+		}
+		requestAnimationFrame(tick);
+	})();
+</script>

@@ -1,7 +1,7 @@
 /* 加载页：还原「居中动效 + 文本」原版形态，仅做轻量品牌适配。
-   原版是白底 + 作者图(feibi-loading.webp)，图片已按需求移除，
-   这里换为纯 CSS 转圈；背景由「白底+暗层叠」改为与博客深色主题一致的
-   纯色底，避免灰白闪屏，更贴合博客整体调性。 */
+   原版是白底 + 作者图(feibi-loading.webp)，图片已按需求移除。
+   现居中元素 = 品牌粉转圈 + 打字机状态文本（循环短语，无站名）+ 均衡器装饰条；
+   背景用与博客深色主题一致的纯色底（暗 #0e0e10 / 浅 #f4f4f5），避免灰白闪屏。 */
 .page-loader {
 	--page-loader-bg-dark: #0e0e10;
 	--page-loader-bg-light: #f4f4f5;
@@ -37,7 +37,7 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 1.1rem;
+	gap: 0.95rem;
 }
 
 /* 转圈：品牌粉描边，其余半透明，呼应博客主色 */
@@ -56,26 +56,79 @@
 	}
 }
 
-.page-loader__brand {
-	font-size: 1.05rem;
-	font-weight: 600;
-	letter-spacing: 0.1em;
-	color: #111;
-}
-
-.page-loader__status {
-	font-size: 0.78rem;
-	letter-spacing: 0.2em;
-	color: #999;
+/* 打字机状态文本：等宽字体 + 闪烁光标，循环状态短语（无站名） */
+.page-loader__type {
 	font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+	font-size: 0.82rem;
+	letter-spacing: 0.12em;
+	color: #d6d6da;
+	min-height: 1.2em;
+	white-space: nowrap;
 }
 
-:root.dark .page-loader__brand {
-	color: #f4f4f5;
+:root:not(.dark) .page-loader__type {
+	color: #555;
 }
 
-:root.dark .page-loader__status {
-	color: #9a9a9a;
+.page-loader__caret {
+	display: inline-block;
+	width: 2px;
+	height: 1em;
+	margin-left: 3px;
+	background: var(--loader-accent);
+	vertical-align: -2px;
+	animation: page-loader-caret 0.9s step-end infinite;
+}
+
+@keyframes page-loader-caret {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
+}
+
+/* 均衡器装饰条：错峰上下跳动，品牌粉，避免单调 */
+.page-loader__eq {
+	display: flex;
+	align-items: flex-end;
+	gap: 4px;
+	height: 16px;
+}
+
+.page-loader__eq i {
+	width: 3px;
+	height: 100%;
+	background: var(--loader-accent);
+	border-radius: 2px;
+	opacity: 0.85;
+	transform-origin: bottom;
+	animation: page-loader-eq 1s ease-in-out infinite;
+}
+
+.page-loader__eq i:nth-child(2) {
+	animation-delay: 0.15s;
+}
+.page-loader__eq i:nth-child(3) {
+	animation-delay: 0.3s;
+}
+.page-loader__eq i:nth-child(4) {
+	animation-delay: 0.45s;
+}
+.page-loader__eq i:nth-child(5) {
+	animation-delay: 0.6s;
+}
+
+@keyframes page-loader-eq {
+	0%,
+	100% {
+		transform: scaleY(0.35);
+	}
+	50% {
+		transform: scaleY(1);
+	}
 }
 
 .page-loader__sr-only {
