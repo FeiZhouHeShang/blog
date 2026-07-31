@@ -3,15 +3,37 @@
  * ----------------------------------------------------------------
  * 复刻 blog.tsh520.cn/movies-games 的 Bangumi 风格收藏墙。
  *
- * 数据修改方式（GitHub 编辑回链，零后端）：
- *   页面上的「在 GitHub 编辑」按钮会打开本文件在 GitHub 的网页编辑器，
- *   改完 Commit 即触发 Cloudflare 自动重建部署。无需本地运行服务。
+ * 【怎么改数据】
+ *   方式一（推荐，零后端）：打开 /movies-games/ 页面 → 点「✏️ 编辑列表」
+ *     → 在标题框输入作品名 → 点「🔍 智能匹配」会从 TMDB 自动拉取
+ *        类型 / 评分 / 简介 / 外链（标题框失焦或按回车也会自动搜索，
+ *        且若只搜到 1 条就直接自动填入，连候选都不用点）。
+ *     → 改完点「💾 存本地」，再在右下角「上传中心」统一推送（合并成 1 次提交）。
+ *   方式二（不熟编辑器）：点页面底部「在 GitHub 编辑」直达本文件网页编辑器，
+ *     手动改完 Commit 即触发 Vercel 重新部署，无需本地跑服务。
  *
- * 封面方案：热链（远程 URL）。
- *   - 影视：TMDB 官方 CDN  `https://image.tmdb.org/t/p/w200/<path>.jpg`
- *   - 动漫：示例用了站长的图床热链，你也可换成 TMDB / 豆瓣 / 自己的图床
- *   - 若封面加载失败，卡片会优雅降级（隐藏破图，保留标题与状态标签）
- *   想本地存图就把 cover 填成 `/assets/mg/xxx.jpg` 并放到 public 下即可。
+ * 【封面 cover 怎么填（重要）】
+ *   智能匹配会先尝试填 TMDB 官方的 image.tmdb.org 封面。但 **国内访问
+ *   image.tmdb.org 经常被墙 / 很慢**，所以封面你大概率要手动给：
+ *     - 留空          → 卡片显示「标题首字」占位（不会破图，最省事）。
+ *     - 远程热链      → 直接填图片直链，如豆瓣条目页的图片、Bangumi 封面、
+ *                       或你自己的图床链接（形如 https://...xxx.jpg）。
+ *     - 本地图片      → 把图片放进仓库 `public/assets/images/movies-games/xxx.jpg`，
+ *                       这里填 `/assets/images/movies-games/xxx.jpg` 即可
+ *                       （随站点一起部署，最稳，不受墙影响）。
+ *   编辑器里「封面 URL」输入框下方有同款提示；自动匹配填的 TMDB 链接若加载
+ *   不出，直接在该框手动换成上面任一方式即可。
+ *
+ * 【字段说明】（完整接口见下方 MediaItem）
+ *   id         唯一标识，建议拼音/英文 slug，如 "xian-ni"（同 slug 会被判冲突）。
+ *   title      作品名称（必填）。
+ *   cover      封面图 URL，规则见上；留空 = 首字占位。
+ *   section    类型：movie 电影 / tv 电视剧 / anime 动漫 / documentary 纪录片 / game 游戏。
+ *   status     状态：collect 看过 / doing 在看(游戏=在玩) / wish 想看 / on_hold 搁置 / dropped 抛弃。
+ *   score      评分 0-10，可空。
+ *   tags       类型副标签，如 ["悬疑","犯罪"]。
+ *   comment    悬停评语（一句话感想）。
+ *   bangumiUrl 外链，如 Bangumi / 豆瓣条目页；留空则卡片不可点击跳转。
  */
 
 export type MediaSection = "movie" | "tv" | "anime" | "documentary" | "game";
@@ -42,6 +64,20 @@ export interface MediaItem {
 /**
  * 示例数据：以下 cover 直接热链参考站图床 / TMDB，仅作骨架演示。
  * 把这里替换成你自己的影视/游戏记录即可。
+ *
+ * ── 一条「带完整注释」的范例，照抄改字就行 ───────────────────────────
+ * {
+ *   id: "xian-ni",                      // 唯一 slug，别和别的条目重复
+ *   title: "仙逆",                       // 作品名（必填）
+ *   cover: "/assets/images/movies-games/xian-ni.jpg", // 留空=首字占位；本地图放 public/assets/images/movies-games/ 下；或填豆瓣/Bangumi/图床直链
+ *   section: "anime",                   // movie 电影 / tv 电视剧 / anime 动漫 / documentary 纪录片 / game 游戏
+ *   status: "collect",                  // collect 看过 / doing 在看 / wish 想看 / on_hold 搁置 / dropped 抛弃
+ *   score: 8,                           // 0-10，可空
+ *   tags: ["玄幻", "热血"],              // 副标签，可空
+ *   comment: "国漫扛把子",               // 悬停评语，可空
+ *   bangumiUrl: "https://bangumi.tv/subject/12345", // 外链，可空（留空卡片不跳转）
+ * },
+ * ──────────────────────────────────────────────────────────────
  */
 export const moviesGames: MediaItem[] = [
   {

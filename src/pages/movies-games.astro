@@ -773,6 +773,14 @@ const STAR_PATH =
 	}
 	[data-mg-editor] .mg-form-field .mg-editor-input-sm { font-size: 0.82rem; padding: 0.35rem 0.5rem; }
 	[data-mg-editor] .mg-form-field .mg-editor-textarea { font-size: 0.82rem; padding: 0.4rem 0.5rem; min-height: 60px; resize: vertical; }
+	/* 封面等字段下方的灰色提示文案 */
+	[data-mg-editor] .mg-field-hint {
+		margin: 0.15rem 0 0;
+		font-size: 0.68rem;
+		line-height: 1.45;
+		color: var(--content-meta, #6b7280);
+		opacity: 0.92;
+	}
 	[data-mg-editor] .mg-form-actions {
 		grid-column: 1 / -1;
 		display: flex;
@@ -1240,6 +1248,45 @@ const STAR_PATH =
 			var host = rowEl.querySelector("[data-tmdb-host]");
 			if (host) host.style.display = "none";
 		}
+		// 统一的 TMDB 搜索执行器：手动点「智能匹配」与标题框失焦/回车自动触发 都走这里。
+		// q 为空时在状态区提示；结果唯一则直接 auto-fill（无需点候选）；多条则列出候选供点选。
+		function runTmdbSearch(rowEl, q) {
+			q = (q || "").trim();
+			var statusEl = rowEl.querySelector("[data-tmdb-status]");
+			var listEl = rowEl.querySelector("[data-tmdb-list]");
+			var host = rowEl.querySelector("[data-tmdb-host]");
+			var searchBtn = rowEl.querySelector('[data-act="tmdb-search"]');
+			if (!q) {
+				if (statusEl) { statusEl.classList.add("is-error"); statusEl.textContent = "请先填写标题"; }
+				return;
+			}
+			if (searchBtn) searchBtn.disabled = true;
+			if (host) host.style.display = "";
+			if (statusEl) { statusEl.classList.remove("is-error"); statusEl.textContent = "正在搜索…"; }
+			if (listEl) listEl.innerHTML = '<div class="mg-tmdb-empty">搜索中…</div>';
+			searchTmdb(q)
+				.then(function (results) {
+					// 缓存到行元素的 attribute
+					tmdbCache[rowEl.getAttribute("data-row-id")] = results;
+					if (results.length === 1) {
+						// 唯一命中：直接自动填入其余字段（封面仍取 TMDB，国内加载不出用户再手改）
+						applyTmdbResult(rowEl, results, 0);
+						if (statusEl) statusEl.textContent = "已自动匹配：" + (results[0].title || results[0].name || "");
+					} else {
+						renderTmdbCandidates(rowEl, results);
+					}
+				})
+				.catch(function (err) {
+					if (statusEl) { statusEl.classList.add("is-error"); statusEl.textContent = "❌ " + (err && err.message ? err.message : err); }
+					if (listEl) listEl.innerHTML = "";
+				})
+				.then(function () { if (searchBtn) searchBtn.disabled = false; });
+		}
+		// 标题框自动触发：失焦 / 回车时，若已填名称就搜（由事件委托调用）
+		function autoSearchFromTitle(rowEl, q) {
+			q = (q || "").trim();
+			if (q) runTmdbSearch(rowEl, q);
+		}
 		// 当前表单的 TMDB 结果缓存（每行独立）
 		var tmdbCache = {}; // rowElId -> { results, query }
 
@@ -1490,7 +1537,7 @@ const STAR_PATH =
 					'<div class="mg-form-field mg-form-full">' +
 						'<label>标题 *</label>' +
 						'<div class="mg-form-title-row">' +
-						'<input type="text" class="mg-editor-input-sm" data-f="title" value="' + escHtml(item.title || "") + '" placeholder="输入名称，或粘贴 TMDB 链接" />' +
+						'<input type="text" class="mg-editor-input-sm" data-f="title" value="' + escHtml(item.title || "") + '" placeholder="输入名称（失焦/回车自动匹配），或粘贴 TMDB 链接" />' +
 						'<button type="button" class="mg-editor-btn mg-form-search-btn" data-act="tmdb-search" title="在 TMDB 搜名称（自动中/英/原名回退）；也可直接粘贴 themoviedb.org 链接精确匹配。候选点选自动填字段">' +
 								'<span class="mg-form-search-icon">🔍</span>' +
 								'<span>智能匹配</span>' +
@@ -1505,10 +1552,11 @@ const STAR_PATH =
 						'</div>' +
 						'<div class="mg-tmdb-list" data-tmdb-list></div>' +
 					'</div>' +
-					'<div class="mg-form-field mg-form-full">' +
-						'<label>封面 URL（热链，留空显示首字占位）</label>' +
-						'<input type="text" class="mg-editor-input-sm" data-f="cover" value="' + escHtml(item.cover || "") + '" placeholder="https://... 或 /assets/xxx.jpg" />' +
-					"</div>" +
+				'<div class="mg-form-field mg-form-full">' +
+					'<label>封面 URL（可选，留空显示首字占位）</label>' +
+					'<input type="text" class="mg-editor-input-sm" data-f="cover" value="' + escHtml(item.cover || "") + '" placeholder="国内 image.tmdb.org 常被墙：可填 ① 豆瓣/Bangumi/图床图片直链 ② 本地图 /assets/images/movies-games/xxx.jpg" />' +
+					'<p class="mg-field-hint">TMDB 自动匹配会先填 image.tmdb.org 链接；若加载不出，直接在此手动换成上面任一方式即可。本地图放仓库 public/assets/images/movies-games/ 下。</p>' +
+				"</div>" +
 					'<div class="mg-form-field">' +
 						'<label>类型</label>' +
 						'<select class="mg-editor-select" data-f="section">' + sectionOpts + "</select>" +
@@ -1711,25 +1759,7 @@ const STAR_PATH =
 						if (titleInp) titleInp.focus();
 						return;
 					}
-					var statusEl = rowEl.querySelector("[data-tmdb-status]");
-					var listEl = rowEl.querySelector("[data-tmdb-list]");
-					var host = rowEl.querySelector("[data-tmdb-host]");
-					var searchBtn = btn;
-					searchBtn.disabled = true;
-					if (host) host.style.display = "";
-					if (statusEl) { statusEl.classList.remove("is-error"); statusEl.textContent = "正在搜索…"; }
-					if (listEl) listEl.innerHTML = '<div class="mg-tmdb-empty">搜索中…</div>';
-					searchTmdb(q)
-						.then(function (results) {
-							// 缓存到行元素的 attribute
-							tmdbCache[rowEl.getAttribute("data-row-id")] = results;
-							renderTmdbCandidates(rowEl, results);
-						})
-						.catch(function (err) {
-							if (statusEl) { statusEl.classList.add("is-error"); statusEl.textContent = "❌ " + err.message; }
-							if (listEl) listEl.innerHTML = "";
-						})
-						.then(function () { searchBtn.disabled = false; });
+					runTmdbSearch(rowEl, q);
 				} else if (act === "tmdb-close") {
 					var host2 = rowEl && rowEl.querySelector("[data-tmdb-host]");
 					if (host2) host2.style.display = "none";
@@ -1745,6 +1775,46 @@ const STAR_PATH =
 				var idx = parseInt(cand.getAttribute("data-tmdb-idx"), 10);
 				var results = tmdbCache[rowEl.getAttribute("data-row-id")] || [];
 				applyTmdbResult(rowEl, results, idx);
+			});
+
+			// 标题框聚焦时记住当前名称，作为「是否改动」的基准
+			$("mg-editor-list")?.addEventListener("focusin", function (e) {
+				var inp = e.target.closest && e.target.closest('[data-f="title"]');
+				if (!inp) return;
+				var rowEl = inp.closest(".mg-row");
+				if (rowEl) rowEl._mgLastQuery = inp.value;
+			});
+			// 标题框自动触发搜索：失焦（focusout 可冒泡）或按回车，免去手动点「智能匹配」
+			// 跳过点「智能匹配 / 保存 / 取消」按钮的失焦，避免重复搜索；
+			// 标题没改过（比如只是去改封面又回来）则不重搜，避免覆盖手动填的封面。
+			$("mg-editor-list")?.addEventListener("focusout", function (e) {
+				var inp = e.target.closest && e.target.closest('[data-f="title"]');
+				if (!inp) return;
+				var rowEl = inp.closest(".mg-row");
+				if (!rowEl || !rowEl.isConnected) return;
+				var q = (inp.value || "").trim();
+				var last = ((rowEl._mgLastQuery || "").trim());
+				if (q === last) return; // 名字没变，不重搜
+				var rel = e.relatedTarget;
+				if (
+					rel && rel.closest && rel.matches &&
+					rel.closest(".mg-row") === rowEl &&
+					rel.matches('[data-act="tmdb-search"],[data-act="save-row"],[data-act="cancel"]')
+				) return;
+				rowEl._mgLastQuery = q;
+				autoSearchFromTitle(rowEl, q);
+			});
+			$("mg-editor-list")?.addEventListener("keydown", function (e) {
+				if (e.key !== "Enter") return;
+				var inp = e.target.closest && e.target.closest('[data-f="title"]');
+				if (!inp) return;
+				e.preventDefault();
+				var rowEl = inp.closest(".mg-row");
+				if (!rowEl || !rowEl.isConnected) return;
+				var q = (inp.value || "").trim();
+				if (q === ((rowEl._mgLastQuery || "").trim())) return; // 没改不搜
+				rowEl._mgLastQuery = q;
+				autoSearchFromTitle(rowEl, q);
 			});
 		}
 

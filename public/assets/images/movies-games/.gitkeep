@@ -1,0 +1,2 @@
+# 本地影视/游戏封面放这里。
+# 放一张图片如 xian-ni.jpg，然后在 src/data/movies-games.ts 的 cover 填 /assets/images/movies-games/xian-ni.jpg
