@@ -60,3 +60,25 @@ const isHome = pathname === "/" || pathname === "";
 		requestAnimationFrame(tick);
 	})();
 </script>
+
+<script is:inline>
+	// [兜底] 独立于外部控制器：最多 9s 强制隐藏加载页，杜绝「卡死进不去博客」。
+	// 控制器成功隐藏后会派发 firefly:page-loader-hidden 事件，届时清除该计时器。
+	(function () {
+		var el = document.getElementById("page-loader");
+		if (!el) return;
+		var failsafe = setTimeout(function () {
+			el.classList.add("page-loader--hidden");
+			el.hidden = true;
+			document.documentElement.classList.remove("is-page-loading");
+			document.body && document.body.removeAttribute("aria-busy");
+		}, 9000);
+		document.addEventListener(
+			"firefly:page-loader-hidden",
+			function () {
+				clearTimeout(failsafe);
+			},
+			{ once: true },
+		);
+	})();
+</script>

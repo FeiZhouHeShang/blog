@@ -214,7 +214,11 @@ const siteLang = lang.replace("_", "-");
     {/* [已修改] 第三方音乐播放器 - 原 MusicManager + FloatingLyrics 已移除，通过 JS 动态加载避免 Astro 类型检查 */}
     <script is:inline>
       // 动态加载第三方音乐播放器（myhkw.cn）
+      // [已修复] 幂等守卫：同一文档只注入一次，避免重复加载触发第三方「禁止重复添加」报错。
       (function() {
+        if (window.__myhkPlayerLoaded) return;
+        if (document.getElementById('myhk')) return;
+        window.__myhkPlayerLoaded = true;
         var s = document.createElement('script');
         s.type = 'text/javascript';
         s.id = 'myhk';
