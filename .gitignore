@@ -44,3 +44,7 @@ package/
 .obsidian/
 
 CLAUDE.md
+
+# local tooling artifacts (dev server logs, agent screenshots)
+dev-server.log.dir/
+.workbuddy/shots/

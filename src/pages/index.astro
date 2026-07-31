@@ -13,6 +13,23 @@ import "@/styles/components/home-section.css";
 import "@/styles/components/home-ticker.css";
 ---
 
+<link
+	slot="head"
+	rel="preload"
+	as="image"
+	href="/assets/images/home/home.webp"
+	fetchpriority="high"
+/>
+<link
+	slot="head"
+	rel="preload"
+	as="image"
+	href="/assets/images/home/home-mobile.webp"
+	media="(max-width: 768px)"
+/>
+
+<MainGridLayout>
+
 <MainGridLayout>
 	<div class="home-page home-page--motion-pending">
 		<HomeHero />
