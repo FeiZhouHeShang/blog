@@ -1,40 +1,50 @@
 .page-loader {
-	--page-loader-size: clamp(18rem, 60vw, 36rem);
-	--page-loader-bg: #fff;
+	--page-loader-hue: 165;
+	--page-loader-bg: #ffffff;
+	--page-loader-fg: #2b3a38;
 
 	position: fixed;
 	inset: 0;
 	z-index: 10000;
-	display: grid;
-	place-items: center;
-	background: var(--page-loader-bg);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 1.75rem;
+	background:
+		radial-gradient(
+			130% 130% at 50% 38%,
+			hsl(var(--page-loader-hue) 32% 97%) 0%,
+			hsl(var(--page-loader-hue) 26% 88%) 100%
+		);
 	opacity: 1;
 	visibility: visible;
 	pointer-events: auto;
 	transition:
-		opacity 220ms ease,
-		visibility 220ms ease;
+		opacity 260ms ease,
+		visibility 260ms ease;
 }
 
-.page-loader::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	z-index: 0;
-	background: rgba(0, 0, 0, 0.42);
-	opacity: 0;
-	transition: opacity 220ms ease;
-	pointer-events: none;
-}
-
-:root.dark .page-loader::after {
-	opacity: 1;
+:root.dark .page-loader {
+	background:
+		radial-gradient(
+			130% 130% at 50% 38%,
+			hsl(var(--page-loader-hue) 32% 13%) 0%,
+			hsl(var(--page-loader-hue) 42% 6%) 100%
+		);
+	--page-loader-fg: #d7e8e4;
 }
 
 .page-loader--hidden {
 	opacity: 0;
 	visibility: hidden;
 	pointer-events: none;
+}
+
+/* 隐藏后暂停所有动画，省 CPU */
+.page-loader--hidden,
+.page-loader--hidden * {
+	animation-play-state: paused !important;
 }
 
 .page-loader__sr-only {
@@ -49,31 +59,211 @@
 	border: 0;
 }
 
-.page-loader__animation {
+/* ============ 舞台 ============ */
+.page-loader__stage {
 	position: relative;
-	z-index: 1;
-	width: var(--page-loader-size);
-	height: auto;
-	aspect-ratio: 480 / 270;
-	filter: none;
+	width: clamp(11rem, 34vw, 17rem);
+	height: clamp(11rem, 34vw, 17rem);
+	display: grid;
+	place-items: center;
 }
 
-.page-loader__image {
-	display: block;
+/* 背后光晕 */
+.page-loader__halo {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: clamp(11rem, 34vw, 17rem);
+	height: clamp(11rem, 34vw, 17rem);
+	border-radius: 50%;
+	background: radial-gradient(
+		circle,
+		hsl(var(--page-loader-hue) 90% 55% / 0.35),
+		transparent 70%
+	);
+	filter: blur(14px);
+	transform: translate(-50%, -50%);
+	animation: haloPulse 4s ease-in-out infinite;
+}
+
+/* 液态渐变光球 */
+.page-loader__orb {
+	position: relative;
+	width: clamp(7rem, 22vw, 11rem);
+	height: clamp(7rem, 22vw, 11rem);
+	border-radius: 42% 58% 56% 44% / 48% 42% 58% 52%;
+	background: hsl(var(--page-loader-hue) 70% 50%);
+	overflow: hidden;
+	isolation: isolate;
+	box-shadow:
+		0 0 60px hsl(var(--page-loader-hue) 90% 55% / 0.45),
+		inset 0 0 26px hsl(var(--page-loader-hue) 90% 86% / 0.4);
+	animation: orbMorph 7s ease-in-out infinite;
+}
+
+/* 流动的主题色渐变层（独立旋转） */
+.page-loader__orb::before {
+	content: "";
+	position: absolute;
+	inset: -45%;
+	background: conic-gradient(
+		from 0deg,
+		hsl(var(--page-loader-hue) 85% 58%),
+		hsl(calc(var(--page-loader-hue) + 45) 80% 50%),
+		hsl(var(--page-loader-hue) 85% 42%),
+		hsl(calc(var(--page-loader-hue) - 35) 82% 56%),
+		hsl(var(--page-loader-hue) 85% 58%)
+	);
+	animation: orbSpin 9s linear infinite;
+}
+
+/* 玻璃高光（静止，模拟真实打光） */
+.page-loader__orb::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(
+		60% 45% at 32% 26%,
+		rgba(255, 255, 255, 0.9),
+		rgba(255, 255, 255, 0) 60%
+	);
+	mix-blend-mode: screen;
+	pointer-events: none;
+}
+
+/* 球心柔光 */
+.page-loader__orb-core {
+	position: absolute;
+	inset: 18%;
+	border-radius: 50%;
+	background: radial-gradient(
+		circle at 38% 34%,
+		rgba(255, 255, 255, 0.55),
+		transparent 65%
+	);
+	pointer-events: none;
+}
+
+/* 中心头像徽标（不随球旋转） */
+.page-loader__emblem {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: clamp(3.4rem, 11vw, 5rem);
+	height: clamp(3.4rem, 11vw, 5rem);
+	border-radius: 50%;
+	padding: 3px;
+	display: grid;
+	place-items: center;
+	background: linear-gradient(145deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.22));
+	box-shadow:
+		0 6px 18px rgba(0, 0, 0, 0.28),
+		inset 0 0 0 1px hsl(var(--page-loader-hue) 80% 72% / 0.6);
+	backdrop-filter: blur(4px);
+}
+
+.page-loader__avatar {
 	width: 100%;
 	height: 100%;
-	object-fit: contain;
+	border-radius: 50%;
+	object-fit: cover;
+	display: block;
 }
 
-@media (prefers-reduced-motion: reduce) {
-	.page-loader,
-	.page-loader * {
-		animation: none !important;
-		transition: none !important;
+/* ============ 文案 ============ */
+.page-loader__caption {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 0.7rem;
+}
+
+.page-loader__name {
+	font-size: clamp(1rem, 3.4vw, 1.35rem);
+	font-weight: 600;
+	letter-spacing: 0.34em;
+	padding-left: 0.34em;
+	color: var(--page-loader-fg);
+	text-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.page-loader__dots {
+	display: inline-flex;
+	gap: 0.42rem;
+}
+
+.page-loader__dots i {
+	width: 0.42rem;
+	height: 0.42rem;
+	border-radius: 50%;
+	background: hsl(var(--page-loader-hue) 70% 50%);
+	animation: dotPulse 1.2s ease-in-out infinite;
+}
+
+.page-loader__dots i:nth-child(2) {
+	animation-delay: 0.2s;
+}
+
+.page-loader__dots i:nth-child(3) {
+	animation-delay: 0.4s;
+}
+
+/* ============ 动画 ============ */
+@keyframes orbMorph {
+	0%,
+	100% {
+		border-radius: 42% 58% 56% 44% / 48% 42% 58% 52%;
+	}
+	33% {
+		border-radius: 58% 42% 44% 56% / 56% 58% 42% 44%;
+	}
+	66% {
+		border-radius: 50% 50% 62% 38% / 44% 56% 44% 56%;
 	}
 }
 
-/* Mobile: hide page loader completely */
+@keyframes orbSpin {
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+@keyframes haloPulse {
+	0%,
+	100% {
+		transform: translate(-50%, -50%) scale(1);
+		opacity: 0.5;
+	}
+	50% {
+		transform: translate(-50%, -50%) scale(1.12);
+		opacity: 0.85;
+	}
+}
+
+@keyframes dotPulse {
+	0%,
+	100% {
+		transform: translateY(0);
+		opacity: 0.35;
+	}
+	50% {
+		transform: translateY(-0.25rem);
+		opacity: 1;
+	}
+}
+
+/* 尊重用户的减弱动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+	.page-loader__orb,
+	.page-loader__orb::before,
+	.page-loader__halo,
+	.page-loader__dots i {
+		animation: none !important;
+	}
+}
+
+/* 移动端：完全隐藏加载页 */
 @media (max-width: 768px) {
 	.page-loader {
 		display: none !important;
