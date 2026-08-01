@@ -14,7 +14,7 @@ interface Props {
 	photoCount: number;
 }
 
-const { id, name, cover, date, location, tags, photoCount } = Astro.props;
+const { id, name, cover, description, date, location, tags, photoCount } = Astro.props;
 
 function truncateLocation(loc: string | undefined, maxChars = 4): string {
 	if (!loc) return "";
@@ -22,7 +22,14 @@ function truncateLocation(loc: string | undefined, maxChars = 4): string {
 	return `${loc.slice(0, maxChars)}...`;
 }
 
+function truncateDesc(desc: string | undefined, maxChars = 80): string {
+	if (!desc) return "";
+	if (desc.length <= maxChars) return desc;
+	return `${desc.slice(0, maxChars)}…`;
+}
+
 const displayLocation = truncateLocation(location);
+const displayDesc = truncateDesc(description);
 ---
 
 <a
@@ -67,8 +74,8 @@ const displayLocation = truncateLocation(location);
   <div class="album-card-details">
     <h3 class="album-card-title">{name}</h3>
 
-    {description && (
-      <p class="album-card-desc">{description}</p>
+    {displayDesc && (
+      <p class="album-card-desc">{displayDesc}</p>
     )}
 
     <div class="album-card-meta">
