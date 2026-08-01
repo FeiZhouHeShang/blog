@@ -4,6 +4,17 @@ import LeftSidebar from "@/components/layout/LeftSidebar.astro";
 import RightSidebar from "@/components/layout/RightSidebar.astro";
 import { moviesGames, type MediaItem, type MediaSection, type MediaStatus } from "@/data/movies-games";
 import { editorSecrets } from "@/config/editorSecrets";
+import fs from "node:fs";
+import path from "node:path";
+
+// 读取源文件原文，作为「存本地」序列化模板（无需先拉远端，避免冲掉已有条目）
+const mgSourceRaw = (() => {
+	try {
+		return fs.readFileSync(path.resolve(process.cwd(), "src/data/movies-games.ts"), "utf-8");
+	} catch (e) {
+		return "";
+	}
+})();
 
 // 影视与游戏页（Bangumi 风格收藏墙）
 // 数据来源：src/data/movies-games.ts
@@ -278,6 +289,15 @@ const STAR_PATH =
 						<button type="button" id="mg-editor-save" class="mg-editor-btn mg-editor-btn-primary">💾 存本地</button>
 					</div>
 				</footer>
+
+				<!-- 待上传：本地草稿 -->
+				<section class="mg-editor-drafts">
+					<div class="mg-drafts-head">
+						<span>🗂 待上传（本地草稿）</span>
+						<span class="mg-editor-label-tip">真正推送仓库请用右下角「上传中心」</span>
+					</div>
+					<div id="mg-draft-panel" class="mg-draft-panel"></div>
+				</section>
 			</div>
 		</dialog>
 		<!-- ========== /前端编辑器模态框 ========== -->
@@ -996,9 +1016,56 @@ const STAR_PATH =
 			background: rgba(255, 255, 255, 0.04);
 		}
 	}
+
+	/* 待上传：本地草稿面板 */
+	.mg-editor-drafts {
+		margin-top: 0.9rem;
+		padding: 0.8rem 0.9rem 0.9rem;
+		border-top: 1px solid rgba(128, 128, 128, 0.18);
+	}
+	.mg-drafts-head {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		font-weight: 600;
+		margin-bottom: 0.55rem;
+	}
+	.mg-draft-panel {
+		min-height: 1.6rem;
+	}
+	.mg-draft-empty {
+		color: var(--content-meta, #888);
+		font-size: 0.8rem;
+		margin: 0;
+	}
+	.mg-draft-card {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.55rem 0.7rem;
+		border-radius: 0.6rem;
+		background: rgba(128, 128, 128, 0.08);
+	}
+	.mg-draft-title {
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+	.mg-draft-meta {
+		font-size: 0.75rem;
+		color: var(--content-meta, #888);
+		margin-top: 0.15rem;
+	}
+	.mg-draft-actions {
+		display: flex;
+		gap: 0.4rem;
+		flex-shrink: 0;
+	}
 </style>
 
-<script is:inline>
+<script is:inline define:vars={{ mgSourceRaw, mgItems: moviesGames }}>
 	(function () {
 		// ===== 配置 =====
 		var API_FILE_URL =
@@ -1085,9 +1152,14 @@ const STAR_PATH =
 		];
 
 		// ===== 状态 =====
+		// SSR 注入：页面构建时已把当前数据（mgItems）与源文件原文（mgSourceRaw）带入，
+		// 因此 state.items 默认就有完整列表，存本地也不再依赖「先加载远端」。
+		var SSR_ITEMS = (typeof mgItems !== "undefined" && Array.isArray(mgItems)) ? mgItems : [];
+		var SSR_SOURCE = (typeof mgSourceRaw !== "undefined") ? mgSourceRaw : "";
 		var state = {
-			items: [], // 当前编辑的数组（用户增删改都在这里）
-			sourceContent: "", // 远端原始文件内容
+			items: SSR_ITEMS.slice(), // 当前编辑的数组（用户增删改都在这里，默认含全部已有条目）
+			sourceContent: "", // 远端原始文件内容（点「加载远端」后才有，用于拿最新 sha）
+			sourceTemplate: SSR_SOURCE, // 序列化模板：远端优先，否则回退到 SSR 源文件（无需 PAT）
 			sha: "", // 远端文件 sha
 			loading: false,
 			saving: false,
@@ -1285,8 +1357,8 @@ const STAR_PATH =
 			if (!r) return;
 			var sec = inferSection(r.media_type, r.genre_ids || []);
 			var title = r.title || r.name || "";
-			// 封面不自动填：国内 image.tmdb.org 常被墙，且用户习惯自己加封面。
-			// 留空即可，卡片会优雅降级为标题首字占位，绝不会破图。
+			// 封面：TMDB 命中时自动填入海报地址（见下方 setVal("cover", ...)），但若用户手动填了封面则不被覆盖。
+			// 国内 image.tmdb.org 可能被墙——此时封面不显示，用户可改填其他图床直链，不影响其他字段。
 			// bangumiUrl 实际是 TMDB 详情页（用户原意"点击跳指定地址"）
 			var tmdbUrl = r.media_type === "movie"
 				? "https://www.themoviedb.org/movie/" + r.id
@@ -1310,6 +1382,14 @@ const STAR_PATH =
 			setVal("section", sec);
 			setVal("bangumiUrl", tmdbUrl);
 			setVal("tags", tags.join(", "));
+			// 封面：TMDB 命中时自动填入海报地址（仅当封面字段为空，避免覆盖用户手动填写的封面）
+			var posterPath = r.poster_path;
+			if (posterPath) {
+				var coverInp = rowEl.querySelector('[data-f="cover"]');
+				if (!coverInp || !coverInp.value.trim()) {
+					setVal("cover", TMDB_IMG_BASE + "/w500" + posterPath);
+				}
+			}
 			// 关闭候选列表
 			var host = rowEl.querySelector("[data-tmdb-host]");
 			if (host) host.style.display = "none";
@@ -1335,7 +1415,7 @@ const STAR_PATH =
 					// 缓存到行元素的 attribute
 					tmdbCache[rowEl.getAttribute("data-row-id")] = results;
 					if (results.length === 1) {
-						// 唯一命中：直接自动填入 类型/简介/外链/标签（封面不自动填，用户自己加）
+						// 唯一命中：直接自动填入 类型/封面/外链/标签（封面仅在原为空时自动填，避免覆盖手动封面）
 						applyTmdbResult(rowEl, results, 0);
 						if (statusEl) statusEl.textContent = "已自动匹配：" + (results[0].title || results[0].name || "");
 					} else {
@@ -1492,20 +1572,22 @@ const STAR_PATH =
 			var saveBtn = $("mg-editor-save");
 			if (saveBtn) saveBtn.disabled = true;
 			try {
-				if (!state.sourceContent) {
-					setStatus($("mg-editor-foot-status"), "请先「加载远端」再保存草稿", "error");
-					return;
-				}
-				var newSource = serializeToSource(state.sourceContent, state.items);
-				var newContent = utf8ToBase64(newSource);
-				await ds.putDraft({
-					feature: "movies-games",
-					id: SRC_PATH,
-					label: "影视游戏（" + state.items.length + " 条）",
-					files: [{ path: SRC_PATH, content: newContent, sha: null }],
-				});
-				state.sourceContent = newSource;
-				setStatus($("mg-editor-foot-status"), "✅ 已存为本地草稿 · 待右下角「上传中心」统一推送", "ok");
+			if (!state.sourceContent && !state.sourceTemplate) {
+				setStatus($("mg-editor-foot-status"), "❌ 无可用源文件模板（SSR 未注入），请点「加载远端」后再存", "error");
+				return;
+			}
+			var tpl = state.sourceContent || state.sourceTemplate;
+			var newSource = serializeToSource(tpl, state.items);
+			var newContent = utf8ToBase64(newSource);
+			await ds.putDraft({
+				feature: "movies-games",
+				id: SRC_PATH,
+				label: "影视游戏（" + state.items.length + " 条）",
+				files: [{ path: SRC_PATH, content: newContent, sha: null }],
+			});
+			state.sourceContent = newSource;
+			setStatus($("mg-editor-foot-status"), "✅ 已存为本地草稿 · 待右下角「上传中心」统一推送", "ok");
+			renderDraftPanel();
 			} catch (e) {
 				setStatus($("mg-editor-foot-status"), "❌ " + e.message, "error");
 			} finally {
@@ -1530,6 +1612,52 @@ const STAR_PATH =
 				setStatus($("mg-editor-foot-status"), "⚠️ 已载入本地未上传草稿（" + arr.length + " 条）", "ok");
 				renderList();
 			} catch (_e) {}
+		}
+
+		// ===== 待上传：本地草稿面板 =====
+		// 展示当前已存为本地草稿的内容，支持「载入」（断点续编）与「删除」（清理多余本地保存）。
+		async function renderDraftPanel() {
+			var panel = $("mg-draft-panel");
+			if (!panel) return;
+			var ds = getDs();
+			if (!ds || !ds.getDraft) {
+				panel.innerHTML = '<p class="mg-draft-empty">本地草稿模块未就绪，请刷新页面</p>';
+				return;
+			}
+			var d = null;
+			try { d = await ds.getDraft("movies-games", SRC_PATH); } catch (e) {}
+			if (!d || !d.files || !d.files.length || d.files[0].delete) {
+				panel.innerHTML = '<p class="mg-draft-empty">暂无本地草稿 · 编辑后点「💾 存本地」会显示在这里</p>';
+				return;
+			}
+			var src = "";
+			try { src = base64ToUtf8(d.files[0].content || ""); } catch (e) {}
+			var count = 0;
+			try {
+				var range = findArrayRange(src);
+				if (range) {
+					var arr = new Function("return (" + src.substring(range.start, range.end) + ");")();
+					if (Array.isArray(arr)) count = arr.length;
+				}
+			} catch (e) {}
+			var when = "未知时间";
+			try {
+				var dt = new Date(d.updatedAt);
+				if (!isNaN(dt.getTime())) {
+					when = dt.toLocaleString("zh-CN", { hour12: false });
+				}
+			} catch (e) {}
+			panel.innerHTML =
+				'<div class="mg-draft-card">' +
+					'<div class="mg-draft-info">' +
+						'<div class="mg-draft-title">📦 ' + escHtml(d.label || "影视游戏草稿") + '</div>' +
+						'<div class="mg-draft-meta">共 ' + count + ' 条 · 更新于 ' + escHtml(when) + '</div>' +
+					'</div>' +
+					'<div class="mg-draft-actions">' +
+						'<button type="button" class="mg-editor-mini" data-draft-act="load">载入</button>' +
+						'<button type="button" class="mg-editor-mini mg-editor-mini-danger" data-draft-act="del">删除</button>' +
+					'</div>' +
+				'</div>';
 		}
 
 		// ===== 列表渲染 =====
@@ -1616,7 +1744,7 @@ const STAR_PATH =
 					'</div>' +
 				'<div class="mg-form-field mg-form-full">' +
 					'<label>封面 URL（可选，留空显示首字占位）</label>' +
-					'<input type="text" class="mg-editor-input-sm" data-f="cover" value="' + escHtml(item.cover || "") + '" placeholder="国内 image.tmdb.org 常被墙：可填 ① 豆瓣/Bangumi/图床图片直链 ② 本地图 /assets/images/movies-games/xxx.jpg" />' +
+					'<input type="text" class="mg-editor-input-sm" data-f="cover" value="' + escHtml(item.cover || "") + '" placeholder="TMDB 命中会自动填入海报地址；若国内 image.tmdb.org 被墙导致封面不显示，可改填 ① 豆瓣/Bangumi/图床直链 ② 本地图 /assets/images/movies-games/xxx.jpg" />' +
 					'<p class="mg-field-hint">TMDB 自动匹配会先填 image.tmdb.org 链接；若加载不出，直接在此手动换成上面任一方式即可。本地图放仓库 public/assets/images/movies-games/ 下。</p>' +
 				"</div>" +
 					'<div class="mg-form-field">' +
@@ -1690,8 +1818,10 @@ const STAR_PATH =
 				patInput.value = getPat();
 				setTimeout(function () { patInput.focus(); }, 50);
 			}
-			// 第一次打开若本地已有 token 但未加载，则自动加载
-			if (getPat() && state.items.length === 0 && !state.sourceContent) {
+			// 打开即展示本地草稿（无论是否填 PAT），让用户随时能看到 / 清理待上传内容
+			renderDraftPanel();
+			// 若已填 PAT 且远端尚未加载，则自动拉一次最新（拿到最新 sha，便于后续「上传中心」一次性推送）
+			if (getPat() && !state.sourceContent) {
 				loadRemote();
 			}
 		}
@@ -1760,6 +1890,50 @@ const STAR_PATH =
 			});
 			// 存为本地草稿（统一由「上传中心」推送）
 			$("mg-editor-save")?.addEventListener("click", saveDraftLocal);
+
+			// 待上传草稿面板：载入 / 删除（事件委托，元素每次重渲染都有效）
+			$("mg-draft-panel")?.addEventListener("click", function (e) {
+				var btn = e.target.closest("[data-draft-act]");
+				if (!btn) return;
+				var act = btn.getAttribute("data-draft-act");
+				var ds = getDs();
+				if (!ds) return;
+				if (act === "del") {
+					if (!confirm("确定删除本地草稿？（不影响已推送到仓库的内容）")) return;
+					ds.deleteDraft("movies-games", SRC_PATH)
+						.then(function () {
+							setStatus($("mg-editor-foot-status"), "🗑 已删除本地草稿", "ok");
+							renderDraftPanel();
+						})
+						.catch(function (err) {
+							setStatus($("mg-editor-foot-status"), "❌ " + (err && err.message ? err.message : err), "error");
+						});
+				} else if (act === "load") {
+					// 载入草稿到编辑区（断点续编）
+					ds.getDraft("movies-games", SRC_PATH)
+						.then(function (d) {
+							if (!d || !d.files || !d.files.length) return;
+							var src = "";
+							try { src = base64ToUtf8(d.files[0].content || ""); } catch (e2) { return; }
+							var range = findArrayRange(src);
+							if (!range) return;
+							try {
+								var arr = new Function("return (" + src.substring(range.start, range.end) + ");")();
+								if (!Array.isArray(arr)) return;
+								state.items = arr;
+								state.sourceContent = src;
+								state.sourceTemplate = src;
+								renderList();
+								setStatus($("mg-editor-foot-status"), "📥 已载入本地草稿（" + arr.length + " 条）", "ok");
+							} catch (e3) {
+								setStatus($("mg-editor-foot-status"), "❌ 草稿解析失败：" + e3.message, "error");
+							}
+						})
+						.catch(function (err) {
+							setStatus($("mg-editor-foot-status"), "❌ " + (err && err.message ? err.message : err), "error");
+						});
+				}
+			});
 
 			// 列表事件委托
 			$("mg-editor-list")?.addEventListener("click", function (e) {
