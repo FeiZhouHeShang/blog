@@ -24,8 +24,12 @@ const postsCollection = defineCollection({
 	}),
 	schema: z.object({
 		title: z.string(),
-		published: z.date(),
-		updated: z.date().optional(),
+		// [关键词: 前端编辑器日期] 帖子编辑器会把 published 序列化为带引号的字符串
+		// （如 published: "2026-07-29"），YAML 据此解析成 string，z.date() 校验会失败导致
+		// 构建报 InvalidContentEntryDataError。改用 z.coerce.date() 兼容「字符串 / Date 实例」两种形态：
+		// 向后兼容手动写的无引号 ISO 日期（YAML 自动解析为 Date），也兼容编辑器产出的字符串。
+		published: z.coerce.date(),
+		updated: z.coerce.date().optional(),
 		draft: z.boolean().optional().default(false),
 		description: z.string().optional().default(""),
 		image: z.string().optional().default(""),

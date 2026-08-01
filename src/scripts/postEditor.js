@@ -328,10 +328,14 @@ function parseFm(fm) {
 	return out;
 }
 function buildMarkdown(fm, body) {
+	// 日期字段（published / updated）不加引号：YAML 会把无引号的 ISO 日期自动解析为 Date，
+	// 与 content.config.ts 的 z.coerce.date() 双保险，避免前端编辑器写入 "2026-07-29" 字符串导致构建失败。
+	var DATE_KEYS = { published: 1, updated: 1 };
 	var lines = Object.keys(fm).map(function (k) {
 		var v = fm[k];
 		if (Array.isArray(v)) return k + ": [" + v.map(function (x) { return '"' + x + '"'; }).join(", ") + "]";
 		if (typeof v === "boolean") return k + ": " + (v ? "true" : "false");
+		if (DATE_KEYS[k] && v) return k + ": " + String(v).replace(/"/g, "");
 		return k + ': "' + String(v).replace(/"/g, '\\"') + '"';
 	});
 	return "---\n" + lines.join("\n") + "\n---\n\n" + body + "\n";
