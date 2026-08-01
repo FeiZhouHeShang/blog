@@ -240,34 +240,51 @@ const STAR_PATH =
 				<header class="mg-editor-head">
 					<div>
 						<h2 class="mg-editor-title">编辑影视/游戏列表</h2>
-						<p class="mg-editor-sub">编辑实时存入本地草稿；最后在右下角「上传中心」统一推送（所有改动合并为 1 次提交）</p>
+						<p class="mg-editor-sub">打开即自动同步最新数据 · 可增 / 删 / 改 · 改完点底部「🚀 保存并上传」一键推送（合并为 1 次提交）</p>
 					</div>
 					<button type="button" id="mg-editor-close" class="mg-editor-close" aria-label="关闭">×</button>
 				</header>
 
-				<!-- Token 区 -->
+				<!--
+					同步状态条（常显）+ 令牌区（默认折叠）
+					[后台改] 令牌已烘焙默认值，一般无需展开；只有换账号/令牌过期才点「🔑 令牌」
+				-->
 				<section class="mg-editor-token">
-					<label class="mg-editor-label">
-						<span>GitHub Personal Access Token</span>
-						<span class="mg-editor-label-tip">
-							仅存浏览器 localStorage
-							· <a href={PAT_HELP_URL} target="_blank" rel="noopener noreferrer" class="mg-editor-link">生成 fine-grained PAT</a>
-						</span>
-					</label>
-					<div class="mg-editor-token-row">
-						<input
-							type="password"
-							id="mg-editor-pat"
-							placeholder="github_pat_xxxxxxxxxxxxxx"
-							autocomplete="off"
-							spellcheck="false"
-							class="mg-editor-input"
-						/>
-						<button type="button" id="mg-editor-pat-toggle" class="mg-editor-mini" title="显示/隐藏">👁</button>
-						<button type="button" id="mg-editor-pat-clear" class="mg-editor-mini mg-editor-mini-danger" title="清除本地保存的 Token">🗑</button>
-						<button type="button" id="mg-editor-load" class="mg-editor-btn mg-editor-btn-secondary">🔄 加载远端</button>
+					<div class="mg-sync-bar">
+						<p id="mg-editor-status" class="mg-editor-status">正在同步远端最新数据…</p>
+						<div class="mg-sync-actions">
+							<button type="button" id="mg-editor-load" class="mg-editor-mini" title="重新拉取远端最新数据">🔄 重新同步</button>
+							<button
+								type="button"
+								id="mg-token-toggle"
+								class="mg-editor-mini"
+								aria-expanded="false"
+								aria-controls="mg-token-body"
+								title="展开 / 收起令牌设置"
+							>🔑 <span id="mg-token-badge">令牌</span></button>
+						</div>
 					</div>
-					<p id="mg-editor-status" class="mg-editor-status">未加载远端数据</p>
+					<div id="mg-token-body" class="mg-token-body" hidden>
+						<label class="mg-editor-label">
+							<span>GitHub Personal Access Token</span>
+							<span class="mg-editor-label-tip">
+								仅存浏览器 localStorage
+								· <a href={PAT_HELP_URL} target="_blank" rel="noopener noreferrer" class="mg-editor-link">生成 fine-grained PAT</a>
+							</span>
+						</label>
+						<div class="mg-editor-token-row">
+							<input
+								type="password"
+								id="mg-editor-pat"
+								placeholder="github_pat_xxxxxxxxxxxxxx"
+								autocomplete="off"
+								spellcheck="false"
+								class="mg-editor-input"
+							/>
+							<button type="button" id="mg-editor-pat-toggle" class="mg-editor-mini" title="显示/隐藏">👁</button>
+							<button type="button" id="mg-editor-pat-clear" class="mg-editor-mini mg-editor-mini-danger" title="清除本地保存的 Token">🗑</button>
+						</div>
+					</div>
 					<!-- TMDB 智能匹配：使用烘焙的只读令牌（src/config/editorSecrets.ts），前端无任何 key 输入入口 -->
 				</section>
 
@@ -283,10 +300,16 @@ const STAR_PATH =
 				<!-- 底部操作 -->
 				<footer class="mg-editor-foot">
 					<p id="mg-editor-foot-status" class="mg-editor-foot-status">准备就绪</p>
+					<!-- 上传进度条：仅在「保存并上传」执行期间显示 -->
+					<div id="mg-upload-progress" class="mg-upload-progress" hidden>
+						<div id="mg-upload-bar" class="mg-upload-bar"></div>
+					</div>
 					<div class="mg-editor-foot-actions">
 						<a id="mg-editor-commits" href={COMMIT_URL_BASE} target="_blank" rel="noopener noreferrer" class="mg-editor-link" style="display:none;">查看提交历史</a>
 						<button type="button" id="mg-editor-cancel" class="mg-editor-btn">关闭</button>
-						<button type="button" id="mg-editor-save" class="mg-editor-btn mg-editor-btn-primary">💾 存本地</button>
+						<button type="button" id="mg-editor-save" class="mg-editor-btn" title="只存浏览器本地，不推送仓库">💾 只存本地</button>
+						<!-- 一键上传：存草稿 → GitHub 一次提交 → 自动重新同步 -->
+						<button type="button" id="mg-editor-publish" class="mg-editor-btn mg-editor-btn-primary">🚀 保存并上传</button>
 					</div>
 				</footer>
 
@@ -294,7 +317,7 @@ const STAR_PATH =
 				<section class="mg-editor-drafts">
 					<div class="mg-drafts-head">
 						<span>🗂 待上传（本地草稿）</span>
-						<span class="mg-editor-label-tip">真正推送仓库请用右下角「上传中心」</span>
+						<span class="mg-editor-label-tip">点上方「🚀 保存并上传」即可全部推送</span>
 					</div>
 					<div id="mg-draft-panel" class="mg-draft-panel"></div>
 				</section>
@@ -1003,6 +1026,58 @@ const STAR_PATH =
 		align-items: center;
 	}
 
+	/* —— 同步状态条（常显）—— */
+	[data-mg-editor] .mg-sync-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.6rem;
+		flex-wrap: wrap;
+	}
+	[data-mg-editor] .mg-sync-bar .mg-editor-status {
+		margin: 0;
+		flex: 1 1 220px;
+		min-width: 0;
+	}
+	[data-mg-editor] .mg-sync-actions {
+		display: flex;
+		gap: 0.35rem;
+		align-items: center;
+		flex-shrink: 0;
+	}
+	/* 令牌折叠区 */
+	[data-mg-editor] .mg-token-body {
+		margin-top: 0.7rem;
+		padding-top: 0.7rem;
+		border-top: 1px dashed var(--line-divider, #e5e7eb);
+	}
+	[data-mg-editor] .mg-token-body[hidden] { display: none; }
+	[data-mg-editor] #mg-token-toggle.is-warn {
+		color: #f43f5e;
+		border-color: rgba(244, 63, 94, 0.4);
+	}
+
+	/* 上传进度条 */
+	[data-mg-editor] .mg-upload-progress {
+		flex: 1 1 100%;
+		height: 4px;
+		border-radius: 999px;
+		background: var(--line-divider, #e5e7eb);
+		overflow: hidden;
+		margin: 0.15rem 0;
+	}
+	[data-mg-editor] .mg-upload-progress[hidden] { display: none; }
+	[data-mg-editor] .mg-upload-bar {
+		height: 100%;
+		width: 0%;
+		border-radius: 999px;
+		background: var(--primary, #6366f1);
+		transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+	@media (prefers-reduced-motion: reduce) {
+		[data-mg-editor] .mg-upload-bar { transition: none; }
+	}
+
 	/* 暗色模式微调 */
 	@media (prefers-color-scheme: dark) {
 		[data-mg-editor] .mg-editor-input,
@@ -1163,6 +1238,7 @@ const STAR_PATH =
 			sha: "", // 远端文件 sha
 			loading: false,
 			saving: false,
+			publishing: false, // 「保存并上传」执行中，防重复点击
 			editingId: null, // 当前展开编辑表单的条目 id（"new" 表示新增）
 		};
 
@@ -1595,6 +1671,118 @@ const STAR_PATH =
 				if (saveBtn) saveBtn.disabled = false;
 			}
 		}
+		// ===== 一键上传：存草稿 → 冲突检测 → GitHub 一次提交 → 自动重新同步 =====
+		// is:inline 脚本无法 import ESM，故复用 uploadCenter 挂在 window 上的 uploadAll。
+		function setUploadProgress(p, show) {
+			var wrap = $("mg-upload-progress");
+			var bar = $("mg-upload-bar");
+			if (!wrap || !bar) return;
+			wrap.hidden = !show;
+			bar.style.width = Math.max(0, Math.min(1, p || 0)) * 100 + "%";
+		}
+
+		// 上传前比对远端 sha：远端若已被别处改动，先征求确认，避免整文件覆盖别的设备的编辑
+		async function checkRemoteConflict() {
+			if (!state.sha) return true; // 没拉过远端＝无基准，跳过检测
+			var token = getPat();
+			if (!token) return true;
+			try {
+				var r = await fetch(API_FILE_URL, {
+					headers: { Accept: "application/vnd.github+json", Authorization: "Bearer " + token },
+				});
+				if (!r.ok) return true; // 检测失败不阻塞上传
+				var file = await r.json();
+				if (file.sha && file.sha !== state.sha) {
+					return window.confirm(
+						"⚠️ 远端文件已被改动（可能你在其它设备编辑过）。\n\n" +
+						"继续上传会用当前编辑内容整体覆盖远端。\n" +
+						"建议先「取消」→ 点「🔄 重新同步」看最新内容。\n\n" +
+						"确定继续覆盖吗？"
+					);
+				}
+			} catch (_e) {
+				/* 网络异常不阻塞上传 */
+			}
+			return true;
+		}
+
+		async function publishNow() {
+			var uc = window.__uploadCenter;
+			var btn = $("mg-editor-publish");
+			var foot = $("mg-editor-foot-status");
+			if (!uc || typeof uc.uploadAll !== "function") {
+				setStatus(foot, "❌ 上传模块未就绪，请刷新页面后重试", "error");
+				return;
+			}
+			if (state.publishing) return;
+			if (!getPat()) {
+				setStatus(foot, "❌ 缺少 GitHub 令牌，请展开上方「🔑 令牌」填写", "error");
+				expandTokenPanel(true);
+				return;
+			}
+			// 1) 先落一次本地草稿，保证最新编辑一定被纳入上传
+			await saveDraftLocal();
+			// 2) 远端冲突检测
+			var ok = await checkRemoteConflict();
+			if (!ok) {
+				setStatus(foot, "已取消上传（远端有更新，建议先重新同步）", "");
+				return;
+			}
+			state.publishing = true;
+			if (btn) { btn.disabled = true; btn.textContent = "⏳ 上传中…"; }
+			setUploadProgress(0.02, true);
+			try {
+				var res = await uc.uploadAll({
+					message: "chore(movies-games): 更新影视游戏收藏（" + state.items.length + " 条）",
+					onProgress: function (p, text) {
+						setUploadProgress(p, true);
+						if (text) setStatus(foot, "⏳ " + text, "");
+					},
+					onLog: function (kind, text) {
+						setStatus(foot, text, kind === "error" ? "error" : kind === "ok" ? "ok" : "");
+					},
+				});
+				setUploadProgress(1, true);
+				var short = res && res.commitSha ? res.commitSha.slice(0, 7) : "";
+				var link = $("mg-editor-commits");
+				if (link) link.style.display = "";
+				renderDraftPanel();
+				if (typeof uc.refreshBadge === "function") uc.refreshBadge();
+				setStatus(foot, "✅ 上传成功" + (short ? "（commit " + short + "）" : "") + " · 正在重新同步…", "ok");
+				// 3) 稍等 GitHub 一致性生效后重新拉取，拿到新 sha 便于继续编辑再次上传
+				await new Promise(function (r2) { setTimeout(r2, 1200); });
+				await loadRemote();
+				setStatus(
+					foot,
+					"✅ 上传成功并已重新同步" + (short ? "（commit " + short + "）" : "") + " · Vercel 约 1 分钟后线上生效",
+					"ok"
+				);
+			} catch (e) {
+				setStatus(foot, "❌ 上传失败：" + (e && e.message ? e.message : e), "error");
+			} finally {
+				state.publishing = false;
+				if (btn) { btn.disabled = false; btn.textContent = "🚀 保存并上传"; }
+				setTimeout(function () { setUploadProgress(0, false); }, 1200);
+			}
+		}
+
+		// ===== 令牌区折叠 =====
+		function expandTokenPanel(open) {
+			var body = $("mg-token-body");
+			var toggle = $("mg-token-toggle");
+			if (!body || !toggle) return;
+			body.hidden = !open;
+			toggle.setAttribute("aria-expanded", open ? "true" : "false");
+		}
+		function refreshTokenBadge() {
+			var badge = $("mg-token-badge");
+			if (!badge) return;
+			var has = !!getPat();
+			badge.textContent = has ? "令牌已就绪" : "需填令牌";
+			var toggle = $("mg-token-toggle");
+			if (toggle) toggle.classList.toggle("is-warn", !has);
+		}
+
 		// 加载远端后，若本地有未上传草稿则覆盖（断点续编）
 		async function restoreDraft() {
 			var ds = getDs();
@@ -1812,17 +2000,22 @@ const STAR_PATH =
 			if (!dlg) return;
 			if (typeof dlg.showModal === "function") dlg.showModal();
 			else dlg.setAttribute("open", "");
-			// 自动填 token
+			// 自动填 token（不抢焦点：傻瓜流下用户几乎不用碰令牌框）
 			var patInput = $("mg-editor-pat");
-			if (patInput) {
-				patInput.value = getPat();
-				setTimeout(function () { patInput.focus(); }, 50);
-			}
+			if (patInput) patInput.value = getPat();
+			expandTokenPanel(false);
+			refreshTokenBadge();
+			// 先用 SSR 种子把列表铺出来（秒开、无需等网络），远端回来后再覆盖为最新
+			renderList();
 			// 打开即展示本地草稿（无论是否填 PAT），让用户随时能看到 / 清理待上传内容
 			renderDraftPanel();
-			// 若已填 PAT 且远端尚未加载，则自动拉一次最新（拿到最新 sha，便于后续「上传中心」一次性推送）
-			if (getPat() && !state.sourceContent) {
+			// 打开即自动同步最新数据（每次都拉，保证「加载后所有信息都出来」且 sha 最新）
+			if (getPat()) {
+				setStatus($("mg-editor-status"), "正在同步远端最新数据…", "");
 				loadRemote();
+			} else {
+				setStatus($("mg-editor-status"), "⚠️ 未配置令牌：当前显示的是页面内置数据，可编辑但无法上传", "error");
+				expandTokenPanel(true);
 			}
 		}
 		function closeEditor() {
@@ -1853,6 +2046,7 @@ const STAR_PATH =
 			// Token 输入实时存
 			$("mg-editor-pat")?.addEventListener("input", function (e) {
 				setPat(e.target.value);
+				refreshTokenBadge();
 			});
 			// 显示/隐藏
 			$("mg-editor-pat-toggle")?.addEventListener("click", function () {
@@ -1866,6 +2060,7 @@ const STAR_PATH =
 				setPat("");
 				var inp = $("mg-editor-pat");
 				if (inp) inp.value = "";
+				refreshTokenBadge();
 				setStatus($("mg-editor-status"), "已清除本地 Token", "ok");
 			});
 
@@ -1888,8 +2083,16 @@ const STAR_PATH =
 				renderList();
 				scheduleDraftSave();
 			});
-			// 存为本地草稿（统一由「上传中心」推送）
+			// 只存本地草稿（不推仓库）
 			$("mg-editor-save")?.addEventListener("click", saveDraftLocal);
+			// 一键：存草稿 + 推送仓库 + 重新同步
+			$("mg-editor-publish")?.addEventListener("click", publishNow);
+			// 令牌区折叠开关
+			$("mg-token-toggle")?.addEventListener("click", function () {
+				var body = $("mg-token-body");
+				if (!body) return;
+				expandTokenPanel(body.hidden);
+			});
 
 			// 待上传草稿面板：载入 / 删除（事件委托，元素每次重渲染都有效）
 			$("mg-draft-panel")?.addEventListener("click", function (e) {

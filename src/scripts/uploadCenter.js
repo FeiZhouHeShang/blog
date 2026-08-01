@@ -18,8 +18,23 @@ export function bootUploadCenter() {
   bindEvents();
   refresh();
   subscribe(refresh);
-  // 便于调试
-  window.__uploadCenter = { open, close, refresh, upload: doUpload, toggle };
+  // 对外 API：
+  //   open/close/toggle/refresh —— 抽屉控制
+  //   upload()                  —— 走抽屉 UI 的上传（状态显示在抽屉里）
+  //   uploadAll(opts)           —— 原始上传函数，支持 onProgress/onLog 回调，
+  //                                供各功能页「一键上传」在自己的 UI 里显示进度
+  //   resolvePat()              —— 读取当前可用令牌
+  //   refreshBadge()            —— 上传后刷新角标
+  window.__uploadCenter = {
+    open,
+    close,
+    refresh,
+    upload: doUpload,
+    toggle,
+    uploadAll,
+    resolvePat,
+    refreshBadge: refresh,
+  };
 }
 
 function injectStyles() {
