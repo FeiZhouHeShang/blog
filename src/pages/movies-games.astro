@@ -181,14 +181,6 @@ const STAR_PATH =
 								)}
 								<div class="mg-gradient"></div>
 								<span class:list={["mg-status", STATUS_COLOR[item.status]]}>{statusLabel(item)}</span>
-								{item.score != null && (
-									<span class="mg-score">
-										<svg class="mg-star" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-											<path d={STAR_PATH} />
-										</svg>
-										{item.score}
-									</span>
-								)}
 							</div>
 							<div class="mg-info">
 								<h3 class="mg-title">{item.title}</h3>
@@ -362,22 +354,6 @@ const STAR_PATH =
 		border-radius: 0.4rem;
 		backdrop-filter: blur(2px);
 	}
-	.mg-score {
-		position: absolute;
-		bottom: 0.4rem;
-		right: 0.45rem;
-		display: flex;
-		align-items: center;
-		gap: 0.15rem;
-		font-size: 0.8rem;
-		font-weight: 700;
-		color: #fde047;
-		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-	}
-	.mg-star {
-		width: 0.85rem;
-		height: 0.85rem;
-	}
 	.mg-info {
 		padding: 0.5rem 0.6rem 0.6rem;
 	}
@@ -545,6 +521,49 @@ const STAR_PATH =
 		outline: none;
 		transition: border-color 0.15s;
 		box-sizing: border-box;
+	}
+	/* 强化下拉：深色聚焦环 + 自定义箭头 + 显式 option 配色（Win11 Chromium 弹层会尊重） */
+	[data-mg-editor] .mg-editor-select {
+		appearance: none;
+		-webkit-appearance: none;
+		-moz-appearance: none;
+		padding-right: 1.85rem;
+		background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3e%3cpath fill='none' stroke='%236366f1' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M3 4.5l3 3 3-3'/%3e%3c/svg%3e");
+		background-repeat: no-repeat;
+		background-position: right 0.55rem center;
+		background-size: 12px 12px;
+		cursor: pointer;
+		color-scheme: light;
+	}
+	/* 选项自身：深底 + 强对比（解决 Win11 浏览器原生 select 弹层白底浅灰字看不清） */
+	[data-mg-editor] .mg-editor-select option {
+		background-color: #ffffff;
+		color: #1f2937;
+		padding: 0.4rem 0.6rem;
+		font-size: 0.85rem;
+	}
+	[data-mg-editor] .mg-editor-select option:checked,
+	[data-mg-editor] .mg-editor-select option:focus {
+		background-color: #6366f1;
+		color: #ffffff;
+	}
+	/* 暗色主题：跟随站点变量 */
+	:global([data-theme="dark"]) [data-mg-editor] .mg-editor-select,
+	:global(html.dark) [data-mg-editor] .mg-editor-select {
+		color-scheme: dark;
+		background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3e%3cpath fill='none' stroke='%23a5b4fc' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M3 4.5l3 3 3-3'/%3e%3c/svg%3e");
+	}
+	:global([data-theme="dark"]) [data-mg-editor] .mg-editor-select option,
+	:global(html.dark) [data-mg-editor] .mg-editor-select option {
+		background-color: #1f2937;
+		color: #f3f4f6;
+	}
+	:global([data-theme="dark"]) [data-mg-editor] .mg-editor-select option:checked,
+	:global([data-theme="dark"]) [data-mg-editor] .mg-editor-select option:focus,
+	:global(html.dark) [data-mg-editor] .mg-editor-select option:checked,
+	:global(html.dark) [data-mg-editor] .mg-editor-select option:focus {
+		background-color: #6366f1;
+		color: #ffffff;
 	}
 	[data-mg-editor] .mg-editor-input:focus,
 	[data-mg-editor] .mg-editor-input-sm:focus,
@@ -1272,8 +1291,8 @@ const STAR_PATH =
 			var tmdbUrl = r.media_type === "movie"
 				? "https://www.themoviedb.org/movie/" + r.id
 				: "https://www.themoviedb.org/tv/" + r.id;
-			// comment(简介)：取 TMDB overview 全文（搜索已按 zh-CN→en-US 回退，非空即写入）
-			var comment = r.overview || "";
+			// comment(观后感) 不再自动填：悬停标语/简介框只放用户自己的心得，
+			// 否则自动匹配会把 TMDB overview 写进 comment，覆盖掉用户原本的观后感。
 			// tags(副标签)：把 TMDB 的 genre_ids 映射成中文标签（如 悬疑/犯罪/科幻）。
 			// 兼容两种返回：搜索结果给 genre_ids[]；粘贴链接取详情给 genres[{id,name}]。
 			var genreIds = r.genre_ids || (r.genres || []).map(function (g) { return g.id; });
@@ -1290,7 +1309,6 @@ const STAR_PATH =
 			rowEl._mgLastQuery = title;
 			setVal("section", sec);
 			setVal("bangumiUrl", tmdbUrl);
-			setVal("comment", comment);
 			setVal("tags", tags.join(", "));
 			// 关闭候选列表
 			var host = rowEl.querySelector("[data-tmdb-host]");
@@ -1538,9 +1556,6 @@ const STAR_PATH =
 							return '<span class="mg-row-badge" style="background:' + statusColor(it.status) + ';">' + escHtml(t) + "</span>";
 						})
 						.join("");
-					var scoreHtml = it.score != null
-						? '<span class="mg-row-badge" style="background:#fde047;color:#92400e;">★ ' + escHtml(String(it.score)) + "</span>"
-						: "";
 					var row = "";
 					if (isEditing) {
 						row =
@@ -1556,7 +1571,6 @@ const STAR_PATH =
 									'<div class="mg-row-meta">' +
 										'<span class="mg-row-badge" style="background:var(--primary,#6366f1);">' + escHtml(sectionLabel(it.section)) + "</span>" +
 										'<span class="mg-row-badge" style="background:' + statusColor(it.status) + ';">' + escHtml(statusLabel(it)) + "</span>" +
-										scoreHtml +
 										tagsHtml +
 									"</div>" +
 								"</div>" +
@@ -1614,10 +1628,6 @@ const STAR_PATH =
 						'<select class="mg-editor-select" data-f="status">' + statusOpts + "</select>" +
 					"</div>" +
 					'<div class="mg-form-field">' +
-						'<label>评分 (0-10)</label>' +
-						'<input type="number" min="0" max="10" step="0.5" class="mg-editor-input-sm" data-f="score" value="' + escHtml(item.score != null ? String(item.score) : "") + '" />' +
-					"</div>" +
-					'<div class="mg-form-field">' +
 						'<label>唯一 ID</label>' +
 						'<input type="text" class="mg-editor-input-sm" data-f="id" value="' + escHtml(item.id || "") + '" />' +
 					"</div>" +
@@ -1647,14 +1657,13 @@ const STAR_PATH =
 			rowEl.querySelectorAll("[data-f]").forEach(function (inp) {
 				var k = inp.getAttribute("data-f");
 				var v = inp.value;
-				if (k === "score") v = v === "" ? undefined : Number(v);
 				if (k === "tags")
 					v = v
 						.split(",")
 						.map(function (x) { return x.trim(); })
 						.filter(Boolean);
 				if (k === "cover" && v === "") v = "";
-				if (v === "" && (k === "comment" || k === "bangumiUrl" || k === "score")) {
+				if (v === "" && (k === "comment" || k === "bangumiUrl")) {
 					// 保留 undefined
 				} else if (k === "tags" && (!v || v.length === 0)) {
 					// 保留 undefined

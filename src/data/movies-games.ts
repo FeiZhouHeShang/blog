@@ -30,7 +30,6 @@
  *   cover      封面图 URL，规则见上；留空 = 首字占位。
  *   section    类型：movie 电影 / tv 电视剧 / anime 动漫 / documentary 纪录片 / game 游戏。
  *   status     状态：collect 看过 / doing 在看(游戏=在玩) / wish 想看 / on_hold 搁置 / dropped 抛弃。
- *   score      评分 0-10，可空。
  *   tags       类型副标签，如 ["悬疑","犯罪"]。
  *   comment    悬停评语（一句话感想）。
  *   bangumiUrl 外链，如 Bangumi / 豆瓣条目页；留空则卡片不可点击跳转。
@@ -51,8 +50,6 @@ export interface MediaItem {
 	section: MediaSection;
 	/** 状态：看过/在看/想看/搁置/抛弃（游戏在看=在玩） */
 	status: MediaStatus;
-	/** 评分 0-10，可空 */
-	score?: number;
 	/** 类型副标签，如 ["悬疑","犯罪"] */
 	tags?: string[];
 	/** 悬停评语 */
@@ -72,168 +69,156 @@ export interface MediaItem {
  *   cover: "/assets/images/movies-games/xian-ni.jpg", // 留空=首字占位；本地图放 public/assets/images/movies-games/ 下；或填豆瓣/Bangumi/图床直链
  *   section: "anime",                   // movie 电影 / tv 电视剧 / anime 动漫 / documentary 纪录片 / game 游戏
  *   status: "collect",                  // collect 看过 / doing 在看 / wish 想看 / on_hold 搁置 / dropped 抛弃
- *   score: 8,                           // 0-10，可空
  *   tags: ["玄幻", "热血"],              // 副标签，可空
- *   comment: "国漫扛把子",               // 悬停评语，可空
+ *   comment: "国漫扛把子",               // 悬停评语（你自己的观后感/心得），可空
  *   bangumiUrl: "https://bangumi.tv/subject/12345", // 外链，可空（留空卡片不跳转）
  * },
  * ──────────────────────────────────────────────────────────────
  */
 export const moviesGames: MediaItem[] = [
-  {
-    "id": "xuan-an",
-    "title": "悬案",
-    "cover": "https://image.tmdb.org/t/p/w200/IgAmsxI2xFxUcHZRvEyEpl1myv.jpg",
-    "section": "tv",
-    "status": "collect",
-    "score": 9,
-    "tags": [
-      "悬疑",
-      "犯罪"
-    ],
-    "comment": "近期为数不多的还不错的悬疑剧"
-  },
-  {
-    "id": "xian-ni",
-    "title": "仙逆",
-    "cover": "https://ph.0824.uk/file/anime/仙逆.jpg",
-    "section": "anime",
-    "status": "collect",
-    "score": 8,
-    "tags": [
-      "玄幻",
-      "热血"
-    ],
-    "comment": "国漫扛把子，剧情渐入佳境"
-  },
-  {
-    "id": "jiang-shi-xiao-yuan",
-    "title": "僵尸校园",
-    "cover": "https://ph.0824.uk/file/anime/僵尸校园.jpg",
-    "section": "anime",
-    "status": "collect",
-    "score": 8,
-    "tags": [
-      "丧尸",
-      "惊悚"
-    ],
-    "comment": "韩漫改，节奏紧凑"
-  },
-  {
-    "id": "tun-shi-xing-kong",
-    "title": "吞噬星空",
-    "cover": "https://ph.0824.uk/file/anime/吞噬星空.jpg",
-    "section": "anime",
-    "status": "doing",
-    "tags": [
-      "科幻",
-      "热血"
-    ],
-    "comment": "追更中"
-  },
-  {
-    "id": "dou-po-cang-qiong",
-    "title": "斗破苍穹",
-    "cover": "https://ph.0824.uk/file/anime/斗破苍穹.jpg",
-    "section": "anime",
-    "status": "collect",
-    "score": 8,
-    "tags": [
-      "玄幻"
-    ]
-  },
-  {
-    "id": "dou-luo-da-lu",
-    "title": "斗罗大陆",
-    "cover": "https://ph.0824.uk/file/anime/斗罗大陆.jpg",
-    "section": "anime",
-    "status": "collect",
-    "score": 7,
-    "tags": [
-      "玄幻"
-    ]
-  },
-  {
-    "id": "gong-fu-nv-zu",
-    "title": "功夫女足",
-    "cover": "https://ph.0824.uk/file/anime/功夫女足.jpg",
-    "section": "anime",
-    "status": "collect",
-    "score": 7,
-    "tags": [
-      "运动",
-      "搞笑"
-    ]
-  },
-  {
-    "id": "wan-mei-shi-jie",
-    "title": "完美世界",
-    "cover": "https://ph.0824.uk/file/anime/完美世界.jpg",
-    "section": "anime",
-    "status": "on_hold",
-    "score": 8,
-    "tags": [
-      "玄幻"
-    ],
-    "comment": "画风好，更新慢"
-  },
-  {
-    "id": "zi-chuan",
-    "title": "紫川",
-    "cover": "https://ph.0824.uk/file/anime/紫川.jpg",
-    "section": "anime",
-    "status": "collect",
-    "score": 7,
-    "tags": [
-      "战争",
-      "权谋"
-    ]
-  },
-  {
-    "id": "hua-jiang-hu",
-    "title": "画江湖之不良人",
-    "cover": "https://ph.0824.uk/file/anime/画江湖之不良人.jpg",
-    "section": "anime",
-    "status": "collect",
-    "score": 8,
-    "tags": [
-      "武侠",
-      "国漫"
-    ]
-  },
-  {
-    "id": "shen-yin-wang-zuo",
-    "title": "神印王座",
-    "cover": "https://ph.0824.uk/file/anime/神印王座.jpg",
-    "section": "anime",
-    "status": "collect",
-    "score": 7,
-    "tags": [
-      "玄幻"
-    ]
-  },
-  {
-    "id": "xing-chen-bian",
-    "title": "星辰变",
-    "cover": "https://ph.0824.uk/file/anime/星辰变.jpg",
-    "section": "anime",
-    "status": "collect",
-    "score": 7,
-    "tags": [
-      "玄幻",
-      "修真"
-    ]
-  },
-  {
-    "id": "nuo-man-di",
-    "title": "诺曼底72小时",
-    "cover": "https://ph.0824.uk/file/anime/诺曼底72小时.jpg",
-    "section": "anime",
-    "status": "collect",
-    "score": 7,
-    "tags": [
-      "战争",
-      "历史"
-    ]
-  }
+	{
+		id: "xuan-an",
+		title: "悬案",
+		cover: "https://image.tmdb.org/t/p/w200/IgAmsxI2xFxUcHZRvEyEpl1myv.jpg",
+		section: "tv",
+		status: "collect",
+		tags: ["悬疑", "犯罪"],
+		comment: "近期为数不多的还不错的悬疑剧",
+	},
+	{
+		id: "xian-ni",
+		title: "仙逆",
+		cover: "https://ph.0824.uk/file/anime/仙逆.jpg",
+		section: "anime",
+		status: "collect",
+		tags: ["玄幻", "热血"],
+		comment: "国漫扛把子，剧情渐入佳境",
+	},
+	{
+		id: "jiang-shi-xiao-yuan",
+		title: "僵尸校园",
+		cover: "https://ph.0824.uk/file/anime/僵尸校园.jpg",
+		section: "anime",
+		status: "collect",
+		tags: ["丧尸", "惊悚"],
+		comment: "韩漫改，节奏紧凑",
+	},
+	{
+		id: "tun-shi-xing-kong",
+		title: "吞噬星空",
+		cover: "https://ph.0824.uk/file/anime/吞噬星空.jpg",
+		section: "anime",
+		status: "on_hold",
+		tags: ["科幻", "热血"],
+		comment: "追更中，先搁置",
+	},
+	{
+		id: "dou-po-cang-qiong",
+		title: "斗破苍穹",
+		cover: "https://ph.0824.uk/file/anime/斗破苍穹.jpg",
+		section: "anime",
+		status: "collect",
+		tags: ["玄幻"],
+	},
+	{
+		id: "dou-luo-da-lu",
+		title: "斗罗大陆",
+		cover: "https://ph.0824.uk/file/anime/斗罗大陆.jpg",
+		section: "anime",
+		status: "collect",
+		tags: ["玄幻"],
+	},
+	{
+		id: "shao-lin-zu-qiu",
+		title: "少林足球",
+		cover: "https://image.tmdb.org/t/p/w200/wWba3TaojhK7NdycRhoQpsG0Fv6.jpg",
+		section: "movie",
+		status: "collect",
+		tags: ["喜剧", "运动"],
+		comment: "星爷经典，百看不厌",
+	},
+	{
+		id: "gong-fu-nv-zu",
+		title: "功夫女足",
+		cover: "https://ph.0824.uk/file/anime/功夫女足.jpg",
+		section: "anime",
+		status: "collect",
+		tags: ["运动", "搞笑"],
+	},
+	{
+		id: "da-wang-rao-ming",
+		title: "大王饶命",
+		cover: "https://ph.0824.uk/file/anime/大王饶命.jpg",
+		section: "anime",
+		status: "collect",
+		tags: ["搞笑", "异能"],
+		comment: "吕树是真的皮",
+	},
+	{
+		id: "wan-mei-shi-jie",
+		title: "完美世界",
+		cover: "https://ph.0824.uk/file/anime/完美世界.jpg",
+		section: "anime",
+		status: "on_hold",
+		tags: ["玄幻"],
+		comment: "画风好，更新慢",
+	},
+	{
+		id: "zi-chuan",
+		title: "紫川",
+		cover: "https://ph.0824.uk/file/anime/紫川.jpg",
+		section: "anime",
+		status: "collect",
+		tags: ["战争", "权谋"],
+	},
+	{
+		id: "hua-jiang-hu",
+		title: "画江湖之不良人",
+		cover: "https://ph.0824.uk/file/anime/画江湖之不良人.jpg",
+		section: "anime",
+		status: "collect",
+		tags: ["武侠", "国漫"],
+	},
+	{
+		id: "shen-yin-wang-zuo",
+		title: "神印王座",
+		cover: "https://ph.0824.uk/file/anime/神印王座.jpg",
+		section: "anime",
+		status: "collect",
+		tags: ["玄幻"],
+	},
+	{
+		id: "xing-chen-bian",
+		title: "星辰变",
+		cover: "https://ph.0824.uk/file/anime/星辰变.jpg",
+		section: "anime",
+		status: "collect",
+		tags: ["玄幻", "修真"],
+	},
+	{
+		id: "nuo-man-di",
+		title: "诺曼底72小时",
+		cover: "https://ph.0824.uk/file/anime/诺曼底72小时.jpg",
+		section: "anime",
+		status: "collect",
+		tags: ["战争", "历史"],
+	},
+	{
+		id: "wang-zhe-rong-yao",
+		title: "王者荣耀",
+		cover: "",
+		section: "game",
+		status: "doing",
+		tags: ["MOBA"],
+		comment: "偶尔上分，王者可期",
+	},
+	{
+		id: "hei-shen-hua",
+		title: "黑神话：悟空",
+		cover: "",
+		section: "game",
+		status: "wish",
+		tags: ["动作", "单机"],
+		comment: "国产之光，等打折入手",
+	},
 ];

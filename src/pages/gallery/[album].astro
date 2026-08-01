@@ -134,7 +134,7 @@ const columnWidth = galleryConfig.columnWidth || 240;
           style={`column-count: 2; column-gap: 0.75rem; --col-width: ${columnWidth}px;`}
         >
           {photos.map((photo) => (
-            <PhotoCard src={photo} albumId={albumMeta.id} client:visible />
+            <PhotoCard src={photo.src} type={photo.type} name={photo.name} albumId={albumMeta.id} client:visible />
           ))}
         </div>
       ) : (
