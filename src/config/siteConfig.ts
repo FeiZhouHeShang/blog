@@ -50,7 +50,7 @@ export const siteConfig: SiteConfig = {
 	// [已修改] Favicon 改为 QQ 图片
 	favicon: [
 		{
-			src: "/gallery/mxdl-2026/QQ.png",
+			src: "/gallery/测试/QQ.png",
 			sizes: "any",
 		},
 	],
@@ -66,7 +66,7 @@ export const siteConfig: SiteConfig = {
 		logo: {
 			type: "image",
 			// [已修改] Logo 改为 QQ 图片
-			value: "/gallery/mxdl-2026/QQ.png",
+			value: "/gallery/测试/QQ.png",
 			alt: "logo",
 		},
 		// 导航栏标题

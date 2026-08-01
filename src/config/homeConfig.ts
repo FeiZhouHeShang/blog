@@ -7,7 +7,7 @@ export const homeConfig: HomeConfig = {
 	// 2. src 目录（不以 "/" 开头，自动优化但会增加构建时间，推荐）："assets/images/avatar.webp"
 	// 3. 远程 URL："https://example.com/avatar.jpg"
 	// [已修改] 头像改为 QQ 图片
-	avatar: "/gallery/mxdl-2026/QQ.png",
+	avatar: "/gallery/测试/QQ.png",
 
 	// 上班时间头像（为空则使用上方 avatar）
 	avatarOnWork: "",

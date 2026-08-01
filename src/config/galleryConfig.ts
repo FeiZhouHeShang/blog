@@ -12,11 +12,10 @@ import type { GalleryConfig } from "@/types/config";
 //
 // -------------------------------------------------------------------------
 // 相册列表
-//   id          相册唯一标识（用于目录命名和 URL 路径）
-//                ⚠️ 强烈建议用英文/拼音，不要用中文
-//                中文 id 会导致 URL 被编码成 %E9%B8%A3%E6%BD%AE 这种长串，
-//                影响 SEO / 分享 / 缓存。name 字段可以填中文。
-//                例如  id: "mc-2026"  对应  public/gallery/mc-2026/
+//   id          相册唯一标识（同时是 public/gallery/ 下的目录名）
+//                现已支持中文目录名（如 id: "鸣潮" → public/gallery/鸣潮/），方便整理；
+//                URL 会被自动编码（%E9%B8%A3...），不影响访问。
+//                注意：改了 id，public/gallery/ 下对应的文件夹也要同步改名。
 //   cover       手动指定封面图（可选；不填会找 cover.* 文件，再没就用第一张图）
 //   name        相册名称（中文展示在这里）
 //   description 相册介绍（中文，显示在卡片标题下方，最多 2 行截断）
@@ -31,7 +30,7 @@ export const galleryConfig: GalleryConfig = {
 	// 相册列表
 	albums: [
 		// 支持jpg/png/webp/avif/gif格式
-		// id: 相册唯一标识符（用于目录命名和URL路径），比如设置：id: "firefly-2026", 对应 public/gallery/firefly-2026/目录
+		// id: 相册唯一标识符（同时是 public/gallery/ 下的目录名），比如设置：id: "鸣潮", 对应 public/gallery/鸣潮/目录
 		// cover: 手动指定封面图（可选，不填会把cover.*文件作为封面图，如果没有cover.*文件，则使用第一张图片作为封面图）
 		// name: 相册名称
 		// description: 相册描述
@@ -40,7 +39,7 @@ export const galleryConfig: GalleryConfig = {
 		// tags: 相册标签，用于分类和过滤
 		// 每添加一个数组项就相当于添加了一个相册，记得在 public/gallery/ 目录下创建对应的子目录并放入图片
 		{
-			id: "mxdl-2026",
+			id: "测试",
 			name: "测试",
 			description: "测试1",
 			location: "萌新大佬",
@@ -48,7 +47,7 @@ export const galleryConfig: GalleryConfig = {
 			tags: ["AI", "测试2"],
 		},
 		{
-			id: "gpt-img2-2026",
+			id: "GPT生图",
 			name: "GPT生图",
 			description: "GPT生成的图片",
 			location: "gpt",
@@ -56,7 +55,7 @@ export const galleryConfig: GalleryConfig = {
 			tags: ["AI", "GPT生图"],
 		},
 		{
-			id: "mc-2026",
+			id: "鸣潮",
 			name: "鸣潮",
 			description: "鸣潮相册",
 			location: "鸣潮",
@@ -64,7 +63,7 @@ export const galleryConfig: GalleryConfig = {
 			tags: ["鸣潮"],
 		},
 		{
-			id: "bl-ll-2026",
+			id: "萝莉",
 			name: "萝莉",
 			description: "进来先电",
 			location: "碧蓝航线",
