@@ -22,8 +22,16 @@ const description = i18n(I18nKey.galleryDescription);
 const albums = galleryConfig.albums.map((album) => {
 	const photos = scanAlbumPhotos(album.id);
 	const cover = getAlbumCover(album, photos);
-	return { ...album, cover, photoCount: photos.length };
+	return {
+		...album,
+		cover,
+		photoCount: photos.length,
+		hasVideo: photos.some((p) => p.type === "video"),
+	};
 });
+
+// 错落排版：循环分配纵横比，制造视觉节奏
+const ratios = ["4/3", "1/1", "3/4"];
 
 const allTags = [...new Set(albums.flatMap((a) => a.tags || []))].sort();
 
@@ -99,8 +107,8 @@ const tabs = [
         )}
 
         {albums.length > 0 ? (
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 my-6">
-            {albums.map((album) => (
+          <div class="gallery-masonry">
+            {albums.map((album, i) => (
               <AlbumCard
                 id={album.id}
                 name={album.name}
@@ -110,6 +118,8 @@ const tabs = [
                 location={album.location}
                 tags={album.tags}
                 photoCount={album.photoCount}
+                hasVideo={album.hasVideo}
+                ratio={ratios[i % ratios.length]}
               />
             ))}
           </div>

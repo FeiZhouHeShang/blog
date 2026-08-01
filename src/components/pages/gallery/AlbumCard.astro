@@ -12,14 +12,29 @@ interface Props {
 	location?: string;
 	tags?: string[];
 	photoCount: number;
+	/** 封面纵横比，如 "4/3" "1/1" "3/4"，用于瀑布流错落排版 */
+	ratio?: string;
+	/** 相册是否含视频（控制 🎬 / 📷 角标） */
+	hasVideo?: boolean;
 }
 
-const { id, name, cover, description, date, location, tags, photoCount } = Astro.props;
+const {
+	id,
+	name,
+	cover,
+	description,
+	date,
+	location,
+	tags,
+	photoCount,
+	ratio = "4/3",
+	hasVideo = false,
+} = Astro.props;
 
-function truncateLocation(loc: string | undefined, maxChars = 4): string {
+function truncateLocation(loc: string | undefined, maxChars = 6): string {
 	if (!loc) return "";
 	if (loc.length <= maxChars) return loc;
-	return `${loc.slice(0, maxChars)}...`;
+	return `${loc.slice(0, maxChars)}…`;
 }
 
 function truncateDesc(desc: string | undefined, maxChars = 80): string {
@@ -36,8 +51,8 @@ const displayDesc = truncateDesc(description);
   href={url(`/gallery/${id}/`)}
   data-tags={tags?.join(",") || ""}
   class="album-card group"
+  style={`--ar:${ratio};`}
 >
-  <!-- Image wrapper -->
   <div class="album-card-imgbox">
     {cover ? (
       <img
@@ -55,38 +70,48 @@ const displayDesc = truncateDesc(description);
       </div>
     )}
 
-    <!-- Photo count badge -->
+    <!-- 底部渐变遮罩：保证文字可读 -->
+    <div class="album-card-scrim"></div>
+
+    <!-- 类型角标：视频 / 图片（左上） -->
+    <div class:list={["album-card-type", { "is-video": hasVideo }]}>
+      {hasVideo ? "🎬" : "📷"}
+    </div>
+
+    <!-- 照片数徽章（右上，常驻） -->
     <div class="album-card-badge">
       {photoCount} {i18n(I18nKey.galleryPhotos)}
     </div>
 
-    <!-- Tags overlay (常驻) -->
-    {tags && tags.length > 0 && (
-      <div class="album-card-tags-overlay">
-        {tags.slice(0, 4).map((tag) => (
-          <span class="album-card-tag-overlay">{tag}</span>
-        ))}
+    <!-- 底部文字区：标题常驻，描述/元信息/标签 hover 揭示 -->
+    <div class="album-card-body">
+      <div class="album-card-headrow">
+        <h3 class="album-card-title">{name}</h3>
       </div>
-    )}
-  </div>
 
-  <!-- 文字区：常驻，hover 不动 -->
-  <div class="album-card-details">
-    <h3 class="album-card-title">{name}</h3>
-
-    {displayDesc && (
-      <p class="album-card-desc">{displayDesc}</p>
-    )}
-
-    <div class="album-card-meta">
-      {date && <span>{date}</span>}
-      {displayLocation && (
-        <span class="album-card-location">
-          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
-          {displayLocation}
-        </span>
-      )}
+      <div class="album-card-reveal">
+        {displayDesc && <p class="album-card-desc">{displayDesc}</p>}
+        <div class="album-card-meta">
+          {date && <span>{date}</span>}
+          {displayLocation && (
+            <span class="album-card-location">
+              <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
+              {displayLocation}
+            </span>
+          )}
+        </div>
+        {tags && tags.length > 0 && (
+          <div class="album-card-tags">
+            {tags.slice(0, 4).map((tag) => (
+              <span class="album-card-tag">{tag}</span>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
+
+    <!-- 查看相册 CTA（右下，hover 浮现） -->
+    <span class="album-card-cta">查看相册 →</span>
   </div>
 </a>
 
