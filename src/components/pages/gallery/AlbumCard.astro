@@ -48,12 +48,12 @@ const displayLocation = truncateLocation(location);
       </div>
     )}
 
-    <!-- Photo count badge (常驻，悬停时消失) -->
+    <!-- Photo count badge -->
     <div class="album-card-badge">
       {photoCount} {i18n(I18nKey.galleryPhotos)}
     </div>
 
-    <!-- Tags overlay (图片内左下角，悬停时消失，最多4个) -->
+    <!-- Tags overlay (常驻) -->
     {tags && tags.length > 0 && (
       <div class="album-card-tags-overlay">
         {tags.slice(0, 4).map((tag) => (
@@ -63,9 +63,13 @@ const displayLocation = truncateLocation(location);
     )}
   </div>
 
-  <!-- Details (悬停时露出) -->
+  <!-- 文字区：常驻，hover 不动 -->
   <div class="album-card-details">
     <h3 class="album-card-title">{name}</h3>
+
+    {description && (
+      <p class="album-card-desc">{description}</p>
+    )}
 
     <div class="album-card-meta">
       {date && <span>{date}</span>}
@@ -76,8 +80,6 @@ const displayLocation = truncateLocation(location);
         </span>
       )}
     </div>
-
-
   </div>
 </a>
 
