@@ -64,11 +64,11 @@ export const homeConfig: HomeConfig = {
 						{ speaker: "visitor", text: "这个博客主要写什么？" },
 						{
 							speaker: "host",
-							text: "主要记录技术学习、项目实践、魔兽争霸相关内容。",
+							text: "主要记录技术学习、项目实践、游戏、动漫、闲聊相关内容。",
 						},
 						{
 							speaker: "host",
-							text: "技术方面涵盖Java、前端、AI等方向。",
+							text: "技术方面涵盖软件应用、前端、AI等方向。",
 						},
 						{ speaker: "visitor", text: "看起来内容挺丰富的。" },
 						{

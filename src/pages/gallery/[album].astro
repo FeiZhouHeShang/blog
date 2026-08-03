@@ -31,7 +31,6 @@ if (!albumMeta) {
 
 const photos = scanAlbumPhotos(albumMeta.id);
 const cover = getAlbumCover(albumMeta, photos);
-const columnWidth = galleryConfig.columnWidth || 240;
 ---
 
 <MainGridLayout title={albumMeta.name} description={albumMeta.description || ""}>
@@ -128,11 +127,27 @@ const columnWidth = galleryConfig.columnWidth || 240;
   <!-- 瀑布流照片网格 -->
   <div class="w-full rounded-(--radius-large) overflow-hidden relative mt-4">
     <div class="card-base z-10 px-6 py-6 relative w-full">
+      <!-- 视图切换：大图 / 小图（偏好持久化到 localStorage） -->
+      <div class="gallery-view-toggle">
+        <span class="gallery-view-toggle-label">
+          <Icon name="material-symbols:grid-view" class="text-base" />
+          视图
+        </span>
+        <div class="gallery-seg" role="group" aria-label="切换大图或小图视图">
+          <button type="button" data-view-btn="large" class="is-active">
+            <Icon name="material-symbols:photo-size-select-large" class="text-base" />
+            大图
+          </button>
+          <button type="button" data-view-btn="small">
+            <Icon name="material-symbols:photo-size-select-small" class="text-base" />
+            小图
+          </button>
+        </div>
+        <span class="gallery-view-hint hidden sm:inline">图片多时切小图翻页更快</span>
+      </div>
+
       {photos.length > 0 ? (
-        <div
-          class="gallery-masonry"
-          style={`column-count: 2; column-gap: 0.75rem; --col-width: ${columnWidth}px;`}
-        >
+        <div class="gallery-masonry" data-view="large">
           {photos.map((photo) => (
             <PhotoCard src={photo.src} type={photo.type} name={photo.name} albumId={albumMeta.id} client:visible />
           ))}
@@ -147,4 +162,33 @@ const columnWidth = galleryConfig.columnWidth || 240;
   </div>
 
   <!-- 样式已迁移至 src/styles/pages/gallery.css -->
+
+  <!-- 大图 / 小图 视图切换（兼容 Swup 软导航，localStorage 记忆偏好） -->
+  <script>
+    function initGalleryViewToggle() {
+      const masonry = document.querySelector(".gallery-masonry[data-view]");
+      if (!masonry) return;
+      const btns = Array.from(document.querySelectorAll("[data-view-btn]"));
+      if (!btns.length) return;
+      const KEY = "gallery-view";
+      const apply = (mode) => {
+        if (mode !== "large" && mode !== "small") mode = "large";
+        masonry.setAttribute("data-view", mode);
+        btns.forEach((b) =>
+          b.classList.toggle("is-active", b.getAttribute("data-view-btn") === mode),
+        );
+      };
+      // 先应用已保存偏好，避免每次进相册都回到默认
+      apply(localStorage.getItem(KEY) || "large");
+      btns.forEach((b) => {
+        b.addEventListener("click", () => {
+          const mode = b.getAttribute("data-view-btn");
+          localStorage.setItem(KEY, mode);
+          apply(mode);
+        });
+      });
+    }
+    document.addEventListener("astro:page-load", initGalleryViewToggle);
+    initGalleryViewToggle();
+  </script>
 </MainGridLayout>

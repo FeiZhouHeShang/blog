@@ -322,3 +322,120 @@
 	opacity: 1;
 	transform: translateY(0);
 }
+
+/* --- 详情页：大图 / 小图 视图切换 --- */
+.gallery-view-toggle {
+	display: flex;
+	align-items: center;
+	gap: 0.85rem;
+	flex-wrap: wrap;
+	margin-bottom: 0.5rem;
+}
+
+.gallery-view-toggle-label {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.4rem;
+	font-size: 0.9rem;
+	font-weight: 600;
+	color: hsl(var(--hue) 35% 35%);
+}
+
+:root.dark .gallery-view-toggle-label {
+	color: hsl(var(--hue) 45% 72%);
+}
+
+.gallery-seg {
+	display: inline-flex;
+	padding: 3px;
+	gap: 2px;
+	border-radius: 9999px;
+	background: rgba(0, 0, 0, 0.05);
+	border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+:root.dark .gallery-seg {
+	background: rgba(255, 255, 255, 0.07);
+	border-color: rgba(255, 255, 255, 0.1);
+}
+
+.gallery-seg button {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 6px 14px;
+	border: none;
+	border-radius: 9999px;
+	font-size: 0.82rem;
+	font-weight: 600;
+	line-height: 1;
+	cursor: pointer;
+	color: #6b7280;
+	background: transparent;
+	transition:
+		color 0.25s ease,
+		background 0.25s ease,
+		box-shadow 0.25s ease,
+		transform 0.15s ease;
+}
+
+:root.dark .gallery-seg button {
+	color: #9ca3af;
+}
+
+.gallery-seg button:hover {
+	color: #374151;
+}
+
+:root.dark .gallery-seg button:hover {
+	color: #e5e7eb;
+}
+
+.gallery-seg button:active {
+	transform: scale(0.96);
+}
+
+.gallery-seg button.is-active {
+	color: #06281f;
+	background: hsl(var(--hue) 70% 60%);
+	box-shadow: 0 4px 14px -4px hsl(var(--hue) 70% 50% / 0.6);
+}
+
+:root.dark .gallery-seg button.is-active {
+	color: #06281f;
+}
+
+.gallery-view-hint {
+	font-size: 0.74rem;
+	color: #9ca3af;
+}
+
+:root.dark .gallery-view-hint {
+	color: #6b7280;
+}
+
+/* 大图：桌面 2 列、手机 1 列（保持大尺寸观感，等同旧版） */
+.gallery-masonry[data-view="large"] {
+	column-count: 2;
+	column-gap: 1.25rem;
+}
+
+/* 小图：窄列缩略图，列数更多、翻页更快 */
+.gallery-masonry[data-view="small"] {
+	column-width: 150px;
+	column-gap: 0.6rem;
+}
+
+.gallery-masonry[data-view="small"] > * {
+	margin-bottom: 0.6rem;
+}
+
+@media (max-width: 639px) {
+	.gallery-masonry[data-view="large"] {
+		column-count: 1;
+	}
+	.gallery-masonry[data-view="small"] {
+		column-count: 2;
+		column-width: auto;
+	}
+}

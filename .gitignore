@@ -48,3 +48,6 @@ CLAUDE.md
 # local tooling artifacts (dev server logs, agent screenshots)
 dev-server.log.dir/
 .workbuddy/shots/
+
+# 媒体自动压缩原图备份（压缩后会生成，勿入仓）
+public/.media-originals/
