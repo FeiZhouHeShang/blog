@@ -2026,51 +2026,41 @@ const STAR_PATH =
 			state.editingId = null;
 		}
 
-		function bind() {
-			var openBtn = $("mg-open-editor");
-			if (openBtn) openBtn.addEventListener("click", openEditor);
-			$("mg-editor-close")?.addEventListener("click", closeEditor);
-			$("mg-editor-cancel")?.addEventListener("click", closeEditor);
-
-			// 点击 backdrop 关闭
-			$("mg-editor")?.addEventListener("click", function (e) {
-				if (e.target === $("mg-editor")) closeEditor();
-			});
-
-			// Esc 关闭
-			$("mg-editor")?.addEventListener("cancel", function (e) {
-				e.preventDefault();
-				closeEditor();
-			});
-
-			// Token 输入实时存
-			$("mg-editor-pat")?.addEventListener("input", function (e) {
-				setPat(e.target.value);
-				refreshTokenBadge();
-			});
-			// 显示/隐藏
-			$("mg-editor-pat-toggle")?.addEventListener("click", function () {
+		// ===== 事件绑定（文档级事件委托，兼容 Swup 软导航）=====
+		// 关键修复：#mg-open-editor / #mg-editor 等都在 Swup 交换区内，软导航后 DOM 被换掉。
+		// 原 bind() 直接 addEventListener 到被换走的旧元素 → 监听器随旧 DOM 一起丢失，
+		// 表现为「点编辑没反应，刷新（硬加载重跑内联脚本）才恢复」。
+		// 现统一在 document 上做事件委托，且只绑一次（window.__mgDelegated 防重复），
+		// 无论 DOM 被 Swup 换多少次，点击都能命中当前真实元素。
+		function onDocClick(e) {
+			var t = e.target;
+			var cId = function (id) { return t.closest && t.closest(id); };
+			// 打开编辑器
+			if (cId("#mg-open-editor")) { openEditor(); return; }
+			// 关闭：× / 关闭按钮
+			if (cId("#mg-editor-close") || cId("#mg-editor-cancel")) { closeEditor(); return; }
+			// 点击 backdrop 关闭（点 dialog 自身、非其子元素）
+			if (cId("#mg-editor") && t === $("mg-editor")) { closeEditor(); return; }
+			// 显示/隐藏 PAT
+			if (cId("#mg-editor-pat-toggle")) {
 				var inp = $("mg-editor-pat");
-				if (!inp) return;
-				inp.type = inp.type === "password" ? "text" : "password";
-			});
-			// 清除
-			$("mg-editor-pat-clear")?.addEventListener("click", function () {
+				if (inp) inp.type = inp.type === "password" ? "text" : "password";
+				return;
+			}
+			// 清除 PAT
+			if (cId("#mg-editor-pat-clear")) {
 				if (!confirm("确定清除本地保存的 GitHub PAT？")) return;
 				setPat("");
-				var inp = $("mg-editor-pat");
-				if (inp) inp.value = "";
+				var inp2 = $("mg-editor-pat");
+				if (inp2) inp2.value = "";
 				refreshTokenBadge();
 				setStatus($("mg-editor-status"), "已清除本地 Token", "ok");
-			});
-
-			// 加载
-			$("mg-editor-load")?.addEventListener("click", function () {
-				state.editingId = null;
-				loadRemote();
-			});
-			// 新增
-			$("mg-editor-add")?.addEventListener("click", function () {
+				return;
+			}
+			// 重新同步
+			if (cId("#mg-editor-load")) { state.editingId = null; loadRemote(); return; }
+			// 新增条目
+			if (cId("#mg-editor-add")) {
 				var newItem = {
 					id: genId("untitled"),
 					title: "",
@@ -2082,185 +2072,206 @@ const STAR_PATH =
 				state.editingId = newItem.id;
 				renderList();
 				scheduleDraftSave();
-			});
-			// 只存本地草稿（不推仓库）
-			$("mg-editor-save")?.addEventListener("click", saveDraftLocal);
-			// 一键：存草稿 + 推送仓库 + 重新同步
-			$("mg-editor-publish")?.addEventListener("click", publishNow);
-			// 令牌区折叠开关
-			$("mg-token-toggle")?.addEventListener("click", function () {
+				return;
+			}
+			// 只存本地
+			if (cId("#mg-editor-save")) { saveDraftLocal(); return; }
+			// 保存并上传
+			if (cId("#mg-editor-publish")) { publishNow(); return; }
+			// 令牌区折叠
+			if (cId("#mg-token-toggle")) {
 				var body = $("mg-token-body");
-				if (!body) return;
-				expandTokenPanel(body.hidden);
-			});
-
-			// 待上传草稿面板：载入 / 删除（事件委托，元素每次重渲染都有效）
-			$("mg-draft-panel")?.addEventListener("click", function (e) {
-				var btn = e.target.closest("[data-draft-act]");
-				if (!btn) return;
-				var act = btn.getAttribute("data-draft-act");
-				var ds = getDs();
-				if (!ds) return;
-				if (act === "del") {
-					if (!confirm("确定删除本地草稿？（不影响已推送到仓库的内容）")) return;
-					ds.deleteDraft("movies-games", SRC_PATH)
-						.then(function () {
-							setStatus($("mg-editor-foot-status"), "🗑 已删除本地草稿", "ok");
-							renderDraftPanel();
-						})
-						.catch(function (err) {
-							setStatus($("mg-editor-foot-status"), "❌ " + (err && err.message ? err.message : err), "error");
-						});
-				} else if (act === "load") {
-					// 载入草稿到编辑区（断点续编）
-					ds.getDraft("movies-games", SRC_PATH)
-						.then(function (d) {
-							if (!d || !d.files || !d.files.length) return;
-							var src = "";
-							try { src = base64ToUtf8(d.files[0].content || ""); } catch (e2) { return; }
-							var range = findArrayRange(src);
-							if (!range) return;
-							try {
-								var arr = new Function("return (" + src.substring(range.start, range.end) + ");")();
-								if (!Array.isArray(arr)) return;
-								state.items = arr;
-								state.sourceContent = src;
-								state.sourceTemplate = src;
-								renderList();
-								setStatus($("mg-editor-foot-status"), "📥 已载入本地草稿（" + arr.length + " 条）", "ok");
-							} catch (e3) {
-								setStatus($("mg-editor-foot-status"), "❌ 草稿解析失败：" + e3.message, "error");
-							}
-						})
-						.catch(function (err) {
-							setStatus($("mg-editor-foot-status"), "❌ " + (err && err.message ? err.message : err), "error");
-						});
+				if (body) expandTokenPanel(body.hidden);
+				return;
+			}
+			// 待上传草稿面板：载入 / 删除
+			if (cId("#mg-draft-panel")) {
+				var dbtn = t.closest("[data-draft-act]");
+				if (dbtn) handleDraftAct(dbtn.getAttribute("data-draft-act"));
+				return;
+			}
+			// 列表内的按钮（编辑/删除/取消/保存/智能匹配/关闭候选）+ TMDB 候选
+			if (cId("#mg-editor-list")) {
+				var abtn = t.closest("[data-act]");
+				if (abtn) { handleListAct(abtn); return; }
+				var cand = t.closest(".mg-tmdb-candidate");
+				if (cand) {
+					var rowEl = cand.closest(".mg-row");
+					if (rowEl) {
+						var idx = parseInt(cand.getAttribute("data-tmdb-idx"), 10);
+						var results = tmdbCache[rowEl.getAttribute("data-row-id")] || [];
+						applyTmdbResult(rowEl, results, idx);
+					}
+					return;
 				}
-			});
+			}
+		}
 
-			// 列表事件委托
-			$("mg-editor-list")?.addEventListener("click", function (e) {
-				var btn = e.target.closest("[data-act]");
-				if (!btn) return;
-				var act = btn.getAttribute("data-act");
-				var id = btn.getAttribute("data-id");
-				var rowEl = btn.closest(".mg-row");
-				if (act === "edit") {
-					state.editingId = id;
-					renderList();
-				} else if (act === "del") {
-					if (!confirm("确定删除「" + (state.items.find(function (x) { return x.id === id; })?.title || id) + "」？")) return;
-					state.items = state.items.filter(function (x) { return x.id !== id; });
-					if (state.editingId === id) state.editingId = null;
-					renderList();
-					scheduleDraftSave();
-				} else if (act === "cancel") {
-					// 取消编辑：若 id 是新生成且无标题，从列表删除
-					var item = state.items.find(function (x) { return x.id === state.editingId; });
-					if (item && !item.title) {
-						state.items = state.items.filter(function (x) { return x.id !== state.editingId; });
-					}
-					state.editingId = null;
-					renderList();
-					scheduleDraftSave();
-				} else if (act === "save-row") {
-					if (!rowEl) return;
-					var data = collectForm(rowEl);
-					if (!data.title || !data.title.trim()) {
-						alert("请填写标题");
-						return;
-					}
-					// 用表单中的 id（可能用户改过）
-					var idx = state.items.findIndex(function (x) { return x.id === state.editingId; });
-					if (idx >= 0) {
-						// 检查 id 冲突
-						if (data.id !== state.editingId &&
-							state.items.some(function (x) { return x.id === data.id; })) {
-							alert("ID 已被占用：" + data.id);
-							return;
+		function handleDraftAct(act) {
+			var ds = getDs();
+			if (!ds) return;
+			if (act === "del") {
+				if (!confirm("确定删除本地草稿？（不影响已推送到仓库的内容）")) return;
+				ds.deleteDraft("movies-games", SRC_PATH)
+					.then(function () {
+						setStatus($("mg-editor-foot-status"), "🗑 已删除本地草稿", "ok");
+						renderDraftPanel();
+					})
+					.catch(function (err) {
+						setStatus($("mg-editor-foot-status"), "❌ " + (err && err.message ? err.message : err), "error");
+					});
+			} else if (act === "load") {
+				ds.getDraft("movies-games", SRC_PATH)
+					.then(function (d) {
+						if (!d || !d.files || !d.files.length) return;
+						var src = "";
+						try { src = base64ToUtf8(d.files[0].content || ""); } catch (e2) { return; }
+						var range = findArrayRange(src);
+						if (!range) return;
+						try {
+							var arr = new Function("return (" + src.substring(range.start, range.end) + ");")();
+							if (!Array.isArray(arr)) return;
+							state.items = arr;
+							state.sourceContent = src;
+							state.sourceTemplate = src;
+							renderList();
+							setStatus($("mg-editor-foot-status"), "📥 已载入本地草稿（" + arr.length + " 条）", "ok");
+						} catch (e3) {
+							setStatus($("mg-editor-foot-status"), "❌ 草稿解析失败：" + e3.message, "error");
 						}
-						state.items[idx] = data;
-					}
-					state.editingId = null;
-					renderList();
-					scheduleDraftSave();
-				} else if (act === "tmdb-search") {
-					if (!rowEl) return;
-					var titleInp = rowEl.querySelector('[data-f="title"]');
-					var q = titleInp ? titleInp.value.trim() : "";
-					if (!q) {
-						alert("请先填写标题");
-						if (titleInp) titleInp.focus();
+					})
+					.catch(function (err) {
+						setStatus($("mg-editor-foot-status"), "❌ " + (err && err.message ? err.message : err), "error");
+					});
+			}
+		}
+
+		function handleListAct(abtn) {
+			var act = abtn.getAttribute("data-act");
+			var id = abtn.getAttribute("data-id");
+			var rowEl = abtn.closest(".mg-row");
+			if (act === "edit") {
+				state.editingId = id;
+				renderList();
+			} else if (act === "del") {
+				if (!confirm("确定删除「" + (state.items.find(function (x) { return x.id === id; })?.title || id) + "」？")) return;
+				state.items = state.items.filter(function (x) { return x.id !== id; });
+				if (state.editingId === id) state.editingId = null;
+				renderList();
+				scheduleDraftSave();
+			} else if (act === "cancel") {
+				var item = state.items.find(function (x) { return x.id === state.editingId; });
+				if (item && !item.title) {
+					state.items = state.items.filter(function (x) { return x.id !== state.editingId; });
+				}
+				state.editingId = null;
+				renderList();
+				scheduleDraftSave();
+			} else if (act === "save-row") {
+				if (!rowEl) return;
+				var data = collectForm(rowEl);
+				if (!data.title || !data.title.trim()) {
+					alert("请填写标题");
+					return;
+				}
+				var idx = state.items.findIndex(function (x) { return x.id === state.editingId; });
+				if (idx >= 0) {
+					if (data.id !== state.editingId &&
+						state.items.some(function (x) { return x.id === data.id; })) {
+						alert("ID 已被占用：" + data.id);
 						return;
 					}
-					runTmdbSearch(rowEl, q);
-				} else if (act === "tmdb-close") {
-					var host2 = rowEl && rowEl.querySelector("[data-tmdb-host]");
-					if (host2) host2.style.display = "none";
+					state.items[idx] = data;
 				}
-			});
-
-			// 候选点击（在 list 上也监听 candidate 按钮，与 list 共用冒泡）
-			$("mg-editor-list")?.addEventListener("click", function (e) {
-				var cand = e.target.closest(".mg-tmdb-candidate");
-				if (!cand) return;
-				var rowEl = cand.closest(".mg-row");
+				state.editingId = null;
+				renderList();
+				scheduleDraftSave();
+			} else if (act === "tmdb-search") {
 				if (!rowEl) return;
-				var idx = parseInt(cand.getAttribute("data-tmdb-idx"), 10);
-				var results = tmdbCache[rowEl.getAttribute("data-row-id")] || [];
-				applyTmdbResult(rowEl, results, idx);
-			});
+				var titleInp = rowEl.querySelector('[data-f="title"]');
+				var q = titleInp ? titleInp.value.trim() : "";
+				if (!q) {
+					alert("请先填写标题");
+					if (titleInp) titleInp.focus();
+					return;
+				}
+				runTmdbSearch(rowEl, q);
+			} else if (act === "tmdb-close") {
+				var host2 = rowEl && rowEl.querySelector("[data-tmdb-host]");
+				if (host2) host2.style.display = "none";
+			}
+		}
 
-			// 标题框聚焦时记住当前名称，作为「是否改动」的基准
-			$("mg-editor-list")?.addEventListener("focusin", function (e) {
-				var inp = e.target.closest && e.target.closest('[data-f="title"]');
-				if (!inp) return;
-				var rowEl = inp.closest(".mg-row");
-				if (rowEl) rowEl._mgLastQuery = inp.value;
-			});
-			// 标题框自动触发搜索：失焦（focusout 可冒泡）或按回车，免去手动点「智能匹配」
-			// 跳过点「智能匹配 / 保存 / 取消」按钮的失焦，避免重复搜索；
-			// 标题没改过（比如只是去改封面又回来）则不重搜，避免覆盖手动填的封面。
-			$("mg-editor-list")?.addEventListener("focusout", function (e) {
-				var inp = e.target.closest && e.target.closest('[data-f="title"]');
-				if (!inp) return;
-				var rowEl = inp.closest(".mg-row");
-				if (!rowEl || !rowEl.isConnected) return;
-				var q = (inp.value || "").trim();
-				var last = ((rowEl._mgLastQuery || "").trim());
-				if (q === last) return; // 名字没变，不重搜
-				var rel = e.relatedTarget;
-				if (
-					rel && rel.closest && rel.matches &&
-					rel.closest(".mg-row") === rowEl &&
-					rel.matches('[data-act="tmdb-search"],[data-act="save-row"],[data-act="cancel"]')
-				) return;
-				rowEl._mgLastQuery = q;
-				autoSearchFromTitle(rowEl, q);
-			});
-			$("mg-editor-list")?.addEventListener("keydown", function (e) {
-				if (e.key !== "Enter") return;
-				var inp = e.target.closest && e.target.closest('[data-f="title"]');
-				if (!inp) return;
+		function onDocInput(e) {
+			if (e.target.id === "mg-editor-pat") {
+				setPat(e.target.value);
+				refreshTokenBadge();
+			}
+		}
+
+		function onDocFocusIn(e) {
+			var inp = e.target.closest && e.target.closest('[data-f="title"]');
+			if (!inp) return;
+			var rowEl = inp.closest(".mg-row");
+			if (rowEl) rowEl._mgLastQuery = inp.value;
+		}
+
+		function onDocFocusOut(e) {
+			var inp = e.target.closest && e.target.closest('[data-f="title"]');
+			if (!inp) return;
+			var rowEl = inp.closest(".mg-row");
+			if (!rowEl || !rowEl.isConnected) return;
+			var q = (inp.value || "").trim();
+			var last = ((rowEl._mgLastQuery || "").trim());
+			if (q === last) return; // 名字没变，不重搜
+			var rel = e.relatedTarget;
+			if (
+				rel && rel.closest && rel.matches &&
+				rel.closest(".mg-row") === rowEl &&
+				rel.matches('[data-act="tmdb-search"],[data-act="save-row"],[data-act="cancel"]')
+			) return;
+			rowEl._mgLastQuery = q;
+			autoSearchFromTitle(rowEl, q);
+		}
+
+		function onDocKeydown(e) {
+			if (e.key !== "Enter") return;
+			var inp = e.target.closest && e.target.closest('[data-f="title"]');
+			if (!inp) return;
+			e.preventDefault();
+			var rowEl = inp.closest(".mg-row");
+			if (!rowEl || !rowEl.isConnected) return;
+			var q = (inp.value || "").trim();
+			if (q === ((rowEl._mgLastQuery || "").trim())) return; // 没改不搜
+			rowEl._mgLastQuery = q;
+			autoSearchFromTitle(rowEl, q);
+		}
+
+		// Esc 关闭：<dialog> 的 cancel 事件不冒泡，用捕获阶段在 document 上接
+		function onDocCancel(e) {
+			if (e.target === $("mg-editor")) {
 				e.preventDefault();
-				var rowEl = inp.closest(".mg-row");
-				if (!rowEl || !rowEl.isConnected) return;
-				var q = (inp.value || "").trim();
-				if (q === ((rowEl._mgLastQuery || "").trim())) return; // 没改不搜
-				rowEl._mgLastQuery = q;
-				autoSearchFromTitle(rowEl, q);
-			});
+				closeEditor();
+			}
 		}
 
-		// Astro 软导航兼容
-		function init() { bind(); }
-		if (document.readyState === "loading") {
-			document.addEventListener("DOMContentLoaded", init);
-		} else {
-			init();
+		// 只绑一次，幂等；app 生命周期内 document 级监听始终有效，不受 Swup 换 DOM 影响
+		function bindDelegated() {
+			if (window.__mgDelegated) return;
+			window.__mgDelegated = true;
+			document.addEventListener("click", onDocClick);
+			document.addEventListener("input", onDocInput);
+			document.addEventListener("focusin", onDocFocusIn);
+			document.addEventListener("focusout", onDocFocusOut);
+			document.addEventListener("keydown", onDocKeydown);
+			document.addEventListener("cancel", onDocCancel, true);
 		}
+
+		// 初始绑定：首屏直接绑（document 级委托，无需等 DOMContentLoaded）；
+		// 每次软导航再调一次，内部 window.__mgDelegated 保证只绑一次 → 永不失效、永不重复。
+		bindDelegated();
 		if (typeof window !== "undefined" && window.Astro && window.Astro.on) {
-			window.Astro.on("page-load", bind);
+			window.Astro.on("page-load", bindDelegated);
 		}
 	})();
 </script>
